@@ -54,6 +54,23 @@ Specialized expertise from Virtual Company:
 - Product: `product-manager`, `workflow-orchestrator`
 - Meta: `skill-generator`
 
+### Token Optimization (1 skill)
+
+CLI token savings with RTK:
+
+- `rtk` - Rust Token Killer for 60-90% token reduction on CLI commands
+
+### RTK MANDATORY USAGE RULE
+
+**You MUST use RTK-wrapped commands for all supported CLI operations.** Failure to use RTK when it is available is a violation of the "Aesthetics and Performance" contract.
+
+- ALWAYS use `rtk git status` instead of `git status`
+- ALWAYS use `rtk lint` instead of `npm run lint`
+- ALWAYS use `rtk tsc` instead of `npx tsc`
+- ALWAYS use `rtk npm test` or `rtk vitest` for testing
+
+If you are unsure if a command is supported, try `rtk <command>` first or use `rtk proxy <command>`.
+
 ## Session Rules
 
 ### Tool Translation Contract
@@ -263,6 +280,86 @@ Never mark a task as complete without verification:
 4. **Manual verification**: Check the actual functionality works
 5. **Document changes**: Update relevant docs
 
+## RTK Token Optimization
+
+**RTK (Rust Token Killer)** is a CLI proxy that reduces LLM token consumption by **60-90%** on common development commands. When RTK is installed, always prefer RTK-wrapped commands.
+
+### Check RTK Installation
+
+```bash
+rtk --version    # Should show version (e.g., rtk 0.27.1)
+rtk gain         # Should show token savings stats
+```
+
+### Command Translation Table
+
+When RTK is installed, automatically translate commands:
+
+| Original           | RTK-Optimized      | Savings |
+| ------------------ | ------------------ | ------- |
+| `git status`       | `rtk git status`   | 70%     |
+| `git log -10`      | `rtk git log -10`  | 85%     |
+| `git diff`         | `rtk git diff`     | 80%     |
+| `cargo test`       | `rtk cargo test`   | 90%     |
+| `cargo build`      | `rtk cargo build`  | 80%     |
+| `cargo clippy`     | `rtk cargo clippy` | 85%     |
+| `npm test`         | `rtk npm test`     | 90%     |
+| `npm run lint`     | `rtk lint`         | 84%     |
+| `npx tsc --noEmit` | `rtk tsc`          | 83%     |
+| `pytest`           | `rtk pytest`       | 90%     |
+| `go test ./...`    | `rtk go test`      | 90%     |
+| `pnpm list`        | `rtk pnpm list`    | 70-90%  |
+| `ls -la`           | `rtk ls`           | 60%     |
+| `cat <file>`       | `rtk read <file>`  | 50-70%  |
+
+### RTK Commands by Category
+
+**Git Operations:**
+
+- `rtk git status` - Compact status with file counts (70% savings)
+- `rtk git log` - Condensed commit summaries (85% savings)
+- `rtk git diff` - Smart diff filtering (80% savings)
+
+**Build & Test:**
+
+- `rtk cargo test` - Failures only (90% savings)
+- `rtk cargo build` - Errors/warnings only (80% savings)
+- `rtk npm test` / `rtk vitest` - Test failures only (90-99% savings)
+
+**Linting & Type Checking:**
+
+- `rtk lint` - ESLint/Biome grouped by rule (84% savings)
+- `rtk tsc` - TypeScript errors by file (83% savings)
+- `rtk ruff check` - Python linter (80% savings)
+
+**Frameworks:**
+
+- `rtk next` - Next.js build metrics (87% savings)
+- `rtk playwright` - E2E test failures (94% savings)
+- `rtk prisma` - Prisma CLI (88% savings)
+
+### View Savings Statistics
+
+```bash
+rtk gain              # Show cumulative savings
+rtk gain --history    # Show command usage history
+```
+
+### Fallback Behavior
+
+If RTK is not installed, use standard commands. The system gracefully degrades without breaking functionality.
+
+### Install RTK
+
+```bash
+# macOS/Linux
+curl -sSL https://github.com/rtk-ai/rtk/releases/latest/download/rtk-$(uname -s)-$(uname -m) -o /usr/local/bin/rtk
+chmod +x /usr/local/bin/rtk
+
+# Or with Cargo
+cargo install rtk
+```
+
 ## Best Practices
 
 ### When to Use Which Skill
@@ -335,7 +432,10 @@ Never mark a task as complete without verification:
 │   ├── ux-designer/
 │   ├── product-manager/
 │   ├── workflow-orchestrator/
-│   └── skill-generator/
+│   ├── skill-generator/
+│   │
+│   ├── # Token Optimization
+│   └── rtk/
 │
 ├── workflows/
 │   ├── brainstorm.md

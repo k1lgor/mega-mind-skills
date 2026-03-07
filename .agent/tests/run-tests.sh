@@ -92,6 +92,7 @@ DOMAIN_SKILLS=(
   "workflow-orchestrator"
   "legacy-archaeologist"
   "skill-generator"
+  "rtk"
 )
 
 for skill in "${DOMAIN_SKILLS[@]}"; do
