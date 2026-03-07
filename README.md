@@ -6,7 +6,7 @@ This is a comprehensive skill-based workflow system that combines the discipline
 
 ## Overview
 
-Mega-Mind brings together **41 skills** organized into categories:
+Mega-Mind brings together **42 skills** organized into categories:
 
 ### The Mega-Mind Orchestrator (1 skill)
 
@@ -48,58 +48,51 @@ Specialized expertise for specific technical domains:
 - **Product**: product-manager, workflow-orchestrator
 - **Meta**: skill-generator
 
+### Token Optimization (1 skill)
+
+Reduce LLM Token consumption:
+
+- **RTK**: `rtk` - CLI proxy for 60-90% token savings on common dev commands
+
 ---
 
 ## Quick Start
 
-### Option 1: Full Installation (Recommended)
-
-Run the full installation script with interactive options:
+### 1. Install the CLI
 
 ```bash
-# Navigate to mega-mind-skills directory
-cd mega-mind-skills
+# pip
+pip install mega-mind
 
-# Run installer with your project path
-./install.sh /path/to/your/project
+# pipx (recommended — isolated, globally available)
+pipx install mega-mind
 
-# Or run from the target project directory
+# uv
+uv tool install mega-mind
+```
+
+### 2. Initialize skills in your project
+
+```bash
+# From your project root
 cd /path/to/your/project
-/path/to/mega-mind-skills/install.sh .
+mega-mind init
 ```
 
-The installer provides options for:
-
-- **[b]ackup** existing `.agent` and install fresh
-- **[m]erge** with existing installation
-- **[o]verwrite** completely
-- **[c]ancel** installation
-
-### Option 2: Quick Install
-
-For a simple copy operation:
+This copies the full `.agent/` directory into your project — all 42 skills, workflows, and agents are ready to use.
 
 ```bash
-# From your project directory
-/path/to/mega-mind-skills/quick-install.sh .
+# Overwrite an existing installation
+mega-mind init --force
 ```
 
-### Option 3: Manual Installation
+### 3. Verify the installation
 
 ```bash
-# Copy the .agent directory to your project
-cp -r mega-mind-skills/.agent /path/to/your/project/
-
-# Make scripts executable
-chmod +x /path/to/your/project/.agent/tests/run-tests.sh
-```
-
-### Verify Installation
-
-```bash
-cd /path/to/your/project
 bash .agent/tests/run-tests.sh
 ```
+
+> 📖 For full installation details see [USAGE.md](./USAGE.md)
 
 ---
 
@@ -169,9 +162,9 @@ User: /mega-mind I need to add user authentication with OAuth
 ```
 mega-mind-skills/
 ├── README.md                    # Main documentation (this file)
+├── USAGE.md                     # Installation guide
 ├── COMPLETE_REFERENCE.md        # Detailed reference
-├── install.sh                   # Full installer with options
-├── quick-install.sh             # Simple copy installer
+├── quick-install.sh             # Simple copy installer (legacy)
 │
 └── .agent/
     ├── AGENTS.md                # Master contract and rules
@@ -335,40 +328,55 @@ Never mark a task as complete without:
 4. All work tracked in task tracker
 5. Nothing marked done without verification
 
+### RTK Token Optimization
+
+When [RTK](https://github.com/rtk-ai/rtk) is installed, CLI commands are automatically optimized:
+
+| Original     | RTK-Optimized    | Savings |
+| ------------ | ---------------- | ------- |
+| `git log`    | `rtk git log`    | 85%     |
+| `cargo test` | `rtk cargo test` | 90%     |
+| `npm test`   | `rtk npm test`   | 90%     |
+| `pytest`     | `rtk pytest`     | 90%     |
+
+Install RTK:
+
+```bash
+cargo install rtk
+# or
+curl -sSL https://github.com/rtk-ai/rtk/releases/latest/download/rtk-$(uname -s)-$(uname -m) -o /usr/local/bin/rtk
+chmod +x /usr/local/bin/rtk
+```
+
 ---
 
-## Installation Scripts
+## Installation
 
-### install.sh (Full Installer)
+See [USAGE.md](./USAGE.md) for the full installation guide.
 
-The full installer provides:
-
-- Interactive installation options
-- Backup/merge/overwrite choices
-- Automatic validation
-- Quick start guide output
+### CLI Reference
 
 ```bash
-./install.sh [project-path]
+# Install skills into current directory
+mega-mind init
+
+# Install into a specific path
+mega-mind init /path/to/project
+
+# Overwrite existing .agent directory
+mega-mind init --force
+
+# Show CLI version
+mega-mind --version
 ```
 
-### quick-install.sh (Simple Copy)
-
-For non-interactive installation:
-
-```bash
-./quick-install.sh [project-path]
-```
-
-### run-tests.sh (Validation)
-
-Validates your installation:
+### Validate Installation
 
 ```bash
 bash .agent/tests/run-tests.sh
 ```
 
-Tests include:
+Tests verify:
 
 - Core workflow skills existence
 - Domain expert skills existence
@@ -406,6 +414,7 @@ This project combines and adapts:
 - [Superpowers](https://github.com/obra/superpowers) by obra - Core workflow philosophy
 - [antigravity-superpowers](https://github.com/skainguyen1412/antigravity-superpowers) by skainguyen1412 - Antigravity adaptation
 - [virtual-company](https://github.com/k1lgor/virtual-company) by k1lgor - Domain expertise skills
+- [RTK](https://github.com/rtk-ai/rtk) - Token optimization CLI
 
 ---
 
