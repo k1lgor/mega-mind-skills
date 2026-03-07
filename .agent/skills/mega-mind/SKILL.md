@@ -80,9 +80,9 @@ When a request comes in, analyze it:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      REQUEST TYPE MAPPING                        │
+│                      REQUEST TYPE MAPPING                       │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
+│                                                                 │
 │  ARCHITECTURE & DESIGN                                          │
 │  ├── "design system"          → tech-lead                       │
 │  ├── "design API"             → api-designer                    │
@@ -91,44 +91,44 @@ When a request comes in, analyze it:
 │  ├── "design backend"         → backend-architect               │
 │  ├── "design infrastructure"  → infra-architect                 │
 │  └── "design mobile app"      → mobile-architect                │
-│                                                                  │
-│  DEVELOPMENT                                                     │
+│                                                                 │
+│  DEVELOPMENT                                                    │
 │  ├── "implement feature"      → brainstorming → writing-plans   │
 │  ├── "refactor code"          → code-polisher                   │
 │  ├── "upgrade dependencies"   → migration-upgrader              │
 │  ├── "work with legacy"       → legacy-archaeologist            │
 │  └── "create skill"           → skill-generator                 │
-│                                                                  │
-│  TESTING & QUALITY                                               │
+│                                                                 │
+│  TESTING & QUALITY                                              │
 │  ├── "write tests"            → test-driven-development         │
 │  ├── "unit tests"             → test-genius                     │
 │  ├── "e2e tests"              → e2e-test-specialist             │
 │  ├── "code review"            → requesting-code-review          │
 │  └── "security audit"         → security-reviewer               │
-│                                                                  │
-│  DEBUGGING & FIXING                                              │
+│                                                                 │
+│  DEBUGGING & FIXING                                             │
 │  ├── "fix bug"                → systematic-debugging            │
 │  ├── "debug error"            → bug-hunter                      │
 │  ├── "performance issue"      → performance-profiler            │
-│                                                                  │
+│                                                                 │
 │  DEVOPS & INFRASTRUCTURE                                        │
 │  ├── "containerize"           → docker-expert                   │
 │  ├── "deploy to k8s"          → k8s-orchestrator                │
 │  ├── "CI/CD"                  → ci-config-helper                │
 │  └── "monitoring"             → observability-specialist        │
-│                                                                  │
-│  DATA & AI                                                       │
+│                                                                 │
+│  DATA & AI                                                      │
 │  ├── "build data pipeline"    → data-engineer                   │
 │  ├── "analyze data"           → data-analyst                    │
 │  ├── "train model"            → ml-engineer                     │
 │  ├── "vector search"          → search-vector-architect         │
 │  └── "RAG system"             → search-vector-architect         │
-│                                                                  │
-│  DOCUMENTATION & UX                                              │
+│                                                                 │
+│  DOCUMENTATION & UX                                             │
 │  ├── "write docs"             → doc-writer                      │
 │  ├── "improve UX"             → ux-designer                     │
 │  └── "plan feature"           → product-manager                 │
-│                                                                  │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -137,37 +137,37 @@ When a request comes in, analyze it:
 ### Feature Development Chain
 
 ```
-1. tech-lead         → Analyze requirements
-2. brainstorming     → Explore approaches
-3. writing-plans     → Create implementation plan
-4. test-driven-development → Write tests first
-5. executing-plans   → Implement with tracking
-6. verification-before-completion → Verify it works
-7. requesting-code-review → Submit for review
-8. finishing-a-development-branch → Merge and deploy
+1. tech-lead                        → Analyze requirements
+2. brainstorming                    → Explore approaches
+3. writing-plans                    → Create implementation plan
+4. test-driven-development          → Write tests first
+5. executing-plans                  → Implement with tracking
+6. verification-before-completion   → Verify it works
+7. requesting-code-review           → Submit for review
+8. finishing-a-development-branch   → Merge and deploy
 ```
 
 ### Bug Fix Chain
 
 ```
-1. systematic-debugging → Reproduce and analyze
-2. bug-hunter          → Find root cause
-3. test-driven-development → Write regression test
-4. verification-before-completion → Verify fix works
-5. finishing-a-development-branch → Ship the fix
+1. systematic-debugging             → Reproduce and analyze
+2. bug-hunter                       → Find root cause
+3. test-driven-development          → Write regression test
+4. verification-before-completion   → Verify fix works
+5. finishing-a-development-branch   → Ship the fix
 ```
 
 ### New Project Chain
 
 ```
-1. tech-lead           → Define architecture
+1. tech-lead                        → Define architecture
 2. [frontend-architect, backend-architect, api-designer, infra-architect] → Design
-3. writing-plans       → Create implementation plan
-4. infra-architect     → Setup infrastructure
+3. writing-plans                    → Create implementation plan
+4. infra-architect                  → Setup infrastructure
 5. [docker-expert, k8s-orchestrator, ci-config-helper] → DevOps setup
-6. Execute development → Feature chain for each component
-7. observability-specialist → Add monitoring
-8. doc-writer          → Document everything
+6. Execute development              → Feature chain for each component
+7. observability-specialist         → Add monitoring
+8. doc-writer                       → Document everything
 ```
 
 ## Session State Management
@@ -307,15 +307,15 @@ User: "I need to add user authentication with OAuth"
 📋 Request Analyzed: New feature - User Authentication with OAuth
 
 🔄 Routed to skill chain:
-   1. tech-lead          → Define architecture
-   2. brainstorming      → Explore OAuth providers
-   3. api-designer       → Design auth API
-   4. writing-plans      → Create implementation plan
-   5. test-driven-development → Write auth tests
-   6. backend-architect  → Implement auth service
-   7. frontend-architect → Implement login UI
-   8. security-reviewer  → Security audit
-   9. verification-before-completion → Verify
+   1. tech-lead                        → Define architecture
+   2. brainstorming                    → Explore OAuth providers
+   3. api-designer                     → Design auth API
+   4. writing-plans                    → Create implementation plan
+   5. test-driven-development          → Write auth tests
+   6. backend-architect                → Implement auth service
+   7. frontend-architect               → Implement login UI
+   8. security-reviewer                → Security audit
+   9. verification-before-completion   → Verify
 
 📍 Starting with: tech-lead
 ```
@@ -331,11 +331,11 @@ User: "Users are randomly getting logged out"
 📋 Request Analyzed: Bug - Random session logout
 
 🔄 Routed to skill chain:
-   1. systematic-debugging → Reproduce issue
-   2. bug-hunter          → Find root cause
-   3. test-driven-development → Regression test
-   4. verification-before-completion → Verify fix
-   5. finishing-a-development-branch → Ship
+   1. systematic-debugging             → Reproduce issue
+   2. bug-hunter                       → Find root cause
+   3. test-driven-development          → Regression test
+   4. verification-before-completion   → Verify fix
+   5. finishing-a-development-branch   → Ship
 
 📍 Starting with: systematic-debugging
 

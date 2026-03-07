@@ -48,14 +48,31 @@ When the plan doesn't match reality:
 
 ### Step 4: Track Progress
 
-Update `docs/plans/task.md` after each step:
+Update `docs/plans/task.md` after each step, ensuring you preserve the **Mega-Mind Session State** structure:
 
 ```markdown
-| Task ID | Description           | Status      | Priority | Notes   |
-| ------- | --------------------- | ----------- | -------- | ------- |
-| 1.1     | Create User model     | completed   | high     | Done    |
-| 1.2     | Password hashing      | in_progress | high     | Working |
-| 1.3     | Registration endpoint | pending     | high     | -       |
+# Mega-Mind Session State
+
+## Current Task
+
+| Task ID | Description       | Status      | Skill           | Started    |
+| ------- | ----------------- | ----------- | --------------- | ---------- |
+| 1.1     | Create User model | completed   | executing-plans | 2024-01-15 |
+| 1.2     | Password hashing  | in_progress | executing-plans | 2024-01-15 |
+
+## Skill Chain
+
+1. ✅ tech-lead
+2. ✅ brainstorming
+3. ✅ writing-plans
+4. 🔄 executing-plans (current)
+5. ⏳ verification-before-completion
+
+## Context
+
+- Project: [project name]
+- Branch: [current branch]
+- Last Action: [what was done]
 ```
 
 ## Execution Protocol
@@ -88,9 +105,9 @@ PROCEED TO NEXT PHASE
 Before marking any phase complete:
 
 - [ ] All steps in phase are marked completed
-- [ ] All tests pass (`npm test` or equivalent)
+- [ ] All tests pass (`rtk npm test` or equivalent)
 - [ ] Code compiles without errors
-- [ ] Linting passes (`npm run lint`)
+- [ ] Linting passes (`rtk lint`)
 - [ ] Feature works as expected manually
 - [ ] No regressions in existing functionality
 
@@ -130,3 +147,13 @@ Phase 1 Complete! Moving to Phase 2...
 - Keep the plan visible - refer back to it frequently
 - Celebrate phase completions - they're meaningful milestones
 - If a step is taking much longer than estimated, reassess the approach
+
+## Token Optimization (RTK)
+
+During plan execution, you will often run verbose commands like `ls`, `git status`, or `npm install`. Always prefer using **RTK-wrapped commands** to save 60-90% of tokens:
+
+- Use `rtk ls` instead of `ls`
+- Use `rtk git status` instead of `rtk git status`
+- Use `rtk npm test` instead of `npm test`
+
+Run `rtk gain` periodically to check your cumulative token savings.

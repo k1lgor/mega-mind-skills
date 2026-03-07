@@ -22,17 +22,17 @@ triggers:
 ### Step 1: Run Tests
 
 ```bash
-# Unit tests
-npm test
+# Unit tests (90% savings)
+rtk npm test
 
 # Integration tests
-npm run test:integration
+rtk proxy npm run test:integration
 
 # E2E tests (if applicable)
-npm run test:e2e
+rtk playwright test
 
 # Check coverage
-npm run test:coverage
+rtk proxy npm run test:coverage
 ```
 
 **All tests must pass.** If any test fails, the task is not complete.
@@ -40,14 +40,14 @@ npm run test:coverage
 ### Step 2: Run Linters and Type Checks
 
 ```bash
-# Lint
-npm run lint
+# Lint (84% savings)
+rtk lint
 
-# Type check (TypeScript)
-npm run type-check
+# Type check (TypeScript - 83% savings)
+rtk tsc
 
 # Format check
-npm run format:check
+rtk proxy npm run format:check
 ```
 
 **No errors allowed.** Warnings should be addressed or documented.
@@ -56,10 +56,10 @@ npm run format:check
 
 ```bash
 # Build
-npm run build
+rtk proxy npm run build
 
 # Production build
-npm run build:prod
+rtk proxy npm run build:prod
 ```
 
 **Build must succeed without errors.**
@@ -188,3 +188,14 @@ Verify the change doesn't break other parts:
 - Check in different environments if possible
 - Have someone else test if possible
 - Document any known issues for future work
+
+## Token Optimization (RTK)
+
+Verification often involves running large test suites or verbose linters. Always use **RTK** to optimize the output and save tokens:
+
+- Use `rtk npm test` or `rtk pytest` for Step 1
+- Use `rtk lint` or `rtk ruff check` for Step 2
+- Use `rtk tsc` for type checking
+- Use `rtk cargo build` or `rtk next` for Step 3
+
+This ensures your final verification doesn't consume unnecessary context window space.

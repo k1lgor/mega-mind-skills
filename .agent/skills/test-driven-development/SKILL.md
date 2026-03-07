@@ -180,3 +180,13 @@ async function register(data) {
 - ❌ Skipping refactoring step
 - ❌ Over-engineering in the GREEN phase
 - ❌ Testing implementation details instead of behavior
+
+## Token Optimization (RTK)
+
+When running test commands in the RED and GREEN phases, always prefer using **RTK** to reduce token consumption:
+
+- Use `rtk cargo test` instead of `cargo test`
+- Use `rtk npm test` instead of `npm test`
+- Use `rtk pytest` instead of `pytest`
+
+This keeps the session context window clean and reduces costs.

@@ -201,28 +201,30 @@ Route:
 5. verification-before-completion (verify deployment)
 ```
 
-## Session State Tracking
+## Session State Tracking (docs/plans/task.md)
 
 ```markdown
-# Session State
+# Mega-Mind Session State
 
-## Active Since: [timestamp]
+## Current Task
 
-## Tasks Completed: X
+| Task ID | Description  | Status      | Skill         | Started    |
+| ------- | ------------ | ----------- | ------------- | ---------- |
+| 1       | Example task | in_progress | brainstorming | 2024-01-15 |
 
-## Tasks In Progress: Y
+## Skill Chain
 
-## Current Focus: [skill being used]
+1. ✅ tech-lead
+2. 🔄 brainstorming (current)
+3. ⏳ writing-plans
+4. ⏳ executing-plans
+5. ⏳ verification-before-completion
 
-## Context:
+## Context
 
 - Project: [project name]
 - Branch: [current branch]
 - Last Action: [what was done]
-
-## Pending Reviews: [count]
-
-## Blockers: [any blockers]
 ```
 
 ## Skill Combination Patterns

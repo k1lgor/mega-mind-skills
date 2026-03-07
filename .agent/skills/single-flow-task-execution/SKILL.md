@@ -70,17 +70,17 @@ Keep context across tasks:
 ## Task Queue Format
 
 ```markdown
-# Task Queue
+# Task Queue (Mega-Mind Session State)
 
-## Current
+## Current Task
 
-| #   | Task                   | Status      | Notes   |
-| --- | ---------------------- | ----------- | ------- |
-| 1   | Set up database schema | completed   | Done    |
-| 2   | Create API endpoints   | in_progress | Working |
-| 3   | Add validation         | pending     | -       |
-| 4   | Write tests            | pending     | -       |
-| 5   | Document API           | pending     | -       |
+| Task ID | Task                   | Status      | Skill                      | Started    |
+| ------- | ---------------------- | ----------- | -------------------------- | ---------- |
+| 1       | Set up database schema | completed   | single-flow-task-execution | 2024-01-15 |
+| 2       | Create API endpoints   | in_progress | single-flow-task-execution | 2024-01-15 |
+| 3       | Add validation         | pending     | single-flow-task-execution | 2024-01-15 |
+| 4       | Write tests            | pending     | single-flow-task-execution | 2024-01-15 |
+| 5       | Document API           | pending     | single-flow-task-execution | 2024-01-15 |
 
 ## Review Gates
 

@@ -43,11 +43,11 @@ You are a debugging specialist focused on finding root causes and fixing bugs ef
 ### Step 2: Gather Evidence
 
 ```bash
-# Check logs
-tail -f logs/error.log
+# Check logs (80% savings)
+rtk read logs/error.log
 
-# Check recent changes
-git log --oneline --since="2 days ago"
+# Check recent changes (85% savings)
+rtk git log --oneline --since="2 days ago"
 
 # Check error tracking
 # Sentry, Rollbar, etc.

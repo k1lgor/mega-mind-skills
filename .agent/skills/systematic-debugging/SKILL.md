@@ -97,14 +97,14 @@ Design an experiment to prove/disprove:
 ### 1. Log Analysis
 
 ```bash
-# Search for errors
-grep -r "ERROR\|Exception\|Failed" logs/
+# Search for errors (compact grouped output)
+rtk grep "ERROR\|Exception\|Failed" logs/
 
-# Check recent changes
-git log --oneline --since="2 days ago"
+# Check recent changes (85% savings)
+rtk git log --oneline --since="2 days ago"
 
 # Trace specific request
-grep "request-id-123" logs/app.log
+rtk grep "request-id-123" logs/app.log
 ```
 
 ### 2. Interactive Debugging
@@ -209,3 +209,14 @@ Hypothesis: API now returns 'fullName' instead of 'name'
 - Take breaks if stuck - fresh eyes help
 - Ask for help if stuck for > 30 minutes
 - Always add a regression test after fixing
+
+## Token Optimization (RTK)
+
+Debugging often involves searching logs and checking git history. Use **RTK** to keep the output concise and save tokens:
+
+- Use `rtk git status` or `rtk git diff` to see what changed
+- Use `rtk git log -10` to check recent commits
+- Use `rtk grep` for grouped search results
+- Use `rtk read <file>` for filtered file inspection
+
+This maintains a focused context window while you're investigating root causes.

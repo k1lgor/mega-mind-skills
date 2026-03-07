@@ -139,11 +139,11 @@ Define what "done" means for each phase:
 
 ### Phase 1: Foundation (Est: 2h)
 
-| Step | Description        | Files       | Status  |
-| ---- | ------------------ | ----------- | ------- |
-| 1.1  | Create data models | src/models/ | pending |
-| 1.2  | Set up migrations  | migrations/ | pending |
-| 1.3  | Add seed data      | seeds/      | pending |
+| Task ID | Description        | Status  | Skill         | Started    |
+| ------- | ------------------ | ------- | ------------- | ---------- |
+| 1.1     | Create data models | pending | writing-plans | 2024-01-15 |
+| 1.2     | Set up migrations  | pending | writing-plans | 2024-01-15 |
+| 1.3     | Add seed data      | pending | writing-plans | 2024-01-15 |
 
 **Verification:**
 
@@ -208,14 +208,14 @@ Implement a secure user authentication system with JWT tokens, supporting email/
 
 ### Phase 1: Core Auth (Est: 8h)
 
-| Step | Description                  | Files              | Status  |
-| ---- | ---------------------------- | ------------------ | ------- |
-| 1.1  | Create User model            | models/user.ts     | pending |
-| 1.2  | Implement password hashing   | utils/auth.ts      | pending |
-| 1.3  | Create registration endpoint | routes/auth.ts     | pending |
-| 1.4  | Create login endpoint        | routes/auth.ts     | pending |
-| 1.5  | Implement JWT generation     | utils/jwt.ts       | pending |
-| 1.6  | Add auth middleware          | middleware/auth.ts | pending |
+| Task ID | Description                  | Status  | Skill         | Started    |
+| ------- | ---------------------------- | ------- | ------------- | ---------- |
+| 1.1     | Create User model            | pending | writing-plans | 2024-01-15 |
+| 1.2     | Implement password hashing   | pending | writing-plans | 2024-01-15 |
+| 1.3     | Create registration endpoint | pending | writing-plans | 2024-01-15 |
+| 1.4     | Create login endpoint        | pending | writing-plans | 2024-01-15 |
+| 1.5     | Implement JWT generation     | pending | writing-plans | 2024-01-15 |
+| 1.6     | Add auth middleware          | pending | writing-plans | 2024-01-15 |
 
 **Verification:**
 
