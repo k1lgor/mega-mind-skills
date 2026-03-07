@@ -1,0 +1,106 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # Triggers on version tags like v0.1.0, v1.2.3
+
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+    inputs:
+      confirm:
+        description: "Type 'publish' to confirm manual release"
+        required: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # 1. Build the distribution package with uv
+  # ──────────────────────────────────────────────────────────────
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Verify build artifacts
+        run: uvx twine check dist/*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Publish to PyPI using Trusted Publishing (OIDC)
+  #    No API token required — configure Trusted Publisher on PyPI:
+  #    https://pypi.org/manage/account/publishing/
+  # ──────────────────────────────────────────────────────────────
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mega-mind
+
+    permissions:
+      id-token: write # Required for OIDC Trusted Publishing
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Uses OIDC Trusted Publishing — no PYPI_API_TOKEN secret needed.
+        # To use an API token instead, uncomment the lines below:
+        # with:
+        #   password: ${{ secrets.PYPI_API_TOKEN }}
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Create a GitHub Release with changelog
+  # ──────────────────────────────────────────────────────────────
+  github-release:
+    name: Create GitHub Release
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # Required to create GitHub Releases
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
