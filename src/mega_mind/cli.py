@@ -4,7 +4,7 @@ from .installer import install_skills
 
 
 @click.group()
-@click.version_option()
+@click.version_option(package_name="mega-mind-orchestrator")
 def cli():
     """Mega-Mind Orchestrator CLI"""
     pass
