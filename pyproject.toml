@@ -1,5 +1,5 @@
 [project]
-name = "mega-mind"
+name = "mega-mind-orchestrator"
 version = "0.1.0"
 description = "A powerful AI orchestrator and skill system for Antigravity, featuring 40+ specialized domain expert skills, disciplined development workflows, and RTK token optimization."
 authors = [

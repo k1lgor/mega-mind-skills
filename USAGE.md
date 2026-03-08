@@ -11,19 +11,19 @@ Choose the method that fits your workflow:
 ### pip (standard)
 
 ```bash
-pip install mega-mind
+pip install mega-mind-orchestrator
 ```
 
 ### pipx (recommended — isolated install, globally available)
 
 ```bash
-pipx install mega-mind
+pipx install mega-mind-orchestrator
 ```
 
 ### uv
 
 ```bash
-uv tool install mega-mind
+uv tool install mega-mind-orchestrator
 ```
 
 ---

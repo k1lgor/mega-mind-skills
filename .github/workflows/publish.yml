@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/mega-mind
+      url: https://pypi.org/p/mega-mind-orchestrator
 
     permissions:
       id-token: write # Required for OIDC Trusted Publishing

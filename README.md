@@ -62,13 +62,13 @@ Reduce LLM Token consumption:
 
 ```bash
 # pip
-pip install mega-mind
+pip install mega-mind-orchestrator
 
 # pipx (recommended — isolated, globally available)
-pipx install mega-mind
+pipx install mega-mind-orchestrator
 
 # uv
-uv tool install mega-mind
+uv tool install mega-mind-orchestrator
 ```
 
 ### 2. Initialize skills in your project
