@@ -79,16 +79,24 @@ uvx --from mega-mind-orchestrator mega-mind
 # From your project root
 cd /path/to/your/project
 
-# Standard install (Antigravity, Cursor, Claude Code, etc.)
+# Standard install (Antigravity, Cursor, and other standard tools)
 mega-mind init
+
+# Also install for Claude Code (CLI)
+mega-mind init --claude
 
 # Also install for GitHub Copilot (VS Code)
 mega-mind init --copilot
 
 # Overwrite an existing installation
 mega-mind init --force
-mega-mind init --copilot --force
+mega-mind init --copilot --claude --force
 ```
+
+The `--claude` flag adds:
+
+- `CLAUDE.md` — project rules and workflows (mirrors `AGENTS.md`)
+- `.claude/skills/` — all 42 skills in the Agent Skills standard directory
 
 The `--copilot` flag adds a `.github/` directory with:
 
