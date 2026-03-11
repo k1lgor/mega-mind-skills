@@ -70,7 +70,10 @@ pip install mega-mind-orchestrator
 pipx install mega-mind-orchestrator
 
 # uv
-uvx --from mega-mind-orchestrator mega-mind
+uv tool install mega-mind-orchestrator
+
+# Or run directly without installation
+uvx mega-mind-orchestrator
 ```
 
 ### 2. Initialize skills in your project
@@ -80,17 +83,17 @@ uvx --from mega-mind-orchestrator mega-mind
 cd /path/to/your/project
 
 # Standard install (Antigravity, Cursor, and other standard tools)
-mega-mind init
+mega-mind-orchestrator init
 
 # Also install for Claude Code (CLI)
-mega-mind init --claude
+mega-mind-orchestrator init --claude
 
 # Also install for GitHub Copilot (VS Code)
-mega-mind init --copilot
+mega-mind-orchestrator init --copilot
 
 # Overwrite an existing installation
-mega-mind init --force
-mega-mind init --copilot --claude --force
+mega-mind-orchestrator init --force
+mega-mind-orchestrator init --copilot --claude --force
 ```
 
 The `--claude` flag adds:
@@ -378,21 +381,21 @@ See [USAGE.md](./USAGE.md) for the full installation guide.
 
 ```bash
 # Install skills into current directory (Antigravity / Claude / Cursor / standard)
-mega-mind init
+mega-mind-orchestrator init
 
 # Also install for GitHub Copilot (VS Code)
-mega-mind init --copilot
+mega-mind-orchestrator init --copilot
 
 # Install into a specific path
-mega-mind init /path/to/project
-mega-mind init /path/to/project --copilot
+mega-mind-orchestrator init /path/to/project
+mega-mind-orchestrator init /path/to/project --copilot
 
 # Overwrite existing installation
-mega-mind init --force
-mega-mind init --copilot --force
+mega-mind-orchestrator init --force
+mega-mind-orchestrator init --copilot --force
 
 # Show CLI version
-mega-mind --version
+mega-mind-orchestrator --version
 ```
 
 ### Validate Installation

@@ -23,7 +23,11 @@ pipx install mega-mind-orchestrator
 ### uv
 
 ```bash
-uvx --from mega-mind-orchestrator mega-mind
+# Install as a tool (recommended for frequent use)
+uv tool install mega-mind-orchestrator
+
+# Or run directly without installation
+uvx mega-mind-orchestrator
 ```
 
 ---
@@ -33,7 +37,7 @@ uvx --from mega-mind-orchestrator mega-mind
 Navigate to your project root and run:
 
 ```bash
-mega-mind init
+mega-mind-orchestrator init
 ```
 
 This copies the full `.agent/` directory — containing all 42 skills, workflows, and agent definitions — into your project.
@@ -43,7 +47,7 @@ This copies the full `.agent/` directory — containing all 42 skills, workflows
 To also install in the format Claude Code expects, add the `--claude` flag:
 
 ```bash
-mega-mind init --claude
+mega-mind-orchestrator init --claude
 ```
 
 ### For GitHub Copilot (VS Code)
@@ -51,7 +55,7 @@ mega-mind init --claude
 To also install in the format GitHub Copilot expects, add the `--copilot` flag:
 
 ```bash
-mega-mind init --copilot
+mega-mind-orchestrator init --copilot
 ```
 
 This installs:
@@ -63,18 +67,18 @@ This installs:
 ### Target a specific directory
 
 ```bash
-mega-mind init /path/to/your/project
-mega-mind init /path/to/your/project --claude
-mega-mind init /path/to/your/project --copilot
+mega-mind-orchestrator init /path/to/your/project
+mega-mind-orchestrator init /path/to/your/project --claude
+mega-mind-orchestrator init /path/to/your/project --copilot
 ```
 
 ### Overwrite an existing installation
 
 ```bash
-mega-mind init --force
-mega-mind init --claude --force
-mega-mind init --copilot --force
-mega-mind init --copilot --claude --force
+mega-mind-orchestrator init --force
+mega-mind-orchestrator init --claude --force
+mega-mind-orchestrator init --copilot --force
+mega-mind-orchestrator init --copilot --claude --force
 ```
 
 > ⚠️ `--force` overwrites the existing directories completely.
@@ -83,7 +87,7 @@ mega-mind init --copilot --claude --force
 
 ## What gets installed
 
-### Standard install (`mega-mind init`)
+### Standard install (`mega-mind-orchestrator init`)
 
 ```
 your-project/
@@ -96,7 +100,7 @@ your-project/
         └── run-tests.sh   # Validates the installation
 ```
 
-### With Claude Code (`mega-mind init --claude`)
+### With Claude Code (`mega-mind-orchestrator init --claude`)
 
 ```
 your-project/
@@ -106,7 +110,7 @@ your-project/
      └── skills/      # 42 skills as Agent Skills
 ```
 
-### With Copilot (`mega-mind init --copilot`)
+### With Copilot (`mega-mind-orchestrator init --copilot`)
 
 ```
 your-project/
@@ -138,7 +142,7 @@ A successful run confirms all skills, workflows, and agents are in place.
 
 ## Step 4 — Use in GitHub Copilot (VS Code)
 
-After `mega-mind init --copilot`, open VS Code with GitHub Copilot enabled.
+After `mega-mind-orchestrator init --copilot`, open VS Code with GitHub Copilot enabled.
 
 In the Copilot Chat:
 
