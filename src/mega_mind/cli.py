@@ -18,16 +18,21 @@ def cli():
     is_flag=True,
     help="Also install GitHub Copilot-compatible files into .github/",
 )
-def init(target_dir, force, copilot):
+@click.option(
+    "--claude",
+    is_flag=True,
+    help="Also install Claude Code-compatible files (CLAUDE.md, .claude/)",
+)
+def init(target_dir, force, copilot, claude):
     """Initialize Mega-Mind skills in the target directory.
 
-    By default, installs to .agent/ for Antigravity / Claude / standard agent tools.
+    By default, installs to .agent/ for Antigravity / standard agent tools.
 
     Use --copilot to also install into .github/ for GitHub Copilot (VS Code).
-    This creates .github/copilot-instructions.md, .github/skills/, and .github/agents/.
+    Use --claude to also install CLAUDE.md and .claude/ for Claude Code.
     """
     try:
-        install_skills(target_dir, force, copilot)
+        install_skills(target_dir, force, copilot, claude)
         click.echo(
             click.style(
                 f" ✅ Successfully initialized Mega-Mind in {target_dir}",
@@ -45,6 +50,19 @@ def init(target_dir, force, copilot):
                 click.style(
                     "    📂 Skills available as slash commands in VS Code Copilot chat",
                     fg="cyan",
+                )
+            )
+        if claude:
+            click.echo(
+                click.style(
+                    "    🧠 Claude Code files installed in CLAUDE.md and .claude/",
+                    fg="magenta",
+                )
+            )
+            click.echo(
+                click.style(
+                    "    📂 Skills available for Claude Code CLI",
+                    fg="magenta",
                 )
             )
     except Exception as e:
