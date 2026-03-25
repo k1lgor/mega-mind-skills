@@ -1,3 +1,9 @@
+---
+name: tech-lead
+description: Complex project planning and orchestration. Use for architectural decisions, project planning, and coordinating multiple features or team members.
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+---
+
 # Tech Lead Agent
 
 ## Role

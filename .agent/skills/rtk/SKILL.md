@@ -23,7 +23,7 @@ RTK is a high-performance CLI proxy that minimizes LLM token consumption by filt
 
 ## When to Use
 
-- **Before running verbose commands**: `git log`, `cargo test`, `npm install`
+- **Before running verbose commands**: `git log`, `cargo test`, `bun install (or npm install)`
 - **When context window is limited**: Large projects with many files
 - **For cost optimization**: Reduce token usage per session
 - **For build/test output**: Only show failures, not full output
@@ -31,7 +31,7 @@ RTK is a high-performance CLI proxy that minimizes LLM token consumption by filt
 ## Quick Check: Is RTK Installed?
 
 ```bash
-rtk --version    # Should show version like "rtk 0.27.1"
+rtk --version    # Should show version like "rtk 0.27.2"
 rtk gain         # Should show token savings stats
 ```
 
@@ -86,7 +86,7 @@ rtk cargo clippy --all-targets
 
 ```bash
 # Test runners
-rtk npm test          # Generic npm test
+rtk bun test (or rtk npm test)          # Generic bun test (or npm test)
 rtk vitest            # Vitest (99.5% savings)
 
 # Linting (84% savings)
@@ -143,7 +143,7 @@ rtk golangci-lint run
 # pnpm (70-90% savings)
 rtk pnpm list
 rtk pnpm outdated
-rtk pnpm install
+rtk pnpm install (or rtk npm install)
 
 # npm
 rtk npm list
@@ -179,6 +179,10 @@ rtk grep <pattern> <path>    # Grouped by file
 
 # JSON inspection
 rtk json <file>       # Structure without values
+
+# Optimization Flags (NEW in v0.27+)
+rtk --ultra-compact <cmd>   # Inline format with ASCII icons (Level 2)
+rtk --skip-env <cmd>        # Set SKIP_ENV_VALIDATION=1 for child processes
 ```
 
 ## Token Savings Statistics
@@ -217,22 +221,22 @@ rtk proxy curl https://api.example.com
 
 When RTK is installed, translate commands automatically:
 
-| Original           | RTK-Optimized      | Savings |
-| ------------------ | ------------------ | ------- |
-| `git status`       | `rtk git status`   | 70%     |
-| `git log -10`      | `rtk git log -10`  | 85%     |
-| `git diff`         | `rtk git diff`     | 80%     |
-| `cargo test`       | `rtk cargo test`   | 90%     |
-| `cargo build`      | `rtk cargo build`  | 80%     |
-| `cargo clippy`     | `rtk cargo clippy` | 85%     |
-| `npm test`         | `rtk npm test`     | 90%     |
-| `npm run lint`     | `rtk lint`         | 84%     |
-| `npx tsc --noEmit` | `rtk tsc`          | 83%     |
-| `pytest`           | `rtk pytest`       | 90%     |
-| `go test ./...`    | `rtk go test`      | 90%     |
-| `pnpm list`        | `rtk pnpm list`    | 70-90%  |
-| `ls -la`           | `rtk ls`           | 60%     |
-| `cat <file>`       | `rtk read <file>`  | 50-70%  |
+| Original                         | RTK-Optimized                | Savings |
+| -------------------------------- | ---------------------------- | ------- |
+| `git status`                     | `rtk git status`             | 70%     |
+| `git log -10`                    | `rtk git log -10`            | 85%     |
+| `git diff`                       | `rtk git diff`               | 80%     |
+| `cargo test`                     | `rtk cargo test`             | 90%     |
+| `cargo build`                    | `rtk cargo build`            | 80%     |
+| `cargo clippy`                   | `rtk cargo clippy`           | 85%     |
+| `bun test (or npm test)`         | `rtk bun test (or npm test)` | 90%     |
+| `bun run lint (or npm run lint)` | `rtk lint`                   | 84%     |
+| `npx tsc --noEmit`               | `rtk tsc`                    | 83%     |
+| `pytest`                         | `rtk pytest`                 | 90%     |
+| `go test ./...`                  | `rtk go test`                | 90%     |
+| `pnpm list`                      | `rtk pnpm list`              | 70-90%  |
+| `ls -la`                         | `rtk ls`                     | 60%     |
+| `cat <file>`                     | `rtk read <file>`            | 50-70%  |
 
 ## Integration with Mega-Mind
 
@@ -338,6 +342,6 @@ rtk proxy <unsupported-command>
 ## Related Skills
 
 - `executing-plans` - Use RTK when running plan steps
-- `test-driven-development` - Use `rtk cargo test` / `rtk npm test`
+- `test-driven-development` - Use `rtk cargo test` / `rtk bun test` (or `rtk npm test`)
 - `systematic-debugging` - Use `rtk git diff` for changes
 - `verification-before-completion` - Use RTK for verification commands

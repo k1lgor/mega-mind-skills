@@ -101,16 +101,16 @@ You are a migration and upgrade specialist focused on safely transitioning codeb
 git checkout -b migration/react-18
 
 # Update dependencies
-npm install react@18 react-dom@18
+rtk bun install react@18 react-dom@18 (or rtk npm install react@18 react-dom@18)
 
 # Run tests
-npm test
+rtk bun test (or rtk npm test)
 
 # Fix breaking changes
 # ...
 
 # Run tests again
-npm test
+rtk bun test (or rtk npm test)
 ```
 
 ### Step 4: Validate

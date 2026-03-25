@@ -31,13 +31,13 @@ The Context Optimizer skill leverages the `context-mode` MCP server to dramatica
 
 When `context-mode` is active, you **MUST** prefer its tools over standard file reads or terminal executions for operations expected to yield >1KB of data.
 
-| Standard Approach            | Context-Optimized Approach | Context Savings          |
-| ---------------------------- | -------------------------- | ------------------------ |
-| Multiple `execute`           | `ctx_batch_execute`        | High (Batching)          |
-| Running `curl` or `npm test` | `ctx_execute`              | 99% (Stdout filtering)   |
-| `cat large_file.log`         | `ctx_execute_file`         | 99% (Sandbox processing) |
-| Loading full API docs        | `ctx_fetch_and_index`      | 99% (FTS5 indexing)      |
-| Repeated searches            | `ctx_search`               | On-demand retrieval      |
+| Standard Approach                          | Context-Optimized Approach | Context Savings          |
+| ------------------------------------------ | -------------------------- | ------------------------ |
+| Multiple `execute`                         | `ctx_batch_execute`        | High (Batching)          |
+| Running `curl` or `bun test (or npm test)` | `ctx_execute`              | 99% (Stdout filtering)   |
+| `cat large_file.log`                       | `ctx_execute_file`         | 99% (Sandbox processing) |
+| Loading full API docs                      | `ctx_fetch_and_index`      | 99% (FTS5 indexing)      |
+| Repeated searches                          | `ctx_search`               | On-demand retrieval      |
 
 ## Command Reference
 

@@ -1,5 +1,5 @@
 ---
-description:
+description: Systematic root cause analysis and resolution workflow. Use when encountering bugs, errors, or unexpected behavior.
 ---
 
 # Debug Workflow

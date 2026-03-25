@@ -3,7 +3,7 @@ name: single-flow-task-execution
 compatibility: Antigravity, Claude Code, GitHub Copilot
 description: Ordered task decomposition with review gates for sequential execution. Use for complex tasks that need to be broken down and executed in order.
 triggers:
-  - "break this down and implement"
+  - "execute step by step"
   - "execute this task"
   - "implement step by step"
 ---
@@ -51,13 +51,14 @@ WHILE tasks remain:
   1. Get next task from queue
   2. Mark as in_progress
   3. Implement
-  4. Test locally
-  5. Mark as completed
-  6. IF at review gate:
+  4. 🧹 Run De-Sloppify pass (clean up debug logs, unused imports, format)
+  5. Test locally
+  6. Mark as completed
+  7. IF at review gate:
      - Pause for review
      - Address feedback
      - Continue
-  7. Update tracker
+  8. Update tracker
 ```
 
 ### Step 4: Maintain Context

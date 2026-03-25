@@ -4,7 +4,7 @@ from .installer import install_skills
 
 
 @click.group()
-@click.version_option(package_name="mega-mind-orchestrator")
+@click.version_option(package_name="mmo")
 def cli():
     """Mega-Mind Orchestrator CLI"""
     pass
@@ -23,16 +23,28 @@ def cli():
     is_flag=True,
     help="Also install Claude Code-compatible files (CLAUDE.md, .claude/)",
 )
-def init(target_dir, force, copilot, claude):
+@click.option(
+    "--opencode",
+    is_flag=True,
+    help="Also install OpenCode-compatible files (.opencode/)",
+)
+@click.option(
+    "--codex",
+    is_flag=True,
+    help="Also install Codex-compatible files (.codex/)",
+)
+def init(target_dir, force, copilot, claude, opencode, codex):
     """Initialize Mega-Mind skills in the target directory.
 
     By default, installs to .agent/ for Antigravity / standard agent tools.
 
     Use --copilot to also install into .github/ for GitHub Copilot (VS Code).
     Use --claude to also install CLAUDE.md and .claude/ for Claude Code.
+    Use --opencode to also install into .opencode/ for OpenCode.
+    Use --codex to also install into .codex/ for Codex.
     """
     try:
-        install_skills(target_dir, force, copilot, claude)
+        install_skills(target_dir, force, copilot, claude, opencode, codex)
         click.echo(
             click.style(
                 f" ✅ Successfully initialized Mega-Mind in {target_dir}",
@@ -63,6 +75,20 @@ def init(target_dir, force, copilot, claude):
                 click.style(
                     "    📂 Skills available for Claude Code CLI",
                     fg="magenta",
+                )
+            )
+        if opencode:
+            click.echo(
+                click.style(
+                    "    📂 OpenCode files installed in .opencode/",
+                    fg="yellow",
+                )
+            )
+        if codex:
+            click.echo(
+                click.style(
+                    "    📂 Codex files installed in .codex/",
+                    fg="blue",
                 )
             )
     except Exception as e:

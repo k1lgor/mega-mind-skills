@@ -1,5 +1,5 @@
 ---
-description:
+description: Structured code review process. Use when code is ready for review before merging.
 ---
 
 # Review Workflow

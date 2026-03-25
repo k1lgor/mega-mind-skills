@@ -63,17 +63,17 @@ triggers:
 ### Step 1: Final Verification
 
 ```bash
-# Run full test suite
-npm test
+# Run full test suite (90% token savings)
+rtk bun test (or rtknpm test)
 
-# Run linting
-npm run lint
+# Run linting (84% token savings)
+rtk bun run lint (or rtk npm run lint)
 
 # Build for production
-npm run build
+rtk proxy bun run build (or rtk npm run build)
 
 # Start app and verify manually
-npm start
+rtk bun start (or rtk npm start)
 ```
 
 ### Step 2: Clean Up
@@ -88,7 +88,7 @@ git rebase origin/main
 
 # Resolve any conflicts
 # Run tests again after rebase
-npm test
+rtk bun test (or rtk npm test)
 
 # Clean up any debug code
 # Remove console.logs, commented code, etc.
@@ -201,13 +201,13 @@ git fetch --prune
 
 ```bash
 # 1. Final verification
-$ npm test
+$ rtk bun test (or rtk npm test)
 ✓ All tests pass
 
-$ npm run lint
+$ rtk bun run lint (or rtk npm run lint)
 ✓ No issues
 
-$ npm run build
+$ rtk bun run build (or rtk npm run build)
 ✓ Build successful
 
 # 2. Rebase on main

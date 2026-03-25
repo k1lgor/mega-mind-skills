@@ -1,5 +1,5 @@
 ---
-description:
+description: Create detailed, step-by-step implementation plans. Use to break down complex features into executable tasks.
 ---
 
 # Write Plan Workflow

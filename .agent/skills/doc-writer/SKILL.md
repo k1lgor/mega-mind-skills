@@ -40,7 +40,7 @@ Brief description of what this project does.
 ## Quick Start
 
 \`\`\`bash
-npm install my-project
+bun install (or npm install) my-project
 \`\`\`
 
 ## Installation
@@ -48,7 +48,7 @@ npm install my-project
 \`\`\`bash
 git clone https://github.com/user/project.git
 cd project
-npm install
+bun install (or npm install)
 \`\`\`
 
 ## Usage

@@ -2,9 +2,9 @@
 
 > **A unified superpowers + virtual company skill set for AI coding assistants**
 
-This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company. It provides structured, reliable behavior for Antigravity, Claude Code, GitHub Copilot, and other agentic tools.
+This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company.
 
-**Compatible with:** Antigravity · Claude Code · GitHub Copilot · Cursor · OpenCode
+**Compatible with:** Antigravity · Claude Code · GitHub Copilot · Cursor · OpenCode · Codex
 
 ---
 
@@ -12,6 +12,7 @@ This is a comprehensive skill-based workflow system that combines the discipline
 
 ```
 /mega-mind [command]    # Primary entry point for all operations
+mmo init [--copilot] [--claude] [--opencode] [--codex]
 ```
 
 Commands: `status`, `skills`, `workflows`, `route <request>`, `execute <workflow>`, `help`
@@ -26,482 +27,127 @@ The master controller that routes requests and coordinates skill chains:
 
 ### Core Workflow Skills (13 skills)
 
-Structured development discipline from Superpowers:
+Structured development discipline:
 
 - `brainstorming` - Structured exploration before committing to an approach
 - `writing-plans` - Detailed, step-by-step implementation plans
-- `executing-plans` - Disciplined plan execution with progress tracking
+- `executing-plans` - Disciplined plan execution with "De-Sloppify" pass
 - `single-flow-task-execution` - Ordered task decomposition with review gates
 - `test-driven-development` - Write tests first, implement second
 - `systematic-debugging` - Root cause tracing with supporting techniques
 - `requesting-code-review` - Structured review flow with checklists
 - `receiving-code-review` - Handling feedback systematically
-- `verification-before-completion` - Prove it works before claiming it's done
+- `verification-before-completion` - Integrated with eval-harness and coverage gates
 - `finishing-a-development-branch` - Clean branch wrap-up with workflow options
 - `using-git-worktrees` - Parallel branch management
 - `using-mega-mind` - Internal skill routing logic
-- `writing-skills` - Create new skills that follow the system's conventions
+- `writing-skills` - Create new skills following system conventions
 
-### Domain Expert Skills (27 skills)
+### Domain Expert Skills (35+ skills) ✨ UPDATED
 
-Specialized expertise from Virtual Company:
+Specialized expertise for complex development tasks:
 
-- Architecture: `tech-lead`, `frontend-architect`, `backend-architect`, `infra-architect`, `api-designer`
-- Development: `code-polisher`, `migration-upgrader`, `mobile-architect`, `legacy-archaeologist`
-- Testing: `test-genius`, `e2e-test-specialist`, `bug-hunter`
-- DevOps: `ci-config-helper`, `docker-expert`, `k8s-orchestrator`, `observability-specialist`
-- Data: `data-engineer`, `data-analyst`, `ml-engineer`, `search-vector-architect`
-- Security: `security-reviewer`
-- Performance: `performance-profiler`
-- Documentation: `doc-writer`
-- UX: `ux-designer`
-- Product: `product-manager`, `workflow-orchestrator`
-- Meta: `skill-generator`, `context-optimizer`
+- **Architecture:** `planner`, `architect`, `tech-lead`, `frontend-architect`, `backend-architect`, `infra-architect`, `api-designer`, `api-design`
+- **Development:** `code-polisher`, `migration-upgrader`, `mobile-architect`, `legacy-archaeologist`, `python-patterns`
+- **Testing:** `test-genius`, `e2e-test-specialist`, `bug-hunter`, `eval-harness`
+- **DevOps:** `ci-config-helper`, `docker-expert`, `k8s-orchestrator`, `observability-specialist`, `deployment-patterns`
+- **Data:** `data-engineer`, `data-analyst`, `ml-engineer`, `search-vector-architect`, `database-migrations`
+- **Security:** `security-reviewer`
+- **Performance:** `performance-profiler`
+- **Documentation:** `doc-writer`
+- **UX:** `ux-designer`
+- **Product:** `product-manager`, `workflow-orchestrator`
+- **Meta:** `skill-generator`
+
+### Meta & Learning Skills (12 skills) ✨ NEW
+
+Advanced patterns for efficiency and continuous improvement:
+
+- `continuous-learning-v2` - Instinct extraction and evolution (The Learning Loop)
+- `search-first` - Mandatory research and library check before coding
+- `autonomous-loops` - Multi-step AI pipeline patterns without intervention
+- `skill-stocktake` - Quality audit and library maintenance
+- `cost-aware-llm-pipeline` - Model routing and token budget tracking
+- `verification-loop` - 6-phase continuous verification pipeline
+- `iterative-retrieval` - Progressive context refinement for subagents
+- `strategic-compact` - Logical context window management
+- `content-hash-cache-pattern` - SHA-256 caching for file processing
+- `multi-plan` - Collaborative multiple-model planning
+- `multi-execute` - Orchestrated multi-model execution and audit
+- `plankton-code-quality` - Write-time formatting and linting enforcement
 
 ### Token Optimization & Context (2 skills)
 
-CLI token savings with RTK and Context window optimization:
-
 - `rtk` - Rust Token Killer for 60-90% token reduction on CLI commands
-- `context-optimizer` - Context offloading and session continuity via FTS5 database
+- `context-optimizer` - Context offloading and session continuity
 
-### RTK MANDATORY USAGE RULE
-
-**You MUST use RTK-wrapped commands for all supported CLI operations if RTK is installed.**
-
-**Before running any terminal command for the first time in a session:**
-
-1. Check if RTK is available by running `rtk --version`.
-2. If available, ALWAYS prepend `rtk ` (or `rtk proxy ` if unsure) to your terminal commands (e.g. `rtk git status`, `rtk npm test`).
-3. If not available, use the standard commands.
-
-Failure to use RTK when it is available is a violation of the "Aesthetics and Performance" contract.
-
-### CONTEXT MODE MANDATORY USAGE RULE
-
-When the `context-mode` MCP server is active, you MUST use its sandbox tools to prevent context window bloat:
-
-- PREFER `ctx_batch_execute` over running multiple individual commands.
-- PREFER `ctx_execute` or `ctx_execute_file` instead of standard terminal commands that output large data.
-- INSTEAD OF `curl` or `read_url_content` on large pages, ALWAYS use `ctx_fetch_and_index`.
-- If you lose track of session state, DO NOT ask the user to repeat themselves; use `ctx_search` to query previous thoughts and actions.
+---
 
 ## Session Rules
 
-### CORE BEHAVIOR RULES
+### CORE BEHAVIOR RULES (MANDATORY)
 
 **1. NO PROACTIVE COMMITS:**
-You MUST NOT proactively run `git add` or `git commit` after modifying files during general task execution. Committing is strictly reserved for the `finishing-a-development-branch` phase of the workflow. Do NOT prompt the user to commit files halfway through a workflow loop.
+You MUST NOT proactively run `git add` or `git commit` until the `finishing-a-development-branch` phase.
 
 **2. MANDATORY TASK TRACKING:**
-You MUST proactively update the `<project-root>/docs/plans/task.md` file after every significant action, file modification, or state change. You must not skip updating the task tracker.
+Update `<project-root>/docs/plans/task.md` after EVERY significant action.
 
-### Tool Translation Contract
+**3. SEARCH FIRST:**
+Always check for existing libraries or prior art using `search-first` before implementation.
 
-When using this system, translate platform-specific references:
+**4. DE-SLOPPIFY:**
+Every implementation step must include a cleanup pass to remove debug code and ensure readability.
 
-| Original                          | Antigravity                                |
-| --------------------------------- | ------------------------------------------ |
-| `Claude` / `Claude Code`          | `Antigravity`                              |
-| `Skill` tool                      | `view_file`                                |
-| `TodoWrite`                       | Update `<project-root>/docs/plans/task.md` |
-| `.claude/skills/<skill>/SKILL.md` | `.agent/skills/<skill>/SKILL.md`           |
-| `CLAUDE.md`                       | `.agent/AGENTS.md`                         |
-| `.claude/agents/*.md`             | `.agent/agents/*.md`                       |
-| `.claude/commands/*.md`           | `.agent/commands/*.md`                     |
+**5. SECURITY BY DESIGN:**
+Invoke `security-reviewer` proactively after implementing sensitive logic (auth, payments, APIs).
 
-### Execution Model
+---
 
-1. **Session starts** — loads `.agent/AGENTS.md` rules
-2. **User invokes** `/mega-mind` or a specific skill command
-3. **Request gets routed** to the most relevant skill(s)
-4. **Design work** flows through brainstorming → planning → execution
-5. **Every task** is tracked in `<project-root>/docs/plans/task.md` (created at runtime)
-6. **Nothing is marked done** without running verification commands first
+## Agent Personas
 
-### Workflow Flowchart
+Invoke specialized agents via `.agent/agents/<name>.md`:
 
-```
-Session Start → Load AGENTS.md
-                       ↓
-                   User Request
-                       ↓
-┌───────────────────────────────────────────────────────┐
-│                    /mega-mind                         │
-│         (Master Orchestrator Entry Point)             │
-│                                                       │
-│  ┌─────────────────────────────────────────────────┐  │
-│  │  ANALYZE → ROUTE → EXECUTE → VERIFY → REPORT    │  │
-│  └─────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────┘
-                       ↓
-                Route to skill(s)
-                       ↓
-┌───────────── Design change? ───────────────┐
-│ yes                                        │ no
-↓                                            ↓
-brainstorming                         Direct execution
-↓                                            │
-writing-plans                                │
-↓                                            │
-executing-plans                              │
-↓                                            │
-verification-before-completion  ←────────────┘
-↓
-finishing-a-development-branch
-```
+- **`planner`** - Technical task architect; uses Z-Pattern decomposition.
+- **`architect`** - System design specialist; produces ADRs (Architecture Decision Records).
+- **`tech-lead`** - Senior technical lead; focus on modularity and patterns.
+- **`code-reviewer`** - Quality gate specialist; focus on readability and standards.
+- **`security-reviewer`** - Vulnerability hunter; focus on OWASP Top 10.
+- **`qa-engineer`** - Testing specialist; focus on edge cases and coverage.
 
-## The `/mega-mind` Command
+---
 
-### Purpose
+## Workflow Chains (The Sequences)
 
-The `/mega-mind` command is the **primary entry point** for interacting with the skill system. It acts as an intelligent orchestrator that:
+### Standard Development Chain (The Z-Pattern)
 
-1. **Analyzes** your request to understand intent
-2. **Routes** to the appropriate skill(s)
-3. **Coordinates** skill chains for complex tasks
-4. **Tracks** progress throughout the session
+`search-first` ➔ `tech-lead` ➔ `brainstorming` ➔ `writing-plans` ➔ `test-driven-development` ➔ `executing-plans` ➔ `verification-loop` ➔ `requesting-code-review` ➔ `finishing-a-development-branch` ➔ `continuous-learning-v2`
 
-### Sub-Commands
+### High-Complexity Chain (Phase 3 Orchestration)
 
-| Command                         | Description                             |
-| ------------------------------- | --------------------------------------- |
-| `/mega-mind status`             | Show current session state and progress |
-| `/mega-mind skills`             | List all available skills               |
-| `/mega-mind workflows`          | List available workflows                |
-| `/mega-mind route <request>`    | Analyze and route a request             |
-| `/mega-mind execute <workflow>` | Execute a named workflow                |
-| `/mega-mind help`               | Show help message                       |
+`search-first` ➔ `architect` ➔ `multi-plan` ➔ **[Approval]** ➔ `multi-execute` ➔ `verification-loop` ➔ `security-reviewer` ➔ `finishing-a-development-branch`
 
-### Direct Skill Commands
+### Autonomous Loop Chain
 
-| Command       | Skill                          | Purpose                            |
-| ------------- | ------------------------------ | ---------------------------------- |
-| `/brainstorm` | brainstorming                  | Explore approaches before deciding |
-| `/plan`       | writing-plans                  | Create implementation plan         |
-| `/execute`    | executing-plans                | Execute plan with tracking         |
-| `/debug`      | systematic-debugging           | Debug systematically               |
-| `/review`     | requesting-code-review         | Request code review                |
-| `/ship`       | finishing-a-development-branch | Deploy to production               |
-| `/tdd`        | test-driven-development        | Test-first development             |
-| `/verify`     | verification-before-completion | Verify before marking done         |
+`writing-plans` ➔ `autonomous-loops` ➔ `[Loop Execution]` ➔ `verification-loop` ➔ `continuous-learning-v2`
 
-### Example Usage
+---
 
-```
-User: /mega-mind I need to add user authentication with OAuth
+## RTK MANDATORY USAGE RULE
 
-🧠 Mega-Mind Orchestration
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**You MUST use RTK-wrapped commands for all supported CLI operations if RTK is installed.**
+Usage: `rtk <command>` (e.g., `rtk bun test (or npm test)`, `rtk git status`, `rtk tsc`).
+Check status via `rtk gain`.
 
-📋 Request Analyzed: New feature - User Authentication with OAuth
-
-🔄 Routed to skill chain:
-   1. tech-lead                         → Define architecture
-   2. brainstorming                     → Explore OAuth providers
-   3. api-designer                      → Design auth API
-   4. writing-plans                     → Create implementation plan
-   5. test-driven-development           → Write auth tests
-   6. backend-architect                 → Implement auth service
-   7. frontend-architect                → Implement login UI
-   8. security-reviewer                 → Security audit
-   9. verification-before-completion    → Verify
-
-📍 Starting with: tech-lead
-```
-
-## Skill Routing Rules
-
-When a request comes in, `/mega-mind` routes to the appropriate skill:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      REQUEST TYPE MAPPING                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ARCHITECTURE & DESIGN                                          │
-│  ├── "design system"          → tech-lead                       │
-│  ├── "design API"             → api-designer                    │
-│  ├── "design database"        → data-engineer                   │
-│  ├── "design frontend"        → frontend-architect              │
-│  ├── "design backend"         → backend-architect               │
-│  ├── "design infrastructure"  → infra-architect                 │
-│  └── "design mobile app"      → mobile-architect                │
-│                                                                 │
-│  DEVELOPMENT                                                    │
-│  ├── "implement feature"      → brainstorming → writing-plans   │
-│  ├── "refactor code"          → code-polisher                   │
-│  ├── "upgrade dependencies"   → migration-upgrader              │
-│  ├── "work with legacy"       → legacy-archaeologist            │
-│  └── "create skill"           → skill-generator                 │
-│                                                                 │
-│  TESTING & QUALITY                                              │
-│  ├── "write tests"            → test-driven-development         │
-│  ├── "unit tests"             → test-genius                     │
-│  ├── "e2e tests"              → e2e-test-specialist             │
-│  ├── "code review"            → requesting-code-review          │
-│  └── "security audit"         → security-reviewer               │
-│                                                                 │
-│  DEBUGGING & FIXING                                             │
-│  ├── "fix bug"                → systematic-debugging            │
-│  ├── "debug error"            → bug-hunter                      │
-│  └── "performance issue"      → performance-profiler            │
-│                                                                 │
-│  DEVOPS & INFRASTRUCTURE                                        │
-│  ├── "containerize"           → docker-expert                   │
-│  ├── "deploy to k8s"          → k8s-orchestrator                │
-│  ├── "CI/CD"                  → ci-config-helper                │
-│  └── "monitoring"             → observability-specialist        │
-│                                                                 │
-│  DATA & AI                                                      │
-│  ├── "build data pipeline"    → data-engineer                   │
-│  ├── "analyze data"           → data-analyst                    │
-│  ├── "train model"            → ml-engineer                     │
-│  ├── "vector search"          → search-vector-architect         │
-│  └── "RAG system"             → search-vector-architect         │
-│                                                                 │
-│  DOCUMENTATION & UX                                             │
-│  ├── "write docs"             → doc-writer                      │
-│  ├── "improve UX"             → ux-designer                     │
-│  ├── "plan feature"           → product-manager                 │
-│  └── "optimize context"       → context-optimizer               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Traditional Routing (Pre-defined Chains)
-
-1. **Design/Architecture decisions** → `brainstorming` → `writing-plans`
-2. **Bug fixes** → `systematic-debugging` → `bug-hunter`
-3. **New features** → `tech-lead` → `writing-plans` → `single-flow-task-execution`
-4. **Code quality** → `code-polisher` → `verification-before-completion`
-5. **Testing** → `test-driven-development` → `test-genius`
-6. **Security audits** → `security-reviewer` → `verification-before-completion`
-7. **Performance issues** → `performance-profiler` → `systematic-debugging`
-8. **Documentation** → `doc-writer`
-9. **DevOps/Infrastructure** → `infra-architect` → `docker-expert` / `k8s-orchestrator`
-10. **API work** → `api-designer` → `backend-architect`
-11. **Frontend work** → `frontend-architect` → `ux-designer`
-12. **Data work** → `data-engineer` → `data-analyst`
-13. **ML/AI work** → `ml-engineer`
-14. **Code review** → `requesting-code-review` → `receiving-code-review`
-
-## Task Tracking
-
-All tasks are tracked in a live table at `<project-root>/docs/plans/task.md`:
-
-| Task ID | Description  | Status      | Skill         | Started    |
-| ------- | ------------ | ----------- | ------------- | ---------- |
-| 1       | Example task | in_progress | brainstorming | 2024-01-15 |
-
-Status values: `pending`, `in_progress`, `completed`, `blocked`
-
-## Verification Before Completion
-
-Never mark a task as complete without verification:
-
-1. **Run tests**: `npm test`, `pytest`, etc.
-2. **Lint code**: `npm run lint`, `ruff check`, etc.
-3. **Build check**: `npm run build`, `cargo build`, etc.
-4. **Manual verification**: Check the actual functionality works
-5. **Document changes**: Update relevant docs
-
-## RTK Token Optimization
-
-**RTK (Rust Token Killer)** is a CLI proxy that reduces LLM token consumption by **60-90%** on common development commands. When RTK is installed, always prefer RTK-wrapped commands.
-
-### Check RTK Installation
-
-```bash
-rtk --version    # Should show version (e.g., rtk 0.27.1)
-rtk gain         # Should show token savings stats
-```
-
-### Command Translation Table
-
-When RTK is installed, automatically translate commands:
-
-| Original           | RTK-Optimized      | Savings |
-| ------------------ | ------------------ | ------- |
-| `git status`       | `rtk git status`   | 70%     |
-| `git log -10`      | `rtk git log -10`  | 85%     |
-| `git diff`         | `rtk git diff`     | 80%     |
-| `cargo test`       | `rtk cargo test`   | 90%     |
-| `cargo build`      | `rtk cargo build`  | 80%     |
-| `cargo clippy`     | `rtk cargo clippy` | 85%     |
-| `npm test`         | `rtk npm test`     | 90%     |
-| `npm run lint`     | `rtk lint`         | 84%     |
-| `npx tsc --noEmit` | `rtk tsc`          | 83%     |
-| `pytest`           | `rtk pytest`       | 90%     |
-| `go test ./...`    | `rtk go test`      | 90%     |
-| `pnpm list`        | `rtk pnpm list`    | 70-90%  |
-| `ls -la`           | `rtk ls`           | 60%     |
-| `cat <file>`       | `rtk read <file>`  | 50-70%  |
-
-### RTK Commands by Category
-
-**Git Operations:**
-
-- `rtk git status` - Compact status with file counts (70% savings)
-- `rtk git log` - Condensed commit summaries (85% savings)
-- `rtk git diff` - Smart diff filtering (80% savings)
-
-**Build & Test:**
-
-- `rtk cargo test` - Failures only (90% savings)
-- `rtk cargo build` - Errors/warnings only (80% savings)
-- `rtk npm test` / `rtk vitest` - Test failures only (90-99% savings)
-
-**Linting & Type Checking:**
-
-- `rtk lint` - ESLint/Biome grouped by rule (84% savings)
-- `rtk tsc` - TypeScript errors by file (83% savings)
-- `rtk ruff check` - Python linter (80% savings)
-
-**Frameworks:**
-
-- `rtk next` - Next.js build metrics (87% savings)
-- `rtk playwright` - E2E test failures (94% savings)
-- `rtk prisma` - Prisma CLI (88% savings)
-
-### View Savings Statistics
-
-```bash
-rtk gain              # Show cumulative savings
-rtk gain --history    # Show command usage history
-```
-
-### Fallback Behavior
-
-If RTK is not installed, use standard commands. The system gracefully degrades without breaking functionality.
-
-### Install RTK
-
-```bash
-# macOS/Linux
-curl -sSL https://github.com/rtk-ai/rtk/releases/latest/download/rtk-$(uname -s)-$(uname -m) -o /usr/local/bin/rtk
-chmod +x /usr/local/bin/rtk
-
-# Or with Cargo
-cargo install rtk
-```
-
-## Best Practices
-
-### When to Use Which Skill
-
-- **Starting fresh?** → Use `/mega-mind` for automatic routing
-- **Need to explore?** → Use `brainstorming` to explore approaches
-- **Have a plan?** → Use `executing-plans` for disciplined execution
-- **Fixing a bug?** → Use `systematic-debugging` for root cause analysis
-- **Writing tests?** → Use `test-driven-development` for test-first approach
-- **Need expertise?** → Route to the appropriate domain expert skill
-- **Completing work?** → Use `verification-before-completion` then `finishing-a-development-branch`
-
-### Anti-Patterns to Avoid
-
-- ❌ Skipping brainstorming for complex features
-- ❌ Writing implementation before tests (when TDD is appropriate)
-- ❌ Marking tasks complete without verification
-- ❌ Ignoring code review feedback
-- ❌ Not documenting architectural decisions
-- ❌ Bypassing `/mega-mind` for complex multi-skill tasks
+---
 
 ## File Structure
 
 ```
 .agent/
-├── AGENTS.md                    # This file - master contract
-│
-├── skills/
-│   ├── mega-mind/               # 🧠 Master orchestrator
-│   │
-│   ├── # Core Workflow Skills
-│   ├── brainstorming/
-│   ├── writing-plans/
-│   ├── executing-plans/
-│   ├── single-flow-task-execution/
-│   ├── test-driven-development/
-│   ├── systematic-debugging/
-│   ├── requesting-code-review/
-│   ├── receiving-code-review/
-│   ├── verification-before-completion/
-│   ├── finishing-a-development-branch/
-│   ├── using-git-worktrees/
-│   ├── using-mega-mind/
-│   └── writing-skills/
-│   │
-│   ├── # Domain Expert Skills
-│   ├── tech-lead/
-│   ├── frontend-architect/
-│   ├── backend-architect/
-│   ├── infra-architect/
-│   ├── api-designer/
-│   ├── code-polisher/
-│   ├── migration-upgrader/
-│   ├── mobile-architect/
-│   ├── legacy-archaeologist/
-│   ├── test-genius/
-│   ├── e2e-test-specialist/
-│   ├── bug-hunter/
-│   ├── ci-config-helper/
-│   ├── docker-expert/
-│   ├── k8s-orchestrator/
-│   ├── observability-specialist/
-│   ├── data-engineer/
-│   ├── data-analyst/
-│   ├── ml-engineer/
-│   ├── search-vector-architect/
-│   ├── security-reviewer/
-│   ├── performance-profiler/
-│   ├── doc-writer/
-│   ├── ux-designer/
-│   ├── product-manager/
-│   ├── workflow-orchestrator/
-│   ├── skill-generator/
-│   │
-│   ├── # Token Optimization & Context
-│   ├── rtk/
-│   └── context-optimizer/
-│
-├── workflows/
-│   ├── brainstorm.md
-│   ├── execute-plan.md
-│   ├── write-plan.md
-│   ├── debug.md
-│   ├── review.md
-│   └── ship.md
-│
-├── agents/
-│   ├── code-reviewer.md
-│   ├── tech-lead.md
-│   └── qa-engineer.md
-│
-└── tests/
-    └── run-tests.sh
-```
-
-## Workflow Chains
-
-### Feature Development Chain
-
-```
-/mega-mind route → tech-lead → brainstorming → writing-plans →
-test-driven-development → executing-plans → verification-before-completion →
-requesting-code-review → finishing-a-development-branch
-```
-
-### Bug Fix Chain
-
-```
-/mega-mind route → systematic-debugging → bug-hunter →
-test-driven-development → verification-before-completion →
-finishing-a-development-branch
-```
-
-### New Project Chain
-
-```
-/mega-mind route → tech-lead → [architects] → writing-plans →
-[docker-expert, k8s-orchestrator, ci-config-helper] → development chains
+├── AGENTS.md                    # Master contract
+├── agents/                      # Specialized personas (.md)
+├── skills/                      # 61 Atomic skills & controllers
+├── workflows/                   # Pre-defined executable chains
+└── instincts/                   # Learned patterns & observations
 ```

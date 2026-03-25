@@ -110,13 +110,13 @@ app.post("/api/transfer", (req, res) => {
 
 ```bash
 # Check for vulnerabilities
-npm audit
+rtk bun pm untrusted (or rtk npm audit)
 
 # Fix automatically
-npm audit fix
+rtk bun pm untrusted (or rtk npm audit) fix
 
 # Check before installing
-npm audit package-name
+rtk bun pm untrusted (or rtk npm audit) package-name
 ```
 
 ### 5. Hardcoded Secrets

@@ -47,7 +47,7 @@ export default defineConfig({
     { name: "webkit", use: { browserName: "webkit" } },
   ],
   webServer: {
-    command: "npm run dev",
+    command: "bun run dev (or npm run dev)",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
   },

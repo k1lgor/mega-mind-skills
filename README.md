@@ -2,13 +2,13 @@
 
 > **A unified superpowers + virtual company skill set for AI coding assistants**
 
-This is a comprehensive skill-based workflow system that combines the disciplined development workflows of [Superpowers](https://github.com/obra/superpowers) with the domain expertise of [Virtual Company](https://github.com/k1lgor/virtual-company). It provides structured, reliable behavior for AI coding assistants across the entire software development lifecycle.
+This is a comprehensive skill-based workflow system that combines the disciplined development workflows of [Superpowers](https://github.com/obra/superpowers) with the domain expertise of [Virtual Company](https://github.com/k1lgor/virtual-company) and [Everything-Claude-Code](https://github.com/affaan-m/everything-claude-code). It provides structured, reliable behavior for AI coding assistants across the entire software development lifecycle.
 
-**Compatible with:** Antigravity · GitHub Copilot (VS Code) · Claude Code · Cursor · OpenCode · and any AI tool that supports the [Agent Skills open standard](https://agentskills.io)
+**Compatible with:** Antigravity · GitHub Copilot (VS Code) · Claude Code · Cursor · OpenCode · Codex · and any AI tool that supports the [Agent Skills open standard](https://agentskills.io)
 
 ## Overview
 
-Mega-Mind brings together **42 skills** organized into categories:
+Mega-Mind brings together **59 skills** organized into categories:
 
 ### The Mega-Mind Orchestrator (1 skill)
 
@@ -16,7 +16,7 @@ The master controller that routes requests and coordinates skill chains:
 
 - `mega-mind` - Primary entry point via `/mega-mind` command
 
-### Core Workflow Skills (13 skills)
+### Core Workflow Skills (12 skills)
 
 Structured development discipline that ensures quality at every step:
 
@@ -31,18 +31,17 @@ Structured development discipline that ensures quality at every step:
 - `verification-before-completion` - Prove it works before done
 - `finishing-a-development-branch` - Clean branch management
 - `using-git-worktrees` - Parallel development workflows
-- `using-mega-mind` - Master skill routing
 - `writing-skills` - Create new custom skills
 
-### Domain Expert Skills (27 skills)
+### Domain Expert Skills (32 skills)
 
 Specialized expertise for specific technical domains:
 
 - **Architecture**: tech-lead, frontend-architect, backend-architect, infra-architect, api-designer
-- **Development**: code-polisher, migration-upgrader, mobile-architect, legacy-archaeologist
-- **Testing**: test-genius, e2e-test-specialist, bug-hunter
-- **DevOps**: ci-config-helper, docker-expert, k8s-orchestrator, observability-specialist
-- **Data**: data-engineer, data-analyst, ml-engineer, search-vector-architect
+- **Development**: code-polisher, migration-upgrader, mobile-architect, legacy-archaeologist, python-patterns
+- **Testing**: test-genius, e2e-test-specialist, bug-hunter, eval-harness
+- **DevOps**: ci-config-helper, docker-expert, k8s-orchestrator, observability-specialist, deployment-patterns
+- **Data**: data-engineer, data-analyst, ml-engineer, search-vector-architect, database-migrations, regex-vs-llm-structured-text
 - **Security**: security-reviewer
 - **Performance**: performance-profiler
 - **Documentation**: doc-writer
@@ -50,11 +49,29 @@ Specialized expertise for specific technical domains:
 - **Product**: product-manager, workflow-orchestrator
 - **Meta**: skill-generator
 
-### Token Optimization (1 skill)
+### Meta & Learning Skills (12 skills)
 
-Reduce LLM Token consumption:
+Advanced patterns for efficiency and continuous improvement:
 
-- **RTK**: `rtk` - CLI proxy for 60-90% token savings on common dev commands
+- `continuous-learning-v2` - Instinct extraction and evolution (The Learning Loop)
+- `search-first` - Mandatory research and library check before coding
+- `autonomous-loops` - Multi-step AI pipeline patterns without intervention
+- `skill-stocktake` - Quality audit and library maintenance
+- `cost-aware-llm-pipeline` - Model routing and token budget tracking
+- `verification-loop` - 6-phase continuous verification pipeline
+- `iterative-retrieval` - Progressive context refinement for subagents
+- `strategic-compact` - Logical context window management
+- `content-hash-cache-pattern` - SHA-256 caching for file processing
+- `multi-plan` - Collaborative multiple-model planning
+- `multi-execute` - Orchestrated multi-model execution and audit
+- `plankton-code-quality` - Write-time formatting and linting enforcement
+
+### Token Optimization & Context (2 skills)
+
+Reduce LLM Token consumption and manage context limits:
+
+- `rtk` - CLI proxy for 60-90% token savings on common dev commands
+- `context-optimizer` - Context offloading and session continuity
 
 ---
 
@@ -64,16 +81,16 @@ Reduce LLM Token consumption:
 
 ```bash
 # pip
-pip install mega-mind-orchestrator
+pip install mmo
 
 # pipx (recommended — isolated, globally available)
-pipx install mega-mind-orchestrator
+pipx install mmo
 
 # uv
-uv tool install mega-mind-orchestrator
+uv tool install mmo
 
 # Or run directly without installation
-uvx mega-mind-orchestrator
+uvx mmo
 ```
 
 ### 2. Initialize skills in your project
@@ -83,37 +100,35 @@ uvx mega-mind-orchestrator
 cd /path/to/your/project
 
 # Standard install (Antigravity, Cursor, and other standard tools)
-mega-mind-orchestrator init
+mmo init
 
 # Also install for Claude Code (CLI)
-mega-mind-orchestrator init --claude
+mmo init --claude
 
 # Also install for GitHub Copilot (VS Code)
-mega-mind-orchestrator init --copilot
+mmo init --copilot
 
 # Overwrite an existing installation
-mega-mind-orchestrator init --force
-mega-mind-orchestrator init --copilot --claude --force
+mmo init --force
+mmo init --copilot --claude --force
 ```
 
 The `--claude` flag adds:
 
 - `CLAUDE.md` — project rules and workflows (mirrors `AGENTS.md`)
-- `.claude/skills/` — all 42 skills in the Agent Skills standard directory
+- `.claude/skills/` — all 59 skills in the Agent Skills standard directory
 
 The `--copilot` flag adds a `.github/` directory with:
 
 - `copilot-instructions.md` — global instructions loaded automatically
-- `skills/<name>/SKILL.md` — all 42 skills available as `/` slash commands
+- `skills/<name>/SKILL.md` — all 59 skills available as `/` slash commands
 - `agents/<name>.agent.md` — custom agent personas for VS Code
 
 > 📖 For full details see [USAGE.md](./USAGE.md)
 
 ### 3. Verify the installation
 
-```bash
-bash .agent/tests/run-tests.sh
-```
+Once initialized, use the `/verify` command (triggered by the `verification-before-completion` skill) or run the `verification-loop` to ensure all components are correctly installed and functional.
 
 > 📖 For full installation details see [USAGE.md](./USAGE.md)
 
@@ -193,6 +208,7 @@ mega-mind-skills/
     ├── AGENTS.md                # Master contract and rules
     ├── hooks/
     │   └── hooks.json           # context-mode hooks registry
+    ├── instincts/               # Learned patterns & observations
     ├── skills/
     │   ├── mega-mind/           # 🧠 Master orchestrator
     │   │
@@ -208,9 +224,8 @@ mega-mind-skills/
     │   ├── verification-before-completion/
     │   ├── finishing-a-development-branch/
     │   ├── using-git-worktrees/
-    │   ├── using-mega-mind/
     │   └── writing-skills/
-    │
+    │   │
     │   ├── # Domain Expert Skills
     │   ├── tech-lead/
     │   ├── frontend-architect/
@@ -221,17 +236,22 @@ mega-mind-skills/
     │   ├── migration-upgrader/
     │   ├── mobile-architect/
     │   ├── legacy-archaeologist/
+    │   ├── python-patterns/
     │   ├── test-genius/
     │   ├── e2e-test-specialist/
     │   ├── bug-hunter/
+    │   ├── eval-harness/
     │   ├── ci-config-helper/
     │   ├── docker-expert/
     │   ├── k8s-orchestrator/
     │   ├── observability-specialist/
+    │   ├── deployment-patterns/
     │   ├── data-engineer/
     │   ├── data-analyst/
     │   ├── ml-engineer/
     │   ├── search-vector-architect/
+    │   ├── database-migrations/
+    │   ├── regex-vs-llm-structured-text/
     │   ├── security-reviewer/
     │   ├── performance-profiler/
     │   ├── doc-writer/
@@ -239,19 +259,41 @@ mega-mind-skills/
     │   ├── product-manager/
     │   ├── workflow-orchestrator/
     │   └── skill-generator/
+    │   │
+    │   ├── # Meta & Learning Skills
+    │   ├── continuous-learning-v2/
+    │   ├── search-first/
+    │   ├── autonomous-loops/
+    │   ├── skill-stocktake/
+    │   ├── cost-aware-llm-pipeline/
+    │   ├── verification-loop/
+    │   ├── iterative-retrieval/
+    │   ├── strategic-compact/
+    │   ├── content-hash-cache-pattern/
+    │   ├── multi-plan/
+    │   ├── multi-execute/
+    │   └── plankton-code-quality/
+    │   │
+    │   └── # Token Optimization & Context
+    │       ├── rtk/
+    │       └── context-optimizer/
     │
     ├── workflows/
     │   ├── brainstorm.md
-    │   ├── execute-plan.md
-    │   ├── write-plan.md
     │   ├── debug.md
+    │   ├── execute-plan.md
+    │   ├── high-complexity-dev.md
     │   ├── review.md
-    │   └── ship.md
+    │   ├── ship.md
+    │   └── write-plan.md
     │
     ├── agents/
+    │   ├── architect.md
     │   ├── code-reviewer.md
-    │   ├── tech-lead.md
-    │   └── qa-engineer.md
+    │   ├── planner.md
+    │   ├── qa-engineer.md
+    │   ├── security-reviewer.md
+    │   └── tech-lead.md
     │
     └── tests/
         └── run-tests.sh
@@ -285,39 +327,39 @@ The `mega-mind` orchestrator automatically routes requests to appropriate skills
 
 ## Workflows
 
-### Feature Development
+### Standard Development Chain (The Z-Pattern)
 
 ```
-brainstorming → writing-plans → test-driven-development →
-executing-plans → verification-before-completion →
-requesting-code-review → finishing-a-development-branch
+search-first → tech-lead → brainstorming → writing-plans → test-driven-development →
+executing-plans → verification-loop → requesting-code-review →
+finishing-a-development-branch → continuous-learning-v2
+```
+
+### High-Complexity Chain (Phase 3 Orchestration)
+
+```
+search-first → architect → multi-plan → [Approval] → multi-execute →
+verification-loop → security-reviewer → finishing-a-development-branch
+```
+
+### Autonomous Loop Chain
+
+```
+writing-plans → autonomous-loops → [Loop Execution] → verification-loop →
+continuous-learning-v2
 ```
 
 ### Bug Fix
 
 ```
 systematic-debugging → bug-hunter → test-driven-development →
-verification-before-completion → finishing-a-development-branch
+verification-loop → finishing-a-development-branch → continuous-learning-v2
 ```
 
 ### Code Improvement
 
 ```
-code-polisher → test-driven-development → verification-before-completion
-```
-
-### Security Audit
-
-```
-security-reviewer → systematic-debugging → test-driven-development →
-verification-before-completion
-```
-
-### New Project
-
-```
-tech-lead → brainstorming → [architects] → writing-plans →
-[docker-expert, k8s-orchestrator, ci-config-helper] → development chains
+plankton-code-quality → code-polisher → test-driven-development → verification-loop
 ```
 
 ---
@@ -382,28 +424,29 @@ See [USAGE.md](./USAGE.md) for the full installation guide.
 
 ```bash
 # Install skills into current directory (Antigravity / Claude / Cursor / standard)
-mega-mind-orchestrator init
+mmo init
 
-# Also install for GitHub Copilot (VS Code)
-mega-mind-orchestrator init --copilot
+# Also install for OpenCode
+mmo init --opencode
+
+# Also install for Codex
+mmo init --codex
 
 # Install into a specific path
-mega-mind-orchestrator init /path/to/project
-mega-mind-orchestrator init /path/to/project --copilot
+mmo init /path/to/project
+mmo init /path/to/project --copilot
 
 # Overwrite existing installation
-mega-mind-orchestrator init --force
-mega-mind-orchestrator init --copilot --force
+mmo init --force
+mmo init --copilot --claude --opencode --codex --force
 
 # Show CLI version
-mega-mind-orchestrator --version
+mmo --version
 ```
 
 ### Validate Installation
 
-```bash
-bash .agent/tests/run-tests.sh
-```
+Use the internal `/verify` command within your AI assistant to run the verification protocol.
 
 Tests verify:
 
@@ -443,6 +486,7 @@ This project combines and adapts:
 - [Superpowers](https://github.com/obra/superpowers) by obra - Core workflow philosophy
 - [antigravity-superpowers](https://github.com/skainguyen1412/antigravity-superpowers) by skainguyen1412 - Antigravity adaptation
 - [virtual-company](https://github.com/k1lgor/virtual-company) by k1lgor - Domain expertise skills
+- [Everything-Claude-Code](https://github.com/affaan-m/everything-claude-code) by affaan-m - Claude Code adaptation
 - [RTK](https://github.com/rtk-ai/rtk) - Token optimization CLI
 
 ---

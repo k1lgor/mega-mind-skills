@@ -1,7 +1,7 @@
 [project]
-name = "mega-mind-orchestrator"
-version = "0.4.0"
-description = "A powerful AI orchestrator and skill system for Antigravity, featuring 40+ specialized domain expert skills, disciplined development workflows, and RTK token optimization."
+name = "mmo"
+version = "0.5.0"
+description = "A powerful AI orchestrator and skill system for Antigravity, Claude Code, GitHub Copilot, and more. Featuring 60+ specialized domain expert skills, disciplined development workflows, and RTK token optimization."
 authors = [
     { name = "Plamen Ivanov", email = "paco.iwanow@gmail.com" },
 ]
@@ -13,6 +13,7 @@ dependencies = [
 
 [project.scripts]
 mega-mind-orchestrator = "mega_mind.cli:main"
+mmo = "mega_mind.cli:main"
 
 [build-system]
 requires = ["hatchling"]

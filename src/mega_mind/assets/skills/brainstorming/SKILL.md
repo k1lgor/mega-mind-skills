@@ -25,6 +25,24 @@ triggers:
 
 ## Instructions
 
+### Step 0: Search First (MANDATORY)
+
+Before generating any approaches, invoke `search-first` to check:
+
+1. **Does a library already solve this?** (npm, PyPI, GitHub)
+2. **Is there an MCP server for this?** (avoids custom integration work)
+3. **Does a skill in this system already address this?** (check existing skills)
+
+> Brainstorming approaches that have obvious existing solutions is wasteful. Knowing what's available changes which approaches are even worth considering.
+
+Once search is complete, include in your output:
+
+```
+**Existing Solutions Found:**
+- [package/tool]: [what it covers and what it doesn't]
+- None found for [specific aspect]
+```
+
 ### Step 1: Understand the Problem Space
 
 Before generating solutions, thoroughly understand the problem:

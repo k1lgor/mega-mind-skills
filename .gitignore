@@ -74,6 +74,7 @@ Thumbs.db
 # Mega-Mind session state (local only — not committed)
 # =============================================================================
 docs/plans/
+.agent/instincts/
 
 # =============================================================================
 # Secrets & environment

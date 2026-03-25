@@ -20,23 +20,34 @@ triggers:
 
 ## Verification Protocol
 
-### Step 1: Run Tests
+### Phase 0: Pre-Verification De-Sloppify
+
+Before running any checks, ensure the implementation is clean:
+
+- [ ] No debug artifacts (console.log, print, debugger)
+- [ ] No TODO comments that were resolved during implementation
+- [ ] No unused imports or dead code
+- [ ] Consistent formatting across all changed files
+
+> If you find anything in this list, clean it up NOW before running tests. Tests on messy code still fail for the wrong reasons.
+
+### Step 1: Run Tests + Coverage Gate
 
 ```bash
 # Unit tests (90% savings)
-rtk npm test
+rtk bun test (or rtk npm test)
 
 # Integration tests
-rtk proxy npm run test:integration
+rtk proxy bun run (or rtk proxy npm run) test:integration
 
 # E2E tests (if applicable)
 rtk playwright test
 
-# Check coverage
-rtk proxy npm run test:coverage
+# Check coverage - MUST be >= 80%
+rtk proxy bun run (or rtk proxy npm run) test:coverage
 ```
 
-**All tests must pass.** If any test fails, the task is not complete.
+**All tests must pass.** Coverage must be ≥ 80% (or match project's configured target). If coverage is below threshold, write additional tests before proceeding.
 
 ### Step 2: Run Linters and Type Checks
 
@@ -48,7 +59,7 @@ rtk lint
 rtk tsc
 
 # Format check
-rtk proxy npm run format:check
+rtk proxy bun run (or rtk proxy npm run) format:check
 ```
 
 **No errors allowed.** Warnings should be addressed or documented.
@@ -57,10 +68,10 @@ rtk proxy npm run format:check
 
 ```bash
 # Build
-rtk proxy npm run build
+rtk proxy bun run build (or rtk proxy npm run build)
 
 # Production build
-rtk proxy npm run build:prod
+rtk proxy bun run build (or rtk proxy npm run build):prod
 ```
 
 **Build must succeed without errors.**
@@ -90,6 +101,36 @@ Verify the change doesn't break other parts:
 - [ ] Navigation still works
 - [ ] API integrations still work
 - [ ] Database operations still work
+
+### Step 6: Eval Harness (Criteria-Driven Verification)
+
+For complex features, run a structured eval against the original acceptance criteria:
+
+```markdown
+## Eval: [Feature Name]
+
+### Acceptance Criteria (from plan)
+
+- [ ] AC1: [criterion from original plan]
+- [ ] AC2: [criterion]
+- [ ] AC3: [criterion]
+
+### Evaluation
+
+| Criterion | Status | Evidence                          | Notes          |
+| --------- | ------ | --------------------------------- | -------------- |
+| AC1       | ✅     | Test #14 passes, manual verified  |                |
+| AC2       | ✅     | API returns expected shape        |                |
+| AC3       | ⚠️     | Works but edge case X not covered | Add to backlog |
+
+### Result
+
+- PASS: All required criteria met
+- PARTIAL: [list unmet criteria]
+- FAIL: [blocking criteria not met]
+```
+
+**Only non-blocking gaps are acceptable for PASS.** Blocking gaps must be resolved before completion.
 
 ## Verification Template
 
@@ -194,7 +235,7 @@ Verify the change doesn't break other parts:
 
 Verification often involves running large test suites or verbose linters. Always use **RTK** to optimize the output and save tokens:
 
-- Use `rtk npm test` or `rtk pytest` for Step 1
+- Use `rtk bun test (or rtk npm test)` or `rtk pytest` for Step 1
 - Use `rtk lint` or `rtk ruff check` for Step 2
 - Use `rtk tsc` for type checking
 - Use `rtk cargo build` or `rtk next` for Step 3

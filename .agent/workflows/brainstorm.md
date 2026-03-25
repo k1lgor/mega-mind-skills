@@ -1,5 +1,5 @@
 ---
-description:
+description: Structured exploration before committing to an approach. Use when facing ambiguous problems or architectural decisions.
 ---
 
 # Brainstorm Workflow

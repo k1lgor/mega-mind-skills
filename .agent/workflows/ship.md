@@ -1,5 +1,5 @@
 ---
-description:
+description: Final branch wrap-up and merge workflow. Use when a feature branch is fully verified and ready to deploy.
 ---
 
 # Ship Workflow
@@ -64,8 +64,8 @@ Use when ready to merge and deploy.
 The complete workflow from start to finish:
 
 ```
-/mega-mind route → brainstorming → writing-plans → tdd →
-executing-plans → verification-before-completion → review → ship
+/mega-mind route → search-first → tech-lead → brainstorming → writing-plans →
+test-driven-development → executing-plans → verification-before-completion → review → ship
 ```
 
 Or simply:

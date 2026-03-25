@@ -1,79 +1,52 @@
 ---
-description:
+description: Execute a planned task with disciplined tracking and verification.
 ---
 
 # Execute Plan Workflow
 
 ## Trigger
 
-Use when you have a plan ready to implement.
+Use after a plan is approved and ready for implementation.
 
 **Quick Start:** `/mega-mind execute execute-plan` or `/execute`
 
-## Prerequisites
-
-- A completed plan from `writing-plans` skill
-- All dependencies available
-- Development environment ready
-
 ## Steps
 
-### 1. Load the Plan
+### 1. Initialize Task
 
-- Read the full plan end-to-end
-- Verify dependencies are available
-- Check for any blockers
+- Update `<project-root>/docs/plans/task.md`.
+- Set task to `in_progress`.
 
-### 2. Execute Phase by Phase
+### 2. Implement Step-by-Step
 
-For each phase:
+- For each atomic step in the plan:
+  - Implement the code.
+  - **De-Sloppify:** Immediately remove debug artifacts, console logs, and unused code.
+  - Verify the specific change.
 
-- Mark step as in-progress
-- Implement following plan guidance
-- Test locally
-- Mark as completed
-- Update task tracker
+### 3. Continuous Verification
 
-### 3. Run Phase Verification
+- Periodically run Phase 1 (Build) and Phase 2 (Types) to catch regressions early.
 
-After each phase:
+### 4. Final Quality Gate (verification-loop)
 
-- Run tests
-- Verify integration
-- Check for regressions
+- Run `/verify` to trigger the **`verification-loop`**.
+- Pass all 6 phases:
+  1. Phase 0: De-Sloppify Check
+  2. Phase 1: Build
+  3. Phase 2: Types
+  4. Phase 3: Lint
+  5. Phase 4: Tests + Coverage
+  6. Phase 5: Security Scan
+  7. Phase 6: Diff Review
 
-### 4. Handle Deviations
+### 5. Task Completion
 
-If plan doesn't match reality:
-
-- Document the deviation
-- Assess impact
-- Update plan if needed
-
-## Next Steps After Execution
-
-After completing this workflow, typically continue with:
-
-```
-/verify → Verify the implementation works
-/review → Request code review
-```
-
-Or use:
-
-```
-/mega-mind execute review
-```
-
-## Output
-
-- Completed implementation
-- Updated task tracker
-- Verification results
+- Mark task as `completed` in `task.md`.
+- Propose next steps or run `finishing-a-development-branch`.
 
 ## Related Skills
 
-- `executing-plans` - The core execution skill
-- `verification-before-completion` - Verify before done
-- `requesting-code-review` - Submit for review
-- `single-flow-task-execution` - For simpler tasks
+- `executing-plans` - The core execution engine
+- `verification-loop` - The primary quality gate
+- `plankton-code-quality` - For write-time enforcement

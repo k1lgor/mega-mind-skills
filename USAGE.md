@@ -11,23 +11,23 @@ Choose the method that fits your workflow:
 ### pip (standard)
 
 ```bash
-pip install mega-mind-orchestrator
+pip install mmo
 ```
 
 ### pipx (recommended — isolated install, globally available)
 
 ```bash
-pipx install mega-mind-orchestrator
+pipx install mmo
 ```
 
 ### uv
 
 ```bash
 # Install as a tool (recommended for frequent use)
-uv tool install mega-mind-orchestrator
+uv tool install mmo
 
 # Or run directly without installation
-uvx mega-mind-orchestrator
+uvx mmo
 ```
 
 ---
@@ -37,7 +37,7 @@ uvx mega-mind-orchestrator
 Navigate to your project root and run:
 
 ```bash
-mega-mind-orchestrator init
+mmo init
 ```
 
 This copies the full `.agent/` directory — containing all 42 skills, workflows, and agent definitions — into your project.
@@ -47,7 +47,7 @@ This copies the full `.agent/` directory — containing all 42 skills, workflows
 To also install in the format Claude Code expects, add the `--claude` flag:
 
 ```bash
-mega-mind-orchestrator init --claude
+mmo init --claude
 ```
 
 ### For GitHub Copilot (VS Code)
@@ -55,7 +55,23 @@ mega-mind-orchestrator init --claude
 To also install in the format GitHub Copilot expects, add the `--copilot` flag:
 
 ```bash
-mega-mind-orchestrator init --copilot
+mmo init --copilot
+```
+
+### For OpenCode
+
+To also install in the format OpenCode expects, add the `--opencode` flag:
+
+```bash
+mmo init --opencode
+```
+
+### For Codex
+
+To also install in the format Codex expects, add the `--codex` flag:
+
+```bash
+mmo init --codex
 ```
 
 This installs:
@@ -63,22 +79,26 @@ This installs:
 - `.agent/` — Core skill system for all tools
 - `CLAUDE.md` and `.claude/` — Specialized for Claude Code
 - `.github/` — Specialized for GitHub Copilot in VS Code
+- `.opencode/` — Specialized for OpenCode
+- `.codex/` — Specialized for Codex
 
 ### Target a specific directory
 
 ```bash
-mega-mind-orchestrator init /path/to/your/project
-mega-mind-orchestrator init /path/to/your/project --claude
-mega-mind-orchestrator init /path/to/your/project --copilot
+mmo init /path/to/your/project
+mmo init /path/to/your/project --claude
+mmo init /path/to/your/project --copilot
 ```
 
 ### Overwrite an existing installation
 
 ```bash
-mega-mind-orchestrator init --force
-mega-mind-orchestrator init --claude --force
-mega-mind-orchestrator init --copilot --force
-mega-mind-orchestrator init --copilot --claude --force
+mmo init --force
+mmo init --claude --force
+mmo init --copilot --force
+mmo init --opencode --force
+mmo init --codex --force
+mmo init --copilot --claude --opencode --codex --force
 ```
 
 > ⚠️ `--force` overwrites the existing directories completely.
@@ -87,7 +107,7 @@ mega-mind-orchestrator init --copilot --claude --force
 
 ## What gets installed
 
-### Standard install (`mega-mind-orchestrator init`)
+### Standard install (`mmo init`)
 
 ```
 your-project/
@@ -95,14 +115,13 @@ your-project/
     ├── AGENTS.md          # Master rules loaded at session start
     ├── hooks/
     │   └── hooks.json     # Context-mode hooks registry
-    ├── skills/            # 42 skills (mega-mind, brainstorming, tech-lead, ...)
+    ├── skills/            # 60+ skills (mega-mind, brainstorming, tech-lead, ...)
     ├── workflows/         # Pre-defined workflow sequences
     ├── agents/            # Persistent agent personas
-    └── tests/
-        └── run-tests.sh   # Validates the installation
+    └── instincts/         # Learned patterns
 ```
 
-### With Claude Code (`mega-mind-orchestrator init --claude`)
+### With Claude Code (`mmo init --claude`)
 
 ```
 your-project/
@@ -114,7 +133,7 @@ your-project/
     └── skills/      # 42 skills as Agent Skills
 ```
 
-### With Copilot (`mega-mind-orchestrator init --copilot`)
+### With Copilot (`mmo init --copilot`)
 
 ```
 your-project/
@@ -138,17 +157,13 @@ your-project/
 
 ## Step 3 — Verify the installation
 
-```bash
-bash .agent/tests/run-tests.sh
-```
-
-A successful run confirms all skills, workflows, and agents are in place.
+Once initialized, use the `/verify` command within your AI assistant (e.g. Antigravity or GitHub Copilot) to run the **verification-before-completion** protocol. This ensures that the skill system is correctly loaded and ready for use.
 
 ---
 
 ## Step 4 — Use in GitHub Copilot (VS Code)
 
-After `mega-mind-orchestrator init --copilot`, open VS Code with GitHub Copilot enabled.
+After `mmo init --copilot`, open VS Code with GitHub Copilot enabled.
 
 In the Copilot Chat:
 

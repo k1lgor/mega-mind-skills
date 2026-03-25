@@ -73,7 +73,15 @@ Best practices and tips...
 
 ## Creating a New Skill
 
-### Step 1: Identify the Need
+### Phase 0: Extracting Instincts (Optional but Recommended)
+
+Before creating a skill from scratch, check if you've already learned the pattern:
+
+1.  **Check Observations**: Run `rtk ls .agent/instincts/observations/` to see recent session captures.
+2.  **Review Raw Instincts**: Read `.agent/instincts/personal/*.yaml` for existing behavioral triggers.
+3.  **Identify Clusters**: If 3+ instincts share the same `domain` (e.g., `testing`, `api-design`), they are ready to be evolved into a formal skill.
+
+### Phase 1: Identify the Need
 
 Ask yourself:
 
@@ -140,13 +148,18 @@ Example usage scenarios...
 - Tip 2
 ```
 
-### Step 4: Test the Skill
+### Phase 4: Test the Skill
 
 1. Place in `.agent/skills/my-custom-skill/SKILL.md`
 2. Start a new session
 3. Test with trigger phrases
 4. Verify the workflow makes sense
 5. Iterate and improve
+
+### Phase 5: Closing the Loop (Continuous Learning)
+
+1.  **Mark as Evolved**: If this skill was created from instincts, move those source YAML files to `.agent/instincts/evolved/`.
+2.  **Update Mega-Mind**: Add the new skill to the `mega-mind` routing matrix in `.agent/skills/mega-mind/SKILL.md`.
 
 ## Skill Design Principles
 
@@ -163,17 +176,19 @@ Bad: "debug-and-deploy" - Does too many things
 
 Triggers should be unambiguous.
 
-```yaml
+```markdown
 Good:
 triggers:
-  - "debug API"
-  - "API not working"
-  - "endpoint error"
+
+- "debug API"
+- "API not working"
+- "endpoint error"
 
 Bad:
 triggers:
-  - "help"
-  - "fix"
+
+- "help"
+- "fix"
 ```
 
 ### 3. Actionable Steps
@@ -181,7 +196,7 @@ triggers:
 Steps should be concrete actions, not vague suggestions.
 
 ```
-Good: "Run `npm test` and check for failures"
+Good: "Run `bun test (or npm test)` and check for failures"
 Bad: "Check if tests pass"
 ```
 
@@ -225,9 +240,9 @@ triggers:
 ### Step 1: Pre-Deployment Check
 
 ```bash
-npm test
-npm run lint
-npm run build
+rtk bun test (or rtk npm test)
+rtk bun run lint (or rtk npm run lint)
+rtk bun run build (or rtk npm run build)
 ```
 ````
 

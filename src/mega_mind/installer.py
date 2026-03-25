@@ -3,7 +3,12 @@ from pathlib import Path
 
 
 def install_skills(
-    target_dir: str, force: bool = False, copilot: bool = False, claude: bool = False
+    target_dir: str,
+    force: bool = False,
+    copilot: bool = False,
+    claude: bool = False,
+    opencode: bool = False,
+    codex: bool = False,
 ):
     """Copies assets to the target .agent directory.
 
@@ -12,6 +17,8 @@ def install_skills(
         force: If True, overwrite existing files.
         copilot: If True, also install skills into .github/ for GitHub Copilot.
         claude: If True, also install skills into CLAUDE.md and .claude/ for Claude Code.
+        opencode: If True, also install skills into .opencode/ for OpenCode.
+        codex: If True, also install skills into .codex/ for Codex.
     """
     target_path = Path(target_dir).resolve()
     agent_path = target_path / ".agent"
@@ -22,7 +29,7 @@ def install_skills(
     if not assets_src.exists():
         raise FileNotFoundError(f"Source assets not found at {assets_src}")
 
-    antigravity = not copilot and not claude
+    antigravity = not copilot and not claude and not opencode and not codex
 
     if agent_path.exists() and not force and antigravity:
         raise FileExistsError(
@@ -39,12 +46,24 @@ def install_skills(
     if claude:
         _install_claude_code(assets_src, target_path, force)
 
+    if opencode:
+        _install_generic_agent_dir(assets_src, target_path, ".opencode", force)
+
+    if codex:
+        _install_generic_agent_dir(assets_src, target_path, ".codex", force)
+
     # Install hooks for context-mode compatibility in all generated environments
-    _install_hooks(target_path, force, copilot, claude, antigravity)
+    _install_hooks(target_path, force, copilot, claude, opencode, codex, antigravity)
 
 
 def _install_hooks(
-    target_path: Path, force: bool, copilot: bool, claude: bool, antigravity: bool
+    target_path: Path,
+    force: bool,
+    copilot: bool,
+    claude: bool,
+    opencode: bool,
+    codex: bool,
+    antigravity: bool,
 ):
     """Install hooks.json for context-mode in the respective environments."""
     import json
@@ -106,13 +125,27 @@ def _install_hooks(
         if not claude_file.exists() or force:
             claude_file.write_text(get_hook_content("claude-code"), encoding="utf-8")
 
+    if opencode:
+        opencode_dir = target_path / ".opencode" / "hooks"
+        opencode_dir.mkdir(parents=True, exist_ok=True)
+        opencode_file = opencode_dir / "hooks.json"
+        if not opencode_file.exists() or force:
+            opencode_file.write_text(get_hook_content("opencode"), encoding="utf-8")
+
+    if codex:
+        codex_dir = target_path / ".codex" / "hooks"
+        codex_dir.mkdir(parents=True, exist_ok=True)
+        codex_file = codex_dir / "hooks.json"
+        if not codex_file.exists() or force:
+            codex_file.write_text(get_hook_content("codex"), encoding="utf-8")
+
 
 def _install_github_copilot(assets_src: Path, target_path: Path, force: bool):
     """Install GitHub Copilot-compatible files into .github/ directory.
 
     Creates:
-      .github/copilot-instructions.md  — global Copilot instructions (from AGENTS.md)
-      .github/skills/<name>/SKILL.md   — all 42 skills (Agent Skills standard)
+      .github/copilot-instructions.md  — project Copilot instructions (from AGENTS.md)
+      .github/skills/<name>/SKILL.md   — all skills (Agent Skills standard)
       .github/agents/<name>.agent.md   — all agent personas
     """
     github_path = target_path / ".github"
@@ -195,6 +228,26 @@ def _install_claude_code(assets_src: Path, target_path: Path, force: bool):
                 skill_md = skill_dir / "SKILL.md"
                 if skill_md.exists():
                     dest_dir = claude_skills_dst / skill_dir.name
+                    dest_dir.mkdir(parents=True, exist_ok=True)
+                    dest_file = dest_dir / "SKILL.md"
+                    if not dest_file.exists() or force:
+                        shutil.copy2(skill_md, dest_file)
+
+
+def _install_generic_agent_dir(
+    assets_src: Path, target_path: Path, dir_name: str, force: bool
+):
+    """Install skills into a generic agent directory (e.g. .opencode, .codex)."""
+    dst_path = target_path / dir_name
+    skills_src = assets_src / "skills"
+    skills_dst = dst_path / "skills"
+
+    if skills_src.exists():
+        for skill_dir in skills_src.iterdir():
+            if skill_dir.is_dir():
+                skill_md = skill_dir / "SKILL.md"
+                if skill_md.exists():
+                    dest_dir = skills_dst / skill_dir.name
                     dest_dir.mkdir(parents=True, exist_ok=True)
                     dest_file = dest_dir / "SKILL.md"
                     if not dest_file.exists() or force:

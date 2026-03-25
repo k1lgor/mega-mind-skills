@@ -83,9 +83,8 @@ git worktree add ../my-app-hotfix -b hotfix/urgent-fix
 # Switch to hotfix
 cd ../my-app-hotfix
 
-# Make fix, commit, push, create PR
-git add .
-git commit -m "Fix urgent bug"
+# Make fix, then commit using the finishing-a-development-branch skill
+# (Do NOT run `git add` or `git commit` directly — use the skill)
 git push origin hotfix/urgent-fix
 
 # Return to feature work
@@ -93,6 +92,7 @@ cd ../my-app
 
 # Clean up after hotfix merges
 git worktree remove ../my-app-hotfix
+
 ```
 
 ### Pattern 2: PR Review While Developing
@@ -104,8 +104,8 @@ git worktree add ../pr-review pr/123
 cd ../pr-review
 
 # Run tests, review code
-npm test
-npm run lint
+rtk bun test (or rtk npm test)
+rtk bun run lint (or rtk npm run lint)
 
 # Return to your work
 cd ../my-app
@@ -168,7 +168,7 @@ git worktree add ../myapp-hotfix-123 hotfix/issue-123
 ```bash
 # If using Node.js, each worktree needs its own node_modules
 cd ../myapp-feature-auth
-npm install
+rtk bun install (or rtk npm install)
 
 # Or use workspaces for shared dependencies
 ```

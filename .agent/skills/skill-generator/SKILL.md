@@ -12,13 +12,23 @@ triggers:
 
 ## Identity
 
-You are a meta-skill specialist focused on creating new skills for the mega-mind system.
+You are a meta-skill specialist focused on creating new skills for the mega-mind system. You can create skills from scratch, evolve them from instincts, or extract them from git history analysis.
 
 ## When to Use
 
 - Creating new custom skills
 - Debugging skill files
 - Improving existing skills
+- Evolving instincts into full skills (use after `continuous-learning-v2`)
+- Analyzing a git repo to extract workflow patterns into skills
+
+## Skill Creation Methods
+
+| Method               | When to Use                   | Work Required |
+| -------------------- | ----------------------------- | ------------- |
+| **From scratch**     | You know the workflow         | High          |
+| **From instincts**   | You have 3+ related instincts | Low           |
+| **From git history** | Existing repo with patterns   | Automated     |
 
 ## Skill Template
 
@@ -97,6 +107,12 @@ Output: [example output]
 
 **Problem:** What specific problem does this skill solve?
 
+**Method:** How will this skill be created?
+
+- [ ] From scratch (new workflow)
+- [ ] From instincts (see continuous-learning-v2 for /evolve)
+- [ ] From git history analysis
+
 **Frequency:** How often will this skill be needed?
 
 - [ ] Frequently (daily)
@@ -109,11 +125,17 @@ Output: [example output]
 - [ ] Medium (needs structured approach)
 - [ ] Complex (needs detailed steps)
 
+**Overlap Check:** Run `skill-stocktake` quick scan — does a skill already cover this?
+
+- [ ] Checked existing skills — no overlap found
+- [ ] Similar skill found: [name] — consider extending instead of creating new
+
 **Decision:** Is this worth a new skill?
 
 - If the task is unique and will be repeated: YES
-- If similar to existing skill: Enhance existing
+- If similar to existing skill: Enhance existing (don't duplicate)
 - If one-time task: Skip skill creation
+- If came from instincts: Use `/evolve` command from `continuous-learning-v2`
 ```
 
 ### Step 2: Define Scope
@@ -159,24 +181,31 @@ Output: [example output]
 ### Frontmatter
 
 - [ ] Name is kebab-case
-- [ ] Description is clear and concise
-- [ ] Triggers are relevant
+- [ ] Description is clear and concise (what + when)
+- [ ] Triggers are unambiguous (test: would you say this phrase to mean something else?)
 
-### Content
+### Content Quality (aligned with skill-stocktake verdicts)
+
+- [ ] **Actionability**: Code examples or commands you can run immediately
+- [ ] **Scope fit**: Name, triggers, and content all aligned
+- [ ] **Uniqueness**: Provides value not covered by another skill or CLAUDE.md
+- [ ] **Currency**: No deprecated package names or CLI flags
+
+### Structure
 
 - [ ] Identity section present
-- [ ] When to Use section clear
-- [ ] Instructions are numbered
-- [ ] Examples are provided
-- [ ] Templates included (if applicable)
-- [ ] Tips section present
+- [ ] When to Use section clear with specific scenarios
+- [ ] Instructions are numbered and concrete
+- [ ] Examples are realistic (not "foo"/"bar" placeholder examples)
+- [ ] At least one runnable code block
+- [ ] Tips section with non-obvious best practices
 
-### Quality
+### Anti-Patterns to Avoid
 
-- [ ] No spelling errors
-- [ ] Consistent formatting
-- [ ] Links work (if any)
-- [ ] Code examples run
+- [ ] No vague instructions like "think carefully about X"
+- [ ] No placeholder content that wasn't filled in
+- [ ] No duplicate triggers that conflict with existing skills
+- [ ] No content > 300 lines without strong justification
 ```
 
 ## Example: Creating a Database Migration Skill

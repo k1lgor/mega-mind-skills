@@ -1,340 +1,185 @@
 ---
 name: api-designer
 compatibility: Antigravity, Claude Code, GitHub Copilot
-description: REST/GraphQL API design and OpenAPI specs. Use for API design tasks.
+description: REST/GraphQL API design specialist. Covers URL conventions, status codes, pagination strategies (cursor/offset), error formats, versioning, and OpenAPI specs. Use for designing new endpoints or reviewing API consistency.
 triggers:
   - "design API"
   - "REST API"
   - "GraphQL"
   - "OpenAPI"
+  - "design API endpoint"
+  - "API conventions"
+  - "pagination"
+  - "cursor pagination"
+  - "api versioning"
+  - "error response format"
+  - "API consistency"
 ---
 
-# API Designer Skill
+# API Designer
 
 ## Identity
 
-You are an API design specialist focused on creating well-structured, documented, and maintainable APIs.
+You are an API design specialist focused on creating well-structured, consistent, predictable, and developer-friendly APIs. You produce APIs with proper resource naming, status codes, response envelopes, pagination strategies, and error formats that make clients easy to write.
 
 ## When to Use
 
-- Designing new APIs
-- Creating OpenAPI specifications
-- Planning API architecture
-- Documenting existing APIs
+- Designing new REST or GraphQL endpoints
+- Creating OpenAPI/Swagger specifications
+- Planning API architecture for consistency
+- Standardizing error response formats and pagination
+- Planning API versioning and deprecation strategies
+
+---
 
 ## RESTful API Design Principles
 
-### Resource Naming
+### URL Structure & Naming
 
 ```
-Good:
-GET    /users                 # List users
-GET    /users/{id}            # Get user
-POST   /users                 # Create user
-PUT    /users/{id}            # Update user
-DELETE /users/{id}            # Delete user
-GET    /users/{id}/posts      # Get user's posts
+# Resources: nouns, plural, lowercase, kebab-case
+GET    /api/v1/users           # list
+GET    /api/v1/users/:id       # single resource
+POST   /api/v1/users           # create
+PUT    /api/v1/users/:id       # full replace
+PATCH  /api/v1/users/:id       # partial update
+DELETE /api/v1/users/:id       # delete
 
-Bad:
-GET    /getUsers
-POST   /createUser
-GET    /user-posts/{id}
+# Sub-resources for clear ownership relationships
+GET    /api/v1/users/:id/orders
+POST   /api/v1/users/:id/orders
+
+# Actions that don't map to CRUD — use POST with a verb suffix
+POST   /api/v1/orders/:id/cancel
+POST   /api/v1/auth/login
 ```
 
-### HTTP Methods
+**Naming Rules:**
 
-| Method | Purpose           | Idempotent |
-| ------ | ----------------- | ---------- |
-| GET    | Retrieve resource | Yes        |
-| POST   | Create resource   | No         |
-| PUT    | Replace resource  | Yes        |
-| PATCH  | Partial update    | No         |
-| DELETE | Remove resource   | Yes        |
+- ✅ `/api/v1/team-members` (kebab-case)
+- ✅ `/api/v1/orders?status=active` (query params for filtering)
+- ❌ `/api/v1/getUsers` (verb in URL)
+- ❌ `/api/v1/user` (singular)
 
-### Status Codes
+### HTTP Methods & Status Codes
 
-| Code | Meaning               | Usage                      |
-| ---- | --------------------- | -------------------------- |
-| 200  | OK                    | Successful GET, PUT, PATCH |
-| 201  | Created               | Successful POST            |
-| 204  | No Content            | Successful DELETE          |
-| 400  | Bad Request           | Invalid input              |
-| 401  | Unauthorized          | Missing auth               |
-| 403  | Forbidden             | Insufficient permissions   |
-| 404  | Not Found             | Resource doesn't exist     |
-| 422  | Unprocessable Entity  | Validation error           |
-| 500  | Internal Server Error | Server failure             |
+| Method | Purpose           | Idempotent | Body? |
+| ------ | ----------------- | ---------- | ----- |
+| GET    | Retrieve resource | ✅ Yes     | No    |
+| POST   | Create / Action   | ❌ No      | Yes   |
+| PUT    | Full replace      | ✅ Yes     | Yes   |
+| PATCH  | Partial update    | ❌ No      | Yes   |
+| DELETE | Remove resource   | ✅ Yes     | No    |
 
-## OpenAPI Specification
+**Status Code Reference:**
+| Code | Meaning | Use Case |
+| ---- | ------- | -------- |
+| 200 | OK | Successful GET, PUT, PATCH |
+| 201 | Created | Successful POST (include `Location` header) |
+| 204 | No Content | Successful DELETE (no body) |
+| 400 | Bad Request | Client sent invalid data (validation error) |
+| 401 | Unauthorized | Missing or invalid auth token |
+| 403 | Forbidden | Authenticated but not allowed |
+| 404 | Not Found | Resource doesn't exist |
+| 409 | Conflict | State conflict (e.g. duplicate email) |
+| 422 | Unprocessable Entity | Validation/Business rule violation |
+| 500 | Internal Error | Unexpected server failure |
 
-```yaml
-openapi: 3.0.3
-info:
-  title: My API
-  description: API for managing resources
-  version: 1.0.0
-  contact:
-    name: API Support
-    email: support@example.com
+---
 
-servers:
-  - url: https://api.example.com/v1
-    description: Production
-  - url: https://api-staging.example.com/v1
-    description: Staging
+## Response Formats
 
-paths:
-  /users:
-    get:
-      summary: List all users
-      tags:
-        - Users
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserList"
-
-    post:
-      summary: Create a user
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateUser"
-      responses:
-        "201":
-          description: User created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-
-  /users/{id}:
-    get:
-      summary: Get a user by ID
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "404":
-          description: User not found
-
-components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        createdAt:
-          type: string
-          format: date-time
-
-    CreateUser:
-      type: object
-      required:
-        - name
-        - email
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 100
-        email:
-          type: string
-          format: email
-
-    UserList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-        meta:
-          type: object
-          properties:
-            total:
-              type: integer
-            page:
-              type: integer
-            limit:
-              type: integer
-
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-security:
-  - bearerAuth: []
-```
-
-## Response Format
-
-### Success Response
+### Standard Envelopes
 
 ```json
 {
   "data": {
-    "id": "123",
-    "name": "John Doe",
-    "email": "john@example.com"
+    "id": "abc-123",
+    "name": "Alice",
+    "created_at": "2025-01-15T10:30:00Z"
   }
 }
 ```
 
-### List Response with Pagination
-
-```json
-{
-  "data": [...],
-  "meta": {
-    "total": 100,
-    "page": 1,
-    "limit": 20,
-    "totalPages": 5
-  },
-  "links": {
-    "first": "/users?page=1",
-    "prev": null,
-    "next": "/users?page=2",
-    "last": "/users?page=5"
-  }
-}
-```
-
-### Error Response
+### Error Responses (Machine-Readable)
 
 ```json
 {
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input",
+    "code": "validation_error",
+    "message": "Request validation failed",
     "details": [
       {
         "field": "email",
-        "message": "Must be a valid email"
+        "message": "Must be valid email",
+        "code": "invalid_format"
       }
     ]
   }
 }
 ```
 
-## GraphQL Schema
+---
+
+## Pagination Strategies
+
+### Offset-Based (Simple)
+
+`GET /api/v1/users?page=2&per_page=20`
+
+- **Pros:** simple, "jump to page N" support.
+- **Cons:** Slow on large offsets, inconsistent with concurrent inserts.
+
+### Cursor-Based (Scalable)
+
+`GET /api/v1/users?cursor=eyJpZCI6MTIzfQ&limit=20`
+
+- **Pros:** O(1) performance, stable with concurrent inserts.
+- **Cons:** Cannot jump to arbitrary page.
+
+---
+
+## GraphQL Schema Example
 
 ```graphql
 type User {
   id: ID!
   name: String!
   email: String!
-  posts: [Post!]!
-  createdAt: DateTime!
-}
-
-type Post {
-  id: ID!
-  title: String!
-  content: String!
-  author: User!
-  createdAt: DateTime!
+  posts(first: Int, after: String): PostConnection!
 }
 
 type Query {
   user(id: ID!): User
-  users(page: Int, limit: Int): UserConnection!
-  post(id: ID!): Post
-  posts(page: Int, limit: Int): PostConnection!
+  me: User
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): User!
-  updateUser(id: ID!, input: UpdateUserInput!): User!
-  deleteUser(id: ID!): Boolean!
-
-  createPost(input: CreatePostInput!): Post!
+  updateProfile(input: UpdateProfileInput!): User!
 }
-
-input CreateUserInput {
-  name: String!
-  email: String!
-}
-
-input UpdateUserInput {
-  name: String
-  email: String
-}
-
-type UserConnection {
-  edges: [UserEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type UserEdge {
-  node: User!
-  cursor: String!
-}
-
-type PageInfo {
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-
-scalar DateTime
 ```
 
-## API Versioning
+---
 
-```
-URL Path:    /v1/users, /v2/users
-Header:      Accept: application/vnd.myapi.v1+json
-Query Param: /users?version=1
-```
+## API Design Checklist
+
+- [ ] Resource URL follows naming conventions (plural, kebab-case, no verbs)
+- [ ] Correct HTTP method used (GET for reads, POST for creates, etc.)
+- [ ] Appropriate status codes returned (not 200 for everything)
+- [ ] Error responses follow standard format with machine-readable `code`
+- [ ] Pagination implemented for all list endpoints
+- [ ] Authentication required (or explicitly marked as public)
+- [ ] Authorization checked (user can only access their own resources)
+- [ ] Response does not leak internal details (no stack traces)
+- [ ] Consistent naming with existing endpoints
+- [ ] OpenAPI/Swagger spec updated
+
+---
 
 ## Tips
 
-- Use nouns for resources, verbs via HTTP methods
-- Be consistent with naming conventions
-- Document all endpoints
-- Use proper HTTP status codes
-- Implement pagination for lists
-- Version your APIs
-- Validate all input
+- **Return the resource after POST/PUT/PATCH** — avoid extra GET requests.
+- **Use ISO 8601 for dates** — `"2025-01-15T10:30:00Z"`.
+- **Use snake_case for JSON keys** — (or follow project convention strictly).
+- **Versioning**: Prefer URL path versioning `/api/v1/`.
+- **Sparse Fieldsets**: `GET /users?fields=id,name` to reduce payload size.
