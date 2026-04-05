@@ -1,6 +1,6 @@
 [project]
 name = "mmo"
-version = "0.5.0"
+version = "0.6.0"
 description = "A powerful AI orchestrator and skill system for Antigravity, Claude Code, GitHub Copilot, and more. Featuring 60+ specialized domain expert skills, disciplined development workflows, and RTK token optimization."
 authors = [
     { name = "Plamen Ivanov", email = "paco.iwanow@gmail.com" },
