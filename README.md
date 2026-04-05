@@ -4,11 +4,11 @@
 
 This is a comprehensive skill-based workflow system that combines the disciplined development workflows of [Superpowers](https://github.com/obra/superpowers) with the domain expertise of [Virtual Company](https://github.com/k1lgor/virtual-company) and [Everything-Claude-Code](https://github.com/affaan-m/everything-claude-code). It provides structured, reliable behavior for AI coding assistants across the entire software development lifecycle.
 
-**Compatible with:** Antigravity · GitHub Copilot (VS Code) · Claude Code · Cursor · OpenCode · Codex · and any AI tool that supports the [Agent Skills open standard](https://agentskills.io)
+**Compatible with:** Antigravity · GitHub Copilot (VS Code) · Claude Code · OpenCode · Codex · and any AI tool that supports the [Agent Skills open standard](https://agentskills.io)
 
 ## Overview
 
-Mega-Mind brings together **59 skills** organized into categories:
+Mega-Mind brings together **53 active skills** organized into categories:
 
 ### The Mega-Mind Orchestrator (1 skill)
 
@@ -16,40 +16,36 @@ The master controller that routes requests and coordinates skill chains:
 
 - `mega-mind` - Primary entry point via `/mega-mind` command
 
-### Core Workflow Skills (12 skills)
+### Core Workflow Skills (9 skills)
 
 Structured development discipline that ensures quality at every step:
 
 - `brainstorming` - Explore approaches before committing
 - `writing-plans` - Create detailed implementation plans
-- `executing-plans` - Disciplined execution with tracking
-- `single-flow-task-execution` - Sequential task decomposition
+- `executing-plans` - Disciplined execution with tracking, including single-flow task mode
 - `test-driven-development` - Write tests first, implement second
-- `systematic-debugging` - Root cause analysis methodology
 - `requesting-code-review` - Structured review requests
 - `receiving-code-review` - Handle feedback systematically
-- `verification-before-completion` - Prove it works before done
 - `finishing-a-development-branch` - Clean branch management
 - `using-git-worktrees` - Parallel development workflows
-- `writing-skills` - Create new custom skills
+- `skill-generator` - Create new custom skills
 
-### Domain Expert Skills (32 skills)
+### Domain Expert Skills (29 skills)
 
 Specialized expertise for specific technical domains:
 
-- **Architecture**: tech-lead, frontend-architect, backend-architect, infra-architect, api-designer
+- **Architecture**: tech-lead, frontend-architect, backend-architect, infra-architect
 - **Development**: code-polisher, migration-upgrader, mobile-architect, legacy-archaeologist, python-patterns
-- **Testing**: test-genius, e2e-test-specialist, bug-hunter, eval-harness
-- **DevOps**: ci-config-helper, docker-expert, k8s-orchestrator, observability-specialist, deployment-patterns
+- **Testing**: test-genius, e2e-test-specialist, debugging, eval-harness
+- **DevOps**: ci-config-helper, docker-expert, k8s-orchestrator, observability-specialist
 - **Data**: data-engineer, data-analyst, ml-engineer, search-vector-architect, database-migrations, regex-vs-llm-structured-text
 - **Security**: security-reviewer
 - **Performance**: performance-profiler
 - **Documentation**: doc-writer
 - **UX**: ux-designer
 - **Product**: product-manager, workflow-orchestrator
-- **Meta**: skill-generator
 
-### Meta & Learning Skills (12 skills)
+### Meta & Learning Skills (11 skills)
 
 Advanced patterns for efficiency and continuous improvement:
 
@@ -60,7 +56,6 @@ Advanced patterns for efficiency and continuous improvement:
 - `cost-aware-llm-pipeline` - Model routing and token budget tracking
 - `verification-loop` - 6-phase continuous verification pipeline
 - `iterative-retrieval` - Progressive context refinement for subagents
-- `strategic-compact` - Logical context window management
 - `content-hash-cache-pattern` - SHA-256 caching for file processing
 - `multi-plan` - Collaborative multiple-model planning
 - `multi-execute` - Orchestrated multi-model execution and audit
@@ -93,42 +88,97 @@ uv tool install mmo
 uvx mmo
 ```
 
-### 2. Initialize skills in your project
+### 2. Install the hook prerequisite: `context-mode`
+
+`mmo init` writes `hooks.json` files for supported environments. Those hooks call the `context-mode` CLI, so hook integration will not work unless `context-mode` is installed first.
+
+**Prerequisites:** Node.js 18+
+
+```bash
+npm install -g context-mode
+context-mode doctor
+```
+
+If `context-mode doctor` fails, fix that before relying on the generated hooks.
+
+### 3. Initialize skills in your project
 
 ```bash
 # From your project root
 cd /path/to/your/project
 
-# Standard install (Antigravity, Cursor, and other standard tools)
-mmo init
+# Standard install (.agent/ only)
+uvx mmo init
 
-# Also install for Claude Code (CLI)
-mmo init --claude
+# Install only for Claude Code (no .agent/)
+uvx mmo init --claude
 
-# Also install for GitHub Copilot (VS Code)
-mmo init --copilot
+# Install only for GitHub Copilot (no .agent/)
+uvx mmo init --copilot
+
+# Install only for OpenCode (no .agent/)
+uvx mmo init --opencode
+
+# Install only for Codex (no .agent/)
+uvx mmo init --codex
 
 # Overwrite an existing installation
-mmo init --force
-mmo init --copilot --claude --force
+uvx mmo init --force
+uvx mmo init --copilot --claude --opencode --codex --force
 ```
+
+Behavior summary:
+
+- `mmo init` → creates `.agent/`
+- `mmo init --claude` → creates `CLAUDE.md` and `.claude/`, not `.agent/`
+- `mmo init --copilot --claude` → creates `.github/`, `CLAUDE.md`, and `.claude/`, not `.agent/`
+- Only GitHub Copilot agent personas use the `.agent.md` suffix
 
 The `--claude` flag adds:
 
-- `CLAUDE.md` — project rules and workflows (mirrors `AGENTS.md`)
-- `.claude/skills/` — all 59 skills in the Agent Skills standard directory
+- `CLAUDE.md` — project rules (mirrors `AGENTS.md`)
+- `.claude/skills/` — all 53 skills in the Agent Skills standard directory
+- `.claude/commands/` — Mega-Mind workflow files exposed as Claude slash commands
+- `.claude/hooks/hooks.json` — context-mode hook integration
 
 The `--copilot` flag adds a `.github/` directory with:
 
 - `copilot-instructions.md` — global instructions loaded automatically
-- `skills/<name>/SKILL.md` — all 59 skills available as `/` slash commands
+- `skills/<name>/SKILL.md` — all 53 skills available as `/` slash commands
 - `agents/<name>.agent.md` — custom agent personas for VS Code
+- `hooks/hooks.json` — context-mode hook integration
+
+The `--opencode` flag adds:
+
+- `AGENTS.md` and `CLAUDE.md` at project root
+- `.opencode/skills/` — all skills
+- `.opencode/commands/` — Mega-Mind workflow files exposed as OpenCode slash commands
+- `.opencode/hooks/hooks.json` — context-mode hook integration
+
+The `--codex` flag adds:
+
+- `AGENTS.md` at project root
+- `.codex/skills/` — all skills
+- `.codex/hooks/hooks.json` — context-mode hook integration
+
+The generated `hooks.json` files call commands such as:
+
+```json
+{
+  "command": "context-mode hook claude-code pretooluse"
+}
+```
+
+If `context-mode` is not installed and available on your PATH, those hooks will fail.
 
 > 📖 For full details see [USAGE.md](./USAGE.md)
 
-### 3. Verify the installation
+### 4. Verify the installation
 
-Once initialized, use the `/verify` command (triggered by the `verification-before-completion` skill) or run the `verification-loop` to ensure all components are correctly installed and functional.
+Once initialized:
+
+1. Run `context-mode doctor` to verify the hook dependency is installed correctly
+2. Use the `/verify` command (triggered by the `verification-loop` skill) to ensure the Mega-Mind files are correctly installed
 
 > 📖 For full installation details see [USAGE.md](./USAGE.md)
 
@@ -163,11 +213,11 @@ The `/mega-mind` command is your primary entry point to the skill system. It act
 | `/brainstorm` | brainstorming                  | Explore approaches before deciding |
 | `/plan`       | writing-plans                  | Create implementation plan         |
 | `/execute`    | executing-plans                | Execute plan with tracking         |
-| `/debug`      | systematic-debugging           | Debug systematically               |
+| `/debug`      | debugging                      | Debug systematically               |
 | `/review`     | requesting-code-review         | Request code review                |
 | `/ship`       | finishing-a-development-branch | Deploy to production               |
 | `/tdd`        | test-driven-development        | Test-first development             |
-| `/verify`     | verification-before-completion | Verify before marking done         |
+| `/verify`     | verification-loop              | Verify before marking done         |
 
 ### Example Usage
 
@@ -182,13 +232,13 @@ User: /mega-mind I need to add user authentication with OAuth
 🔄 Routed to skill chain:
    1. tech-lead                        → Define architecture
    2. brainstorming                    → Explore OAuth providers
-   3. api-designer                     → Design auth API
+   3. backend-architect                → Design auth API
    4. writing-plans                    → Create implementation plan
    5. test-driven-development          → Write auth tests
    6. backend-architect                → Implement auth service
    7. frontend-architect               → Implement login UI
    8. security-reviewer                → Security audit
-   9. verification-before-completion   → Verify
+   9. verification-loop                → Verify
 
 📍 Starting with: tech-lead
 ```
@@ -216,22 +266,19 @@ mega-mind-skills/
     │   ├── brainstorming/
     │   ├── writing-plans/
     │   ├── executing-plans/
-    │   ├── single-flow-task-execution/
     │   ├── test-driven-development/
-    │   ├── systematic-debugging/
+    │   ├── debugging/
     │   ├── requesting-code-review/
     │   ├── receiving-code-review/
-    │   ├── verification-before-completion/
+    │   ├── verification-loop/
     │   ├── finishing-a-development-branch/
     │   ├── using-git-worktrees/
-    │   └── writing-skills/
     │   │
     │   ├── # Domain Expert Skills
     │   ├── tech-lead/
     │   ├── frontend-architect/
     │   ├── backend-architect/
     │   ├── infra-architect/
-    │   ├── api-designer/
     │   ├── code-polisher/
     │   ├── migration-upgrader/
     │   ├── mobile-architect/
@@ -239,13 +286,12 @@ mega-mind-skills/
     │   ├── python-patterns/
     │   ├── test-genius/
     │   ├── e2e-test-specialist/
-    │   ├── bug-hunter/
+    │   ├── debugging/
     │   ├── eval-harness/
     │   ├── ci-config-helper/
     │   ├── docker-expert/
     │   ├── k8s-orchestrator/
     │   ├── observability-specialist/
-    │   ├── deployment-patterns/
     │   ├── data-engineer/
     │   ├── data-analyst/
     │   ├── ml-engineer/
@@ -268,7 +314,6 @@ mega-mind-skills/
     │   ├── cost-aware-llm-pipeline/
     │   ├── verification-loop/
     │   ├── iterative-retrieval/
-    │   ├── strategic-compact/
     │   ├── content-hash-cache-pattern/
     │   ├── multi-plan/
     │   ├── multi-execute/
@@ -277,6 +322,11 @@ mega-mind-skills/
     │   └── # Token Optimization & Context
     │       ├── rtk/
     │       └── context-optimizer/
+    │
+    ├── shared/
+    │   ├── routing.md
+    │   ├── templates.md
+    │   └── metadata.md
     │
     ├── workflows/
     │   ├── brainstorm.md
@@ -308,15 +358,15 @@ The `mega-mind` orchestrator automatically routes requests to appropriate skills
 | Request Type  | Primary Skill           | Secondary Skills                |
 | ------------- | ----------------------- | ------------------------------- |
 | New feature   | tech-lead               | brainstorming, writing-plans    |
-| Bug fix       | systematic-debugging    | bug-hunter                      |
+| Bug fix       | debugging               | -                               |
 | Code quality  | code-polisher           | -                               |
 | Performance   | performance-profiler    | -                               |
 | Security      | security-reviewer       | -                               |
 | Testing       | test-driven-development | test-genius                     |
 | Documentation | doc-writer              | -                               |
-| API design    | api-designer            | backend-architect               |
+| API design    | backend-architect       | -                               |
 | Frontend      | frontend-architect      | ux-designer                     |
-| Backend       | backend-architect       | api-designer                    |
+| Backend       | backend-architect       | -                               |
 | DevOps        | infra-architect         | docker-expert, k8s-orchestrator |
 | Data          | data-engineer           | data-analyst                    |
 | ML/AI         | ml-engineer             | -                               |
@@ -352,7 +402,7 @@ continuous-learning-v2
 ### Bug Fix
 
 ```
-systematic-debugging → bug-hunter → test-driven-development →
+debugging → test-driven-development →
 verification-loop → finishing-a-development-branch → continuous-learning-v2
 ```
 
@@ -423,26 +473,43 @@ See [USAGE.md](./USAGE.md) for the full installation guide.
 ### CLI Reference
 
 ```bash
-# Install skills into current directory (Antigravity / Claude / Cursor / standard)
-mmo init
+# Install skills into current directory (.agent/ only when no platform flags are used)
+uvx mmo init
+
+# Also install for GitHub Copilot (VS Code)
+uvx mmo init --copilot
+
+# Also install for Claude Code
+uvx mmo init --claude
 
 # Also install for OpenCode
-mmo init --opencode
+uvx mmo init --opencode
 
 # Also install for Codex
-mmo init --codex
+uvx mmo init --codex
 
 # Install into a specific path
-mmo init /path/to/project
-mmo init /path/to/project --copilot
+uvx mmo init /path/to/project
+uvx mmo init /path/to/project --copilot
 
 # Overwrite existing installation
-mmo init --force
-mmo init --copilot --claude --opencode --codex --force
+uvx mmo init --force
+uvx mmo init --copilot --claude --opencode --codex --force
 
 # Show CLI version
-mmo --version
+uvx mmo --version
 ```
+
+### Hook prerequisite
+
+The installer writes `hooks.json` files for `.agent/`, `.github/`, `.claude/`, `.opencode/`, and `.codex/`. Those hooks invoke `context-mode`, so install it first:
+
+```bash
+npm install -g context-mode
+context-mode doctor
+```
+
+If `context-mode` is missing from your PATH, the installed hooks will not work.
 
 ### Validate Installation
 
@@ -465,6 +532,7 @@ To add new skills:
 
 1. Create a new directory in `.agent/skills/`
 2. Add a `SKILL.md` file with proper frontmatter:
+
    ```markdown
    ---
    name: skill-name
@@ -474,6 +542,7 @@ To add new skills:
      - "keyword"
    ---
    ```
+
 3. Include instructions and examples
 4. Run tests to verify
 
