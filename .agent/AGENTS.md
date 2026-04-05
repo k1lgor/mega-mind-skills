@@ -24,32 +24,28 @@ The master controller that routes requests and coordinates skill chains:
 
 - `mega-mind` - Primary entry point via `/mega-mind` command
 
-### Core Workflow Skills (13 skills)
+### Core Workflow Skills (9 skills)
 
 Structured development discipline:
 
 - `brainstorming` - Structured exploration before committing to an approach
 - `writing-plans` - Detailed, step-by-step implementation plans
 - `executing-plans` - Disciplined plan execution with "De-Sloppify" pass
-- `single-flow-task-execution` - Ordered task decomposition with review gates
 - `test-driven-development` - Write tests first, implement second
-- `systematic-debugging` - Root cause tracing with supporting techniques
 - `requesting-code-review` - Structured review flow with checklists
 - `receiving-code-review` - Handling feedback systematically
-- `verification-before-completion` - Integrated with eval-harness and coverage gates
 - `finishing-a-development-branch` - Clean branch wrap-up with workflow options
 - `using-git-worktrees` - Parallel branch management
 - `using-mega-mind` - Internal skill routing logic
-- `writing-skills` - Create new skills following system conventions
 
-### Domain Expert Skills (35+ skills) ✨ UPDATED
+### Domain Expert Skills (29 skills) ✨ UPDATED
 
 Specialized expertise for complex development tasks:
 
-- **Architecture:** `planner`, `architect`, `tech-lead`, `frontend-architect`, `backend-architect`, `infra-architect`, `api-designer`, `api-design`
+- **Architecture:** `planner`, `architect`, `tech-lead`, `frontend-architect`, `backend-architect`, `infra-architect`
 - **Development:** `code-polisher`, `migration-upgrader`, `mobile-architect`, `legacy-archaeologist`, `python-patterns`
-- **Testing:** `test-genius`, `e2e-test-specialist`, `bug-hunter`, `eval-harness`
-- **DevOps:** `ci-config-helper`, `docker-expert`, `k8s-orchestrator`, `observability-specialist`, `deployment-patterns`
+- **Testing:** `test-genius`, `e2e-test-specialist`, `debugging`, `eval-harness`
+- **DevOps:** `ci-config-helper`, `docker-expert`, `k8s-orchestrator`, `observability-specialist`
 - **Data:** `data-engineer`, `data-analyst`, `ml-engineer`, `search-vector-architect`, `database-migrations`
 - **Security:** `security-reviewer`
 - **Performance:** `performance-profiler`
@@ -69,7 +65,6 @@ Advanced patterns for efficiency and continuous improvement:
 - `cost-aware-llm-pipeline` - Model routing and token budget tracking
 - `verification-loop` - 6-phase continuous verification pipeline
 - `iterative-retrieval` - Progressive context refinement for subagents
-- `strategic-compact` - Logical context window management
 - `content-hash-cache-pattern` - SHA-256 caching for file processing
 - `multi-plan` - Collaborative multiple-model planning
 - `multi-execute` - Orchestrated multi-model execution and audit
@@ -89,17 +84,83 @@ Advanced patterns for efficiency and continuous improvement:
 **1. NO PROACTIVE COMMITS:**
 You MUST NOT proactively run `git add` or `git commit` until the `finishing-a-development-branch` phase.
 
+> **Enforcement:** If this rule is violated, immediately unstage any auto-committed files (`git reset HEAD~1 --soft`), explain what happened, and wait for explicit user confirmation before proceeding. A commit made without user direction is a contract violation and must be reversed.
+
 **2. MANDATORY TASK TRACKING:**
 Update `<project-root>/docs/plans/task.md` after EVERY significant action.
+
+> **Enforcement:** If no task file exists at session start, create it before writing any code. If a task is marked complete without a corresponding task.md update, the session is considered "unsaved" and the next action MUST be a task.md sync. Skipping this rule means the user cannot reliably resume a session — treat it as data loss.
 
 **3. SEARCH FIRST:**
 Always check for existing libraries or prior art using `search-first` before implementation.
 
+> **Enforcement:** If code is written for a problem that a well-known library solves (e.g., writing a custom date formatter instead of using `date-fns`), stop immediately, document the oversight in task.md, and refactor to use the existing solution. Proceeding past this violation compounds technical debt.
+
 **4. DE-SLOPPIFY:**
 Every implementation step must include a cleanup pass to remove debug code and ensure readability.
 
+> **Enforcement:** Any `console.log`, `TODO`, `FIXME`, `print(`, or commented-out block left in a "completed" implementation is a blocking issue. Run `plankton-code-quality` before marking any step done. Sloppy code that passes review is a process failure, not a quality success.
+
 **5. SECURITY BY DESIGN:**
 Invoke `security-reviewer` proactively after implementing sensitive logic (auth, payments, APIs).
+
+> **Enforcement:** If a PR or feature touches authentication, user input handling, secrets, or external API calls without a security review, it MUST be flagged as incomplete. Do not mark any security-sensitive task as "done" without at least executing the OWASP Top 10 checklist from `security-reviewer`. Skipping security review in sensitive code is a critical process failure.
+
+---
+
+### AUTORESEARCH RULES (MANDATORY)
+
+**6. AUTORESEARCH LOOP:**
+At the end of any non-trivial session (i.e., any session that involved code changes, architectural decisions, or debugging), you MUST run the continuous-learning pipeline before the session is closed.
+
+Protocol:
+
+1. Run `continuous-learning-v2` to extract instincts from session observations.
+2. Run `eval-harness` to record any eval definitions that emerged during the session.
+3. Save extracted instincts to `.agent/instincts/observations/` (JSONL format).
+4. Promote confirmed instincts to `.agent/instincts/personal/` if confidence >= 0.8.
+
+> **Enforcement:** A session that ends without this loop is an opportunity lost. If context is running out, write a brief observation file before closing. A 3-line observation is better than nothing.
+
+**7. SELF-EVAL BEFORE DONE:**
+Before marking ANY task as complete, you MUST run the self-verification checklist from the active skill. If no skill is active, use the default `verification-loop` checklist.
+
+Minimum self-eval steps:
+
+- [ ] Build passes (no compile errors)
+- [ ] Tests pass (or test coverage added for new logic)
+- [ ] No regressions in adjacent systems
+- [ ] De-Sloppify pass completed
+- [ ] Security review completed (if applicable)
+- [ ] task.md updated to "completed"
+
+> **Enforcement:** The word "done" or "complete" MUST NOT appear in any response unless all checklist items above are confirmed. If any item fails, the task status is "blocked" not "done".
+
+**8. EVAL-DRIVEN DEVELOPMENT:**
+For any non-trivial feature (estimated >1 hour of implementation), create an eval definition in `.agent/evals/` BEFORE writing implementation code.
+
+Eval definition format (save to `.agent/evals/<feature-name>.eval.md`):
+
+```markdown
+# Eval: [Feature Name]
+
+## Success Criteria
+
+- [ ] [Measurable outcome 1]
+- [ ] [Measurable outcome 2]
+
+## Pass Threshold
+
+- Unit tests: 100% of defined scenarios
+- Integration: [specific metric]
+
+## Regression Guard
+
+- [ ] Existing tests still pass
+- [ ] Performance baseline not degraded by >10%
+```
+
+> **Enforcement:** Implementation code written without a corresponding eval definition in `.agent/evals/` is considered "unverifiable work." When discovered, pause implementation, write the eval definition first, then continue. This is the "test-first" principle applied at the feature level.
 
 ---
 
@@ -146,7 +207,12 @@ Check status via `rtk gain`.
 .agent/
 ├── AGENTS.md                    # Master contract
 ├── agents/                      # Specialized personas (.md)
-├── skills/                      # 61 Atomic skills & controllers
+├── skills/                      # 53 Active skills (+ 8 redirects)
+│   └── debugging/               # Merged debugging skill
 ├── workflows/                   # Pre-defined executable chains
+├── evals/                       # Eval definitions (EVAL-DRIVEN DEVELOPMENT)
 └── instincts/                   # Learned patterns & observations
+    ├── personal/                # Active instinct files (YAML)
+    ├── observations/            # Raw session observations (JSONL)
+    └── evolved/                 # Graduated instincts (promoted to skills/workflows)
 ```
