@@ -26,6 +26,13 @@ You are a meta-learning specialist. Your job is to extract behavioral patterns f
 - At the end of long sessions to extract what was learned
 - To import/export patterns between projects or team members
 
+## When NOT to Use
+
+- Mid-task — do not interrupt active implementation to run the learning loop; save it for end-of-session
+- When there is nothing new to extract (no user corrections, no novel patterns, no repeated observations from this session)
+- As a substitute for documentation — instincts capture behavioral patterns, not architecture decisions or API contracts
+- When the session was purely exploratory with no confirmed outcomes (low-confidence noise is worse than no instinct)
+
 ---
 
 ## The Instinct Model
@@ -286,3 +293,35 @@ BEFORE executing any task:
 - **Review quarterly** — expired instincts (project moved on) should be retired
 - **Share with team** — export and PR instincts that would help teammates
 - **Confidence drops** — if you act on an instinct and it's wrong, reduce confidence
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Instinct extracted from single session over-generalised | One data point treated as a universal pattern; context of the session not recorded | Tag every instinct with its source session and domain; require 2+ independent observations before promoting to instinct |
+| Low-confidence observation promoted to instinct without validation | Agent assigns high confidence to a pattern it observed only once | Add a confidence score to every instinct entry; only promote to active instinct when confidence ≥ 0.7 after validation |
+| Instinct conflicts with existing instinct, causing contradictory behaviour | New instinct added without checking for conflicts in the instinct file | Before adding, search instinct file for related entries; resolve conflicts explicitly with a "supersedes" note |
+| Session observation written too late | Observation captured at end-of-session summary; key decision moments already forgotten | Write observations immediately after each significant decision, not at session end |
+| Instinct file format invalid, causing silent load failure | Malformed YAML/JSON in the instinct file; parser fails silently | Validate instinct file format after every write; add a schema check as part of the session teardown step |
+
+## Anti-Patterns
+
+- Never promote an instinct from a single observation because one data point is insufficient to distinguish a genuine pattern from a task-specific anomaly.
+- Never add an instinct without checking for conflicts with existing instincts because contradictory instincts cause non-deterministic agent behaviour that is hard to diagnose.
+- Never write observations at session end because the key decision moments that produce the most valuable learning happen mid-session and are forgotten by the time the summary is written.
+- Never assign high confidence to an instinct without validation data because confidence without evidence is indistinguishable from bias.
+- Never skip instinct file format validation because a malformed file fails silently and the agent operates without any learned instincts, regressing to baseline behaviour.
+- Never record an instinct without its source context because a decontextualised instinct cannot be evaluated for applicability and may be applied in the wrong domain.
+
+## Self-Verification Checklist
+
+- [ ] At least 1 instinct file written per user correction: `ls .agent/instincts/observations/ | wc -l` >= number of corrections observed in the session — 0 files after a session with corrections is a failure
+- [ ] Every instinct has a non-default confidence score: `grep -c '"confidence": 0\b' .agent/instincts/observations/*.jsonl` returns 0 — no instinct left at confidence 0
+- [ ] Instinct files are valid JSONL: `python -c "import sys,json; [json.loads(l) for l in open(sys.argv[1])]" .agent/instincts/observations/<file>.jsonl` exits 0 for every file written this session
+- [ ] High-confidence instincts promoted or justified: `grep -l '"confidence": 0\.[89]\|"confidence": 1\.' .agent/instincts/observations/*.jsonl | wc -l` matches `ls .agent/instincts/personal/ | wc -l` (promoted count) — unpromoted high-confidence instincts have a written justification
+- [ ] Every instinct has a non-empty `evidence` field: `grep -c '"evidence": ""' .agent/instincts/observations/*.jsonl` returns 0 — bare preferences without evidence fail this check
+- [ ] Clusters of 3+ related observations evaluated for skill consolidation: `grep -rn "cluster\|consolidat\|merged into skill" .agent/instincts/observations/` returns >= 1 match if session produced >= 3 instincts on the same topic
+
+## Success Criteria
+
+This skill is complete when: 1) all user corrections and novel patterns from the current session have been captured as individual instinct entries, 2) each instinct has a confidence score and evidence, and 3) the instinct files are written to the correct directory before the session closes.

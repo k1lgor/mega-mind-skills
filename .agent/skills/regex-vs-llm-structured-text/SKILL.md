@@ -24,6 +24,13 @@ You are an extraction and parsing specialist. You know that LLMs are powerful bu
 - Building hybrid pipelines that combine deterministic rules with probabilistic model fixes
 - Optimizing cost and latency tradeoffs in text processing workflows
 
+## When NOT to Use
+
+- When the input format is already well-defined JSON, XML, or CSV — use a proper parser, not regex or LLM
+- When the input is 100% free-form natural language with no repeating structure — LLM-only is correct, no regex pass needed
+- For single-document extraction where cost and latency are irrelevant — just use the LLM directly
+- When the extraction target is a known standard format (e.g., ISO dates, email addresses) — use a battle-tested library function, not custom regex
+
 ---
 
 ## Decision Framework
@@ -133,9 +140,34 @@ def validate_with_llm(raw_text: str, current_data: dict, client) -> dict:
 
 ---
 
+---
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Confidence threshold miscalibrated, LLM passes low-confidence output downstream | Threshold set too low (e.g., 0.5) during development; never tuned on production distribution | Run threshold calibration on a labelled sample of 100+ real records; pick the threshold that minimises false-passes at target precision |
+| Regex has catastrophic backtracking on adversarial input causing CPU spike | Pattern uses nested quantifiers (e.g., `(.+)+`) on user-controlled input; not tested against malicious strings | Audit all regexes with a backtracking analyser (e.g., `safe-regex` for Node.js); replace greedy quantifiers with possessive or atomic groups |
+| LLM cost overrun on high-volume endpoint (expected regex, got 100× cost) | Confidence gate threshold too strict; nearly all records routed to LLM on inputs that regex handles well | Lower the LLM routing threshold; improve regex patterns to raise coverage above 95% on representative samples before deploying |
+| Hybrid pipeline latency regression from synchronous LLM call on hot path | LLM validation inserted inline on a synchronous request handler with 200ms p99 SLA | Move LLM calls to an async queue; return regex best-effort result immediately; apply LLM correction asynchronously and store |
+| Training data staleness causes LLM to miss newly introduced format variant | Document format changed (new field added, date format shifted); LLM prompt not updated; regex pattern misses new structure | Maintain a golden test set with format variants; run it on every prompt change; add the new variant as a test case before deploying |
+
+## Self-Verification Checklist
+
+- [ ] Regex tested against adversarial inputs — `safe-regex` (or equivalent) exits 0 with no catastrophic-backtracking warnings
+- [ ] LLM confidence threshold documented (e.g., `CONFIDENCE_GATE = 0.85`) and tested: records below threshold are verifiably routed to LLM, not passed silently
+- [ ] Cost per-call estimated and within budget: LLM intervention rate < 10% on representative sample (confirmed by logging actual intervention rate)
+- [ ] Decision framework consulted — the choice between regex-first, LLM-only, or hybrid is explicitly justified
+- [ ] Raw extracted values and LLM-corrected values are both logged for pipeline debugging
+- [ ] Input sanitization (whitespace normalization, quote normalization) runs before regex matching
+
+## Success Criteria
+
+This skill is complete when: 1) the decision framework has been applied and the correct parsing strategy is documented, 2) the hybrid pipeline logs both raw regex output and LLM corrections, and 3) LLM intervention rate is below the project's cost threshold for pattern-heavy inputs.
+
 ## Anti-Patterns
 
-- **Regex-as-Judge:** Trying to use a 1,000 character regex to handle every permutation of human error.
-- **Blind LLM usage:** Piping 5,000 items to an LLM when 4,800 follow an exact pattern.
-- **Silent Failures:** If the regex doesn't match, just skipping the item without a log or LLM fallback.
-- **Prompting for JSON on the happy path:** If you have JSON already from regex, don't ask the LLM "is this valid JSON?" – use a JSON validator.
+- **Regex-as-Judge:** Trying to use a 1,000 character regex to handle every permutation of human error, because unmaintainable patterns silently misclassify edge cases and the next developer cannot reason about failure modes without rewriting the entire expression.
+- **Blind LLM usage:** Piping 5,000 items to an LLM when 4,800 follow an exact pattern, because you pay token costs for every call and introduce non-deterministic outputs where a deterministic regex would have been free and 100% reproducible.
+- **Silent Failures:** If the regex doesn't match, just skipping the item without a log or LLM fallback, because data is silently dropped and the corrupt output propagates downstream before anyone notices the loss.
+- **Prompting for JSON on the happy path:** If you have JSON already from regex, don't ask the LLM "is this valid JSON?" – use a JSON validator, because sending valid structured data to an LLM for validation wastes tokens and risks the model returning a subtly reformatted string that breaks strict parsers.

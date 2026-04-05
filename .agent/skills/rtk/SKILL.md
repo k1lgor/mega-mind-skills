@@ -28,6 +28,13 @@ RTK is a high-performance CLI proxy that minimizes LLM token consumption by filt
 - **For cost optimization**: Reduce token usage per session
 - **For build/test output**: Only show failures, not full output
 
+## When NOT to Use
+
+- When RTK is not installed — fall back gracefully to raw commands; do not fail or stall waiting for RTK
+- When verbose output is explicitly needed for debugging (e.g., investigating a specific build warning) — use the raw command directly
+- For commands where RTK's output compression would hide information needed for the current task
+- For `git commit`, `git push`, or other write commands where you need to confirm the exact output
+
 ## Quick Check: Is RTK Installed?
 
 ```bash
@@ -240,6 +247,24 @@ When RTK is installed, translate commands automatically:
 
 ## Integration with Mega-Mind
 
+## Anti-Patterns
+
+- Never mutate state outside of a createSlice reducer because mutations outside reducers bypass Immer's change tracking, producing state updates that the Redux DevTools cannot record and that time-travel debugging cannot replay.
+- Never put non-serializable values in Redux state because non-serializable values (Date objects, class instances, functions) cannot be persisted, replayed, or compared with strict equality, causing silent failures in selectors and middleware.
+- Never use useSelector with a new object or array literal in the selector function because a selector that returns a new reference on every call causes the component to re-render on every dispatch, regardless of whether the relevant data changed.
+- Never dispatch an action that triggers another dispatch synchronously because synchronous chained dispatches bypass the middleware pipeline for the inner dispatch and create action ordering that is impossible to reproduce in tests.
+- Never store derived data in Redux state when it can be computed from existing state because redundant derived state goes out of sync with its source, requiring manual synchronisation logic that is consistently forgotten or incorrectly implemented.
+- Never use RTK Query with a baseUrl that differs between environments without configuration because a hardcoded baseUrl causes all API calls to target the wrong environment in staging or production, making the bug invisible until deployment.
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Token savings not achieved because context was already small | RTK applied to a command that outputs fewer than 200 tokens; compression overhead exceeds benefit | Skip RTK for small-output commands; use `rtk gain` to identify which command types are actually saving tokens in this project |
+| RTK not installed in environment, command fails silently | `rtk` binary not on PATH; CI or remote environment missing the install step | Check `rtk --version` exits 0 before wrapping any command; fall back to raw command if check fails; add RTK install to CI setup step |
+| Command output truncated unexpectedly, leaving partial context | RTK's output filter aggressively drops lines that match a suppression rule; needed information removed | Re-run the raw command without RTK to see full output; file an issue or adjust RTK filter config; for debugging sessions use raw commands |
+| RTK applied to wrong file, compressing irrelevant content | `rtk read <file>` called on a binary or auto-generated file; output is noise | Verify the target file path with `ls` before reading; only use `rtk read` on human-readable source or config files |
+
 ### When to Suggest RTK
 
 1. **User asks to run a command** → Check if RTK version exists
@@ -345,3 +370,16 @@ rtk proxy <unsupported-command>
 - `test-driven-development` - Use `rtk cargo test` / `rtk bun test` (or `rtk npm test`)
 - `systematic-debugging` - Use `rtk git diff` for changes
 - `verification-before-completion` - Use RTK for verification commands
+
+## Self-Verification Checklist
+
+- [ ] RTK installed and `rtk --version` exits 0 — verified before using any RTK-wrapped commands
+- [ ] Token count after compression is lower than before — `rtk gain` shows cumulative tokens saved > 0 for this session
+- [ ] Compressed output is syntactically valid — key fields (test names, error messages, file paths) are present and parseable in the RTK output
+- [ ] All supported CLI operations use RTK-wrapped equivalents (`rtk git status`, `rtk bun test`, etc.)
+- [ ] Fallback to raw commands is in place when RTK is unavailable (no hard dependency)
+- [ ] Verbose debugging commands use raw CLI (not RTK) when full output is needed
+
+## Success Criteria
+
+This skill is complete when: 1) all supported CLI commands in the current session use RTK-wrapped equivalents, 2) `rtk gain` shows measurable token savings, and 3) there is a documented fallback for environments where RTK is not installed.

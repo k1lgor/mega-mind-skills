@@ -30,6 +30,16 @@ You are an autonomous workflow architect. You design AI agent pipelines that run
 
 ---
 
+## When NOT to Use
+
+- The task requires human approval or judgment at each step (use a supervised workflow instead)
+- The task is a single focused change that can be done in one shot (use Sequential Pipeline only, not a loop)
+- The output cannot be objectively validated (loops without a verification gate will silently accumulate errors)
+- The codebase has no test suite — running autonomous loops against untested code with no CI gate is high risk
+- You are mid-debugging and the root cause is not yet known (loops amplify confusion, not clarity)
+
+---
+
 ## Loop Pattern Spectrum
 
 From simplest to most sophisticated:
@@ -322,15 +332,40 @@ These patterns compose well:
 
 ## Anti-Patterns
 
-| Anti-Pattern                      | Problem                 | Fix                              |
-| --------------------------------- | ----------------------- | -------------------------------- |
-| Sharing state via shell variables | Lost between iterations | Use files                        |
-| No completion signal              | Infinite loops          | Add explicit completion check    |
-| Single agent for everything       | Context overflow        | Split into pipeline steps        |
-| No CI gates                       | Silently broken code    | Add test runs between iterations |
-| Negative instructions only        | LLMs ignore "don't X"   | Add explicit de-sloppify pass    |
+- Never start a loop without a MAX_ITERATIONS or token-budget ceiling because an unbounded loop with no termination condition will exhaust compute budget, context window, or API quota silently — sometimes incurring significant cost before anyone notices.
+- Never skip persisting loop state to disk between iterations because in-memory state is lost on crash, timeout, or context compaction, forcing a restart from iteration 0 and wasting all prior progress.
+- Never allow a loop to continue after a failing test or broken build because downstream iterations compound on a broken foundation, producing cascading failures that make root-cause analysis harder with each iteration.
+- Never run a loop on a live production codebase without a feature branch or sandbox because a loop that makes incorrect edits has no clean rollback path; iterating on main conflates the loop's experimental changes with production-ready work.
+- Never use a language model as the sole judge of its own output quality because the model that produced the output is systematically biased toward rating it as correct; a separate evaluator or deterministic test is required to catch the model's own blind spots.
+- Never expose secrets or credentials inside the loop's context window because the context is serialized to disk for persistence and may be logged; a leaked secret in the loop state is as dangerous as a leaked secret in source code.
 
 ---
+
+## Self-Verification Checklist
+
+- [ ] `MAX_ITERATIONS` constant is defined in code: `grep -rn "MAX_ITERATIONS\|max_iterations\|maxIterations" <loop_file>` returns at least 1 match before execution begins
+- [ ] Completion signal file or flag is defined: `grep -rn "completion.txt\|DONE\|stop_condition\|complete_flag" <loop_file>` returns at least 1 match — no open-ended while-true loops
+- [ ] CI gate aborts on failure: test runner exit code is checked and loop exits non-zero on test failure — `grep -n "exit\|sys.exit\|process.exit" <loop_file>` returns at least 1 match per CI check
+- [ ] Context persisted to files: `grep -rn "writeFile\|open.*w\|json.dump\|fs.write" <loop_file>` returns at least 1 match — no reliance on shell variables or in-memory state only
+- [ ] Stagnation detection implemented: `grep -rn "stagnation\|same_output\|no_change\|consecutive_failures" <loop_file>` returns at least 1 match — or iteration diff is checked and escalation triggers when diff = 0
+- [ ] De-Sloppify pass present per iteration: `grep -rn "console.log\|print(\|TODO\|FIXME" <output_files>` after loop completion returns 0 matches
+- [ ] Git checkpoint per iteration: `git log --oneline` shows at least 1 commit per loop iteration completed — `git log --oneline | wc -l` >= iteration count
+
+## Success Criteria
+
+This skill is complete when: 1) the loop architecture chosen matches the complexity tier (Sequential for simple, Continuous PR for iterative, DAG for parallel multi-module), 2) the loop has a max iteration limit, an explicit completion signal, and a CI gate configured before execution starts, and 3) stagnation detection or escalation logic is in place so the loop cannot run indefinitely without human intervention.
+
+## Failure Modes
+
+| Situation                          | Response                                                           |
+| ---------------------------------- | ------------------------------------------------------------------ |
+| Output exceeds expectations        | Redirect to sandbox or context-optimizer. Log and truncate.        |
+| Skill conflicts with another skill | Define clear boundaries. Each skill owns one domain.               |
+| Agent ignores skill                | Rewrite description to contain ONLY triggers, no workflow summary. |
+| Loop runs forever                  | Add max iterations. Escalate to human after N cycles.              |
+| Loop produces same output          | Detect stagnation. Change approach or escalate.                    |
+| Loop corrupts files                | Use git checkpoint before each iteration. Rollback on regression.  |
+| Generated output too verbose       | Apply conciseness check. Every line must earn its place.           |
 
 ## Tips
 

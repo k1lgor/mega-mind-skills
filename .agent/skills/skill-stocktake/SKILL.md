@@ -25,6 +25,13 @@ You are a skill librarian and quality auditor. Your job is to ensure the skill s
 - When a major technology version change happens
 - Before onboarding a new project (trim to relevant skills)
 
+## When NOT to Use
+
+- During active feature development — the distraction cost outweighs the benefit mid-sprint
+- When auditing a single skill in isolation — the value is in cross-library comparison, not single-skill review
+- When the library has fewer than 5 skills — overhead exceeds return at that scale
+- As a substitute for fixing a bad skill immediately — if you notice a problem, fix it now rather than scheduling a stocktake
+
 ## Modes
 
 | Mode               | When                      | Time      |
@@ -199,3 +206,35 @@ The `reason` field must be **self-contained and decision-enabling**:
 - **Don't Retire for age alone** — a 2-year-old skill with no decay is still good
 - **Web search suspicious package names** — libraries get renamed/deprecated
 - **Check trigger conflicts** — two skills with identical triggers cause routing confusion
+
+## Anti-Patterns
+
+- Never score a skill without reading it fully because skimming a skill and scoring it on the description alone produces inflated Keep verdicts that prevent the library from being cleaned up.
+- Never remove a skill without checking if it is referenced elsewhere because deleting a skill that is referenced in a workflow chain or routing matrix leaves broken references that cause silent routing failures.
+- Never defer upgrading a thin skill because a thin skill that does not change behaviour costs tokens in every session that loads it; the cumulative cost of inaction exceeds the cost of a one-time upgrade.
+- Never add a new skill without checking for duplicates because a duplicate skill creates routing ambiguity, splits related instructions across two files, and produces inconsistent agent behaviour depending on which skill fires.
+- Never evaluate all skills against a single rubric dimension because a skill that scores low on actionability but high on uniqueness and currency may still be worth keeping; single-dimension scoring discards valid skills.
+- Never update a skill's score without editing the skill to justify it because a score that is not backed by observable content changes is an assertion without evidence, and future audits will contradict it.
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Stocktake counts skills but misses skills in subdirectories | Script only scans the top-level `.agent/skills/` directory without recursion | Use `find .agent/skills -name SKILL.md` (or equivalent recursive glob) to count all files including subdirectory skills |
+| Scoring rubric applied inconsistently across runs, scores not comparable | Reviewer applies different standards on different days; rubric criteria are vague | Anchor each rubric dimension with a concrete pass/fail example; re-score 3 randomly selected skills from the previous run to calibrate consistency |
+| Weak skills identified but no remediation plan created | Stocktake produces verdicts but Phase 4 Action List is skipped under time pressure | For every non-Keep verdict, a concrete action item must be created before the stocktake is considered complete |
+| Stocktake run on stale file cache, missing recently added skills | IDE or agent has a cached file listing; new SKILL.md files added after cache was built are invisible | Force a fresh directory listing with `git status` or `ls -R` before Phase 1 Inventory; count files before and after to detect mismatches |
+| Score inflation from lenient rubric, masking actual weaknesses | Reviewer marks every skill "Keep" to avoid the work of improving them | Apply the Keep standard strictly: a skill scores Keep only if trigger phrases are unambiguous, examples are runnable, and content is current |
+
+## Self-Verification Checklist
+
+- [ ] Script counts all SKILL.md files including subdirectories — total count matches `find .agent/skills -name SKILL.md | wc -l`
+- [ ] Scores are reproducible — re-scoring 3 randomly selected skills from this run produces the same verdict (within 1 rubric point)
+- [ ] Remediation plan created for all skills scoring below 3.0 — Action List contains at least one concrete item per weak skill
+- [ ] Every skill in the library has a verdict assigned — no skill skipped
+- [ ] Each verdict's `reason` field is self-contained — readable without context from this session
+- [ ] Trigger conflicts across all Keep skills have been checked and resolved
+
+## Success Criteria
+
+This skill is complete when: 1) Every skill in the library has a Keep/Improve/Update/Retire/Merge verdict with a self-contained reason. 2) All non-Keep verdicts have specific, actionable next steps in the Action List. 3) The summary table is complete and can serve as a standalone library health record.

@@ -22,6 +22,13 @@ You are a legacy code specialist focused on understanding, documenting, and safe
 - Planning safe refactoring
 - Modernizing old codebases
 
+## When NOT to Use
+
+- Modern, well-documented codebases with good test coverage — standard `code-polisher` or `backend-architect` patterns apply directly
+- When the goal is to add a new feature without understanding the existing system — at minimum read entry points before using this skill
+- Green-field projects with no pre-existing complexity to excavate
+- When the primary concern is performance rather than understanding — use `performance-profiler` instead
+
 ## Code Archaeology Process
 
 ### Step 1: Discovery
@@ -280,8 +287,44 @@ class OvernightShipping implements ShippingCalculator {
 
 ## Tips
 
-- Never refactor without tests
+- Never refactor without tests, because legacy code often has undocumented behavioral contracts and without a test harness any structural change can silently break production behavior that has been relied upon for years
 - Understand before changing
 - Make incremental changes
 - Keep a refactoring journal
 - Communicate changes to team
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Refactor changes observable behaviour because of undocumented side effects | Original code had hidden side effects (global state mutation, I/O) not visible from its signature | Write characterisation tests that capture all observable outputs including side effects before touching any code |
+| Test written for legacy code tests the bug, not the intended behaviour | Agent tests what the code does, not what it should do; bug is baked into the test | Consult original spec or product owner to determine intended behaviour; write tests against intent, not implementation |
+| Dead code deleted but called via reflection or dynamic dispatch | Static analysis reports no references; runtime uses `require(variable)` or plugin registry | Search for dynamic dispatch patterns (eval, require with variable, plugin registration) before deleting any "unreferenced" code |
+| Modernisation introduces a dependency that conflicts with an existing pinned version | New library added without checking existing lockfile constraints | Check `npm ls` / `pip check` / `go mod graph` after adding any dependency; resolve conflicts before proceeding |
+| Partial refactor leaves codebase in worse state than original | Refactor scope expanded mid-task; incomplete transformation mixed with original pattern | Refactor in atomic commits; each commit must leave the codebase in a consistent state; never leave a half-migrated pattern |
+
+## Anti-Patterns
+
+- Never delete code marked as dead by static analysis without checking for dynamic dispatch because `require(variable)`, plugin registries, and reflection patterns are invisible to static analysers.
+- Never refactor and change behaviour in the same commit because reviewers cannot distinguish intentional behaviour changes from accidental regressions when both are present in the same diff.
+- Never write characterisation tests without consulting the original spec because tests that codify bugs become regression tests that prevent the bugs from ever being fixed.
+- Never expand refactor scope mid-task because scope creep leaves the codebase in a half-migrated state that is harder to reason about than the original.
+- Never add a new dependency to legacy code without auditing the existing dependency graph because version conflicts in legacy projects are frequently unresolvable without a major upgrade.
+- Never assume legacy code has no callers outside the repository because internal tools, scripts, and external integrations often depend on undocumented interfaces.
+
+## Self-Verification Checklist
+
+- [ ] Code Archaeology Report file exists and is non-empty: `test -s <report_file> && echo EXISTS` exits 0; `grep -c "entry point\|critical path\|framework\|estimated age" <report_file>` returns >= 4 matches
+- [ ] All external dependencies catalogued with status: `wc -l <dependency_catalogue>` >= number of `import`/`require` statements found by `grep -rn "^import \|^require(" src/ | wc -l`; each entry is labelled current, outdated, or EOL
+- [ ] Characterization tests exist for every critical path: `grep -rn "characterization\|golden master\|snapshot" tests/ | wc -l` >= number of critical paths documented in the report
+- [ ] Refactoring pattern chosen and documented before code change: `grep -n "Strangler Fig\|Extract Method\|pattern chosen" <report_file>` returns at least 1 match; `git log --oneline --before=<first_code_change_date>` shows the report commit predates any production file changes
+- [ ] Every refactoring step verified by test run: `git log --oneline` shows alternating implement/test commits — `git log --oneline | grep -c "test\|verify"` >= number of refactoring steps
+- [ ] Hidden dependencies documented: `grep -c "global\|singleton\|ENV\|environment variable\|implicit order" <report_file>` returns >= 1 match; undocumented globals found by `grep -rn "global " src/ | wc -l` equals 0 or all are listed in the report
+- [ ] No regressions after refactoring: test runner exits 0 after final step — `npm test (or pytest)` returns exit code 0 with 0 newly failing tests compared to pre-refactoring baseline
+
+## Success Criteria
+
+This task is complete when:
+1. A System Map document exists covering data flow, dependency tree, and critical paths
+2. Characterization tests cover the critical paths with enough confidence to detect regressions
+3. A refactoring plan with incremental steps is documented, prioritized by risk level

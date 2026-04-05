@@ -248,6 +248,40 @@ ORCHESTRATOR:
 
 ---
 
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Retrieval loop terminates early on partial match | Stop condition triggers on surface-level similarity before the needed information is fully retrieved | Tighten stop condition: require semantic completeness check, not just presence of related chunks |
+| Context window fills with retrieved chunks, leaving no room for generation | Retrieval budget not capped; agent keeps retrieving until context is full | Set a hard retrieval budget (e.g. 30% of context window); prioritise highest-relevance chunks and discard the rest |
+| Same chunk retrieved multiple times | Deduplication not implemented; relevance score is recalculated identically on each iteration | Track retrieved chunk IDs; exclude already-retrieved chunks from subsequent retrieval rounds |
+| Retrieval quality degrades silently after embedding model update | Embeddings re-indexed with new model but cache not invalidated; old embeddings compared against new query embeddings | Version the embedding model in the index metadata; invalidate and re-index when model changes |
+| Semantically similar but factually incorrect chunks returned with high confidence | Embedding similarity does not capture factual correctness; hallucinated or outdated chunks score highly | Add a re-ranking step with a cross-encoder; spot-check high-confidence retrievals against ground truth |
+
+---
+
+## Anti-Patterns
+
+- Never use the same stop condition for all retrieval tasks because a condition tuned for short factual lookups will terminate prematurely on multi-step reasoning tasks that require deeper context.
+- Never allow unbounded retrieval because filling the context window with chunks leaves no room for generation and the model produces truncated or incoherent output.
+- Never skip deduplication because retrieving the same chunk multiple times wastes context budget and biases the generation toward over-represented content.
+- Never invalidate the retrieval cache without re-indexing because stale embeddings compared against fresh query embeddings produce ranking inversions and surface irrelevant results.
+- Never trust retrieval confidence scores as a proxy for factual correctness because embedding similarity measures semantic proximity, not accuracy.
+- Never retrieve without logging the query and returned chunks because without a retrieval log you cannot diagnose why the agent produced an incorrect answer.
+
+## Self-Verification Checklist
+
+- [ ] Maximum 3 retrieval cycles enforced: cycle count = 0 overruns (never exceeds 3 even if results are ambiguous)
+- [ ] Early exit triggered when >= 3 high-relevance files found with no context gaps remaining
+- [ ] Terminology from cycle 1 reused: `grep -c "<project-term>" queries_cycle2.log` returns > 0 where applicable
+- [ ] Context summary explicitly names retrieved files: `grep -c "Retrieved:\|Selected:" subagent_prompt.md` returns > 0
+- [ ] Subagent prompt does NOT include full codebase: total file count in prompt = 0 full-repo dumps
+- [ ] Broad-then-narrow strategy applied: `grep -c "cycle_1\|initial_query" retrieval.log` returns >= 1
+
+## Success Criteria
+
+This skill is complete when: 1) the highest-relevance files for the task are identified in at most 3 cycles, 2) the subagent prompt includes an explicit context summary of what was retrieved and why, and 3) the subagent receives only the focused, relevant context — not a dump of the full codebase.
+
 ## Best Practices
 
 - **3 is the magic max** — never run more than 3 cycles; the diminishing returns aren't worth the extra latency

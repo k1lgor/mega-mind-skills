@@ -27,6 +27,13 @@ You are an LLM cost optimization specialist. Your job is to ensure AI pipelines 
 - Setting up prompt caching for repeated system prompts
 - When a pipeline is spending more than expected
 
+## When NOT to Use
+
+- Single-call scripts where total cost is < $0.01 — overhead of routing logic exceeds savings
+- When all tasks are uniformly complex (e.g., all require Opus) — routing adds complexity with no benefit
+- For prototyping — add cost controls after the pipeline logic is proven correct, not before
+- When the team has no visibility into API spend (cost controls without observability are theater)
+
 ---
 
 ## Core Concept: The 4 Levers
@@ -313,3 +320,37 @@ Before running any LLM pipeline:
 - **Cache early**: The minimum cache size is 1,024 tokens — most system prompts qualify
 - **Budget gates**: Stop the pipeline when budget is 80% consumed (leave 20% for error recovery)
 - **Log per-call**: Aggregate cost is less useful than seeing which step is expensive
+
+## Anti-Patterns
+
+- Never send the same prompt to the most expensive model without first testing if a cheaper model meets the quality bar because the cost difference between GPT-4 and GPT-3.5 is 20x, and most classification and extraction tasks are solved correctly by the cheaper model.
+- Never build a pipeline without per-call cost logging because without granular cost data you cannot identify which stage is responsible for a cost spike and the only remediation available is to reduce quality across the entire pipeline.
+- Never use unbounded context as pipeline input because sending an entire codebase or document corpus to a model call when only a subset is relevant multiplies cost by the ratio of irrelevant to relevant tokens.
+- Never retry a failed model call without exponential backoff and a cost cap because a naive retry loop during a model provider outage can exhaust your monthly budget in minutes.
+- Never hardcode model names as string literals throughout the pipeline because when you need to swap a model for cost or quality reasons, a hardcoded name requires changes in every call site instead of one configuration entry.
+- Never cache model outputs without including the full prompt hash in the cache key because a prompt change that is invisible to a partial cache key causes stale cached responses to be served for semantically different inputs.
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Expensive model used for a task that a cheap model handles correctly | No routing logic; all requests sent to the most capable model by default | Add a task complexity classifier at the pipeline entry point; route simple extraction/classification tasks to the cheapest model that passes the quality bar |
+| Token budget exhausted mid-pipeline, truncating output | Input context not estimated before sending; pipeline has no budget gate | Add a pre-flight token count check before every model call; if estimated tokens exceed budget, apply context compression or split the task |
+| Cost spike caused by prompt that triggers verbose model output | Prompt uses open-ended instructions ("explain in detail") on a high-token-price model | Use constrained output prompts ("respond in under 100 words") on expensive models; validate output length against budget before accepting |
+| Model downgrade silently degrades output quality below acceptable threshold | Cheaper model selected for cost reasons but quality not re-validated after switch | Define a minimum quality bar for each task type; run quality eval after every model routing change before promoting to production |
+| Retry storm multiplies cost by 3–10x during a model API outage | Exponential backoff not implemented; naive retry on every 5xx response | Implement exponential backoff with jitter; cap total retries at 3; log cost-per-retry; fail fast after budget threshold exceeded |
+| Cost attribution lost across pipeline stages | No cost tracking per stage; total bill visible but individual stage cost invisible | Instrument every model call with a cost tag (stage name, model, input/output tokens); aggregate by stage for per-stage cost visibility |
+
+## Self-Verification Checklist
+
+- [ ] A per-task budget limit is defined before pipeline execution begins: `grep -c "budget\|max_cost\|cost_limit" pipeline_config.*` returns > 0
+- [ ] The cheapest viable model is selected for each task type (Haiku for extraction/formatting, Sonnet for standard reasoning, Opus only for architectural tasks)
+- [ ] Prompt caching applied to repeated system prompts >= 1,024 tokens: `grep -c "cache_control\|ephemeral" pipeline.*` returns > 0 where applicable
+- [ ] Retry logic is narrowed to transient errors only: `grep -c "429\|503\|RetryError" pipeline.*` returns > 0 and `grep -c "400\|401\|4[0-9][02-9]" retry_handler.*` returns = 0
+- [ ] Cost is logged immutably per API call: `grep -c "input_tokens\|output_tokens\|cost" logs/` returns > 0
+- [ ] A budget gate stops pipeline at 80% consumption: `grep -c "0\.8\|80%" pipeline.*` returns > 0
+- [ ] Cost-per-step is visible: pipeline output includes a cost summary table with >= 1 row per stage
+
+## Success Criteria
+
+This skill is complete when: 1) every step in the pipeline has an explicit model assignment based on task complexity, 2) per-call costs are logged immutably and a budget ceiling is enforced, and 3) retry logic only fires on transient errors and stops before budget is exhausted.

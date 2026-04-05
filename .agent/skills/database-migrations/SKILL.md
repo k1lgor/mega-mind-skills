@@ -29,6 +29,13 @@ You are a database migration specialist. You ensure schema changes are safe, rev
 - Planning zero-downtime schema changes
 - Setting up migration tooling for a new project
 
+## When NOT to Use
+
+- Seed data inserts or test fixture changes — these are not schema migrations
+- Changes that only affect application logic with no schema impact (no new tables, columns, or indexes)
+- Ad-hoc data fixes on a single row — use a targeted SQL script with a backup, not a migration
+- When the schema is still being prototyped and changes daily (wait until the schema stabilizes before committing to migrations)
+
 ---
 
 ## Core Principles
@@ -329,17 +336,43 @@ Phase 3: CONTRACT
 
 ## Anti-Patterns
 
-| Anti-Pattern                         | Why It Fails                             | Better Approach                             |
-| ------------------------------------ | ---------------------------------------- | ------------------------------------------- |
-| Manual SQL in production             | No audit trail, unrepeatable             | Always use migration files                  |
-| Editing a deployed migration         | Causes drift between environments        | Create a new forward migration instead      |
-| NOT NULL without default             | Locks table, rewrites every existing row | Add nullable, backfill, then add constraint |
-| `CREATE INDEX` (not CONCURRENTLY)    | Blocks writes during index build         | Use `CREATE INDEX CONCURRENTLY`             |
-| Schema + data in one migration       | Hard to rollback, long lock time         | Two separate migrations                     |
-| Dropping column before removing code | Runtime errors on deployed app           | Remove code references first, then drop     |
-| Testing on dev fixtures only         | Dev has 50 rows, production has 50M      | Always test against production-sized copy   |
+- Never add a NOT NULL column without a DEFAULT or a preceding backfill migration because the ALTER TABLE statement locks the table while it re-writes every existing row with the default value, causing write downtime proportional to table size.
+- Never run a migration that drops a column while the old application version is still deployed because the old code still references the dropped column, causing immediate SELECT/INSERT failures until all application instances are updated.
+- Never skip a rollback (DOWN) migration because without a tested rollback, a failed forward migration leaves the schema in an unknown intermediate state that requires manual intervention to recover.
+- Never test migrations only against the development database because production databases have significantly larger tables, different indexes, and potentially divergent data distributions that cause acceptable dev-environment timings to become hour-long production locks.
+- Never create a non-concurrent index inside a migration on a busy Postgres table because `CREATE INDEX` (without CONCURRENTLY) acquires a full table lock for the duration of the build, blocking all reads and writes during the migration window.
+- Never deploy application and migration changes atomically without a compatibility window because a zero-downtime deployment requires the new schema to be compatible with the old code and the new code to be compatible with the old schema simultaneously during the rollout.
 
 ---
+
+---
+
+## Self-Verification Checklist
+
+- [ ] Migration UP runs to completion with exit code 0: `psql -c "\d <table>"` (or equivalent) confirms the expected columns/indexes exist after applying
+- [ ] NOT NULL column has a server-side DEFAULT or a preceding backfill migration: `grep -rn "NOT NULL" <migration_file>` — every NOT NULL column is accompanied by DEFAULT or a prior data migration
+- [ ] Indexes created with `CONCURRENTLY`: `grep -n "CREATE INDEX" <migration_file>` returns 0 matches without `CONCURRENTLY` keyword
+- [ ] Migration tested against production-sized data: row count of test dataset is >= 80% of production row count — confirmed via `SELECT COUNT(*) FROM <table>` on both environments
+- [ ] Schema changes and data migrations are in separate files: `ls migrations/` shows DDL files and DML files with distinct timestamps — no single file contains both `ALTER TABLE` and `UPDATE`/`INSERT` statements (`grep -c "ALTER TABLE\|UPDATE\|INSERT" <file>` returns ≤ 1 statement type per file)
+- [ ] Rollback migration tested: DOWN migration runs with exit code 0 and `psql -c "\d <table>"` confirms the schema reverted to the pre-migration state
+- [ ] `lock_timeout` set: `grep -n "lock_timeout" <migration_file>` returns at least 1 match — missing lock_timeout is a blocking issue
+
+## Success Criteria
+
+This skill is complete when: 1) the migration file is tested against production-sized data and passes without table locks or timeouts, 2) schema changes and data backfills are in separate migrations, and 3) a rollback strategy is documented and tested in staging.
+
+## Failure Modes
+
+| Situation                          | Response                                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------- |
+| Output exceeds expectations        | Redirect to sandbox or context-optimizer. Log and truncate.                     |
+| Skill conflicts with another skill | Define clear boundaries. Each skill owns one domain.                            |
+| Agent ignores skill                | Rewrite description to contain ONLY triggers, no workflow summary.              |
+| Generated output too verbose       | Apply conciseness check. Every line must earn its place.                        |
+| Migration fails mid-way            | Have rollback migration ready. Use transactions where possible.                 |
+| Schema change breaks running app   | Use expand-contract pattern. Add new column, migrate data, remove old.          |
+| Large table migration times out    | Use batched migrations. Add progress logging. Consider pt-online-schema-change. |
+| Data loss during migration         | Always backup before migration. Test on staging with production-size data.      |
 
 ## Tips
 

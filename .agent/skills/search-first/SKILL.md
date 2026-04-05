@@ -26,6 +26,13 @@ You are a research-first engineering specialist. Your core belief: **the best co
 - When the user asks "add X" and you're about to write code
 - Before picking a pattern from memory — verify it's still current
 
+## When NOT to Use
+
+- When building something genuinely novel with no prior art (new algorithm, domain-specific proprietary logic)
+- When a library choice has already been made, approved, and is already a project dependency — don't re-search what's already decided
+- For tiny helper functions that are 3-5 lines — the cost of installing and maintaining a dependency exceeds writing it inline
+- When the task is to remove or replace an existing library — research is already done; the decision is made
+
 ## The Workflow
 
 ```
@@ -155,12 +162,12 @@ Before proceeding to implementation, output a research summary:
 
 ## Anti-Patterns to Avoid
 
-- ❌ **Writing from scratch** without checking registry first
-- ❌ **Ignoring MCP** — always check if an MCP server provides the capability
-- ❌ **Over-customizing** — wrapping a library so heavily it loses its benefits
-- ❌ **Dependency bloat** — installing a 500KB package for a 10-line utility
-- ❌ **Stale knowledge** — using a library you "remember" without checking if it's still maintained
-- ❌ **First result bias** — installing the first npm result without comparing alternatives
+- ❌ **Writing from scratch** without checking registry first, because you duplicate existing battle-tested logic and inherit all the bugs the library already solved, while adding maintenance burden with no differentiating value
+- ❌ **Ignoring MCP** — always check if an MCP server provides the capability, because reinventing an MCP-provided tool means writing authentication, error handling, and pagination that the server already implements correctly
+- ❌ **Over-customizing** — wrapping a library so heavily it loses its benefits, because deep wrapper layers make upgrades impossible without rewriting the wrapper, locking you to an old version when security patches ship
+- ❌ **Dependency bloat** — installing a 500KB package for a 10-line utility, because every added dependency increases bundle size, attack surface, and the probability of a supply-chain compromise affecting your production build
+- ❌ **Stale knowledge** — using a library you "remember" without checking if it's still maintained, because unmaintained packages accumulate unpatched CVEs that scanners will flag and block your CI pipeline
+- ❌ **First result bias** — installing the first npm result without comparing alternatives, because the top search result is often an older package with fewer features and more open security advisories than a newer maintained alternative
 
 ## Integration Points
 
@@ -213,6 +220,16 @@ npm: vitest, jest, playwright, @testing-library
 Python: pytest, hypothesis, locust
 ```
 
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Library found but last commit is 3+ years ago, effectively unmaintained | Search ranked by stars not by recency; maintainer abandoned the project | Filter candidates to only those with a commit in the last 12 months; look for active forks or successors |
+| Multiple options with similar star counts, no clear winner, analysis paralysis | Candidates evaluated on stars alone without applying the scoring rubric | Apply the full rubric (functionality 40%, maintenance 20%, community 15%, docs 15%, license 5%, bundle 5%); pick highest total score |
+| Library has known CVE not yet patched, security team blocks it | Security scan skipped; CVE only visible after `npm audit` or Snyk check | Run `npm audit` / `pip-audit` immediately after install; if CVE found, evaluate a patched fork or alternative |
+| License is AGPL, incompatible with proprietary product | License column skipped during evaluation; AGPL copyleft not flagged | Check the LICENSE file before any integration; AGPL requires the consuming product to also be open-source — choose MIT/Apache alternative |
+| Search returns outdated Stack Overflow answer referencing deprecated API | Web search found a high-voted answer from 5+ years ago; library has since changed | Filter web search to last 12 months; cross-reference the Stack Overflow answer with the library's current official docs |
+
 ## Tips
 
 - **Time-box your search**: 5-10 minutes max before deciding
@@ -220,3 +237,17 @@ Python: pytest, hypothesis, locust
 - **Last commit date matters**: No commits in 2+ years = maintenance risk
 - **Bundle size check**: Use bundlephobia.com for frontend packages
 - **Security scan**: `rtk bun pm untrusted (or rtk npm audit)` after install, check Snyk for known CVEs
+
+## Self-Verification Checklist
+
+- [ ] Chosen library has a commit in the last 12 months — verified on GitHub repository's commit history
+- [ ] No open CVEs: `npm audit --audit-level=high` or `pip-audit` exits 0, or all issues documented with justification
+- [ ] License is compatible: `grep -c "MIT\|Apache-2.0\|BSD\|ISC" package.json` returns > 0 for the chosen library
+- [ ] npm/PyPI/GitHub searched before writing implementation: `grep -c "search-first\|npm search\|pypi" task.md` returns > 0
+- [ ] Top 3 candidates evaluated against scoring rubric (weekly downloads, last commit, license, bundle size)
+- [ ] Decision documented in a "Search-First Research" block: `grep -c "Search-First Research\|search-first" docs/` returns > 0
+- [ ] MCP server alternatives checked: `grep -c "MCP\|mcp server" task.md` returns >= 1
+
+## Success Criteria
+
+This skill is complete when: 1) the search has confirmed whether a suitable library exists, 2) the top candidates are scored against the rubric and the choice is documented, and 3) the decision (use library X, or build custom because Y) is recorded before any implementation begins.

@@ -22,6 +22,13 @@ You are a testing specialist focused on writing comprehensive, maintainable test
 - Writing integration tests
 - Test-driven development
 
+## When NOT to Use
+
+- You are practicing TDD and need to write tests BEFORE implementation — use `test-driven-development` skill instead (this skill assumes code already exists)
+- You are writing E2E browser tests — use `e2e-test-specialist` instead
+- The code being tested is not yet finalized and likely to change significantly (tests written now will be thrown away)
+- You are auditing test quality on a large codebase without a specific coverage gap — use `skill-stocktake` for that
+
 ## Testing Philosophy
 
 ```
@@ -245,3 +252,38 @@ src/
 - Test behavior, not code
 - Keep tests simple and readable
 - Use test data builders for complex objects
+
+## Anti-Patterns
+
+- Never write a test that doesn't assert anything because a test with no assertion always passes regardless of whether the feature works, creating false confidence in the test suite.
+- Never mock the system under test because mocking the code being tested means the test exercises the mock, not the implementation; the test will pass even when the real code is completely broken.
+- Never delete a failing test to fix CI because deleting a test removes the only evidence that a bug exists; the underlying problem remains and will manifest in production.
+- Never write tests after implementation as a formality because tests written after the fact are biased toward confirming what the code does, not specifying what it should do; they miss the failure cases the implementation never considered.
+- Never couple a test to implementation details because a test that asserts on internal variable names, private methods, or call counts breaks on safe refactors and forces the developer to update tests whenever the internals change.
+- Never write a test that passes when the feature is not implemented because a test that passes on an empty implementation is not testing anything; the RED phase must be confirmed before any implementation is written.
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Test suite passes at 100% coverage but misses integration failure between units | Unit tests mock all collaborators; no test exercises the real wiring between components | Add integration tests for critical component boundaries without mocks; verify the real dependency contract is exercised |
+| Mocked dependency diverges from real implementation, hiding contract breakage | Mock was written once and never updated when the real API changed; tests pass but production breaks | Add contract tests (e.g., Pact) or in-process integration tests that call the real dependency; run them in CI |
+| Flaky test marked `skip` instead of fixed, masking real intermittent failure | Developer adds `.skip` or `xit` to stop CI failing; underlying non-determinism never resolved | Require every skipped test to have an issue tracker reference in the skip comment; ban `skip` without a linked ticket in CI |
+| Test data factory produces invalid state that real users can't reach | Factory shortcuts validation; creates objects that bypass domain invariants | Review test factory output against the domain model; ensure factories go through the same validation path as production code |
+| Snapshot test updated blindly without reviewing diff, approving regression | Developer runs `jest --updateSnapshot` to clear failing snapshots without reading the diff | Require snapshot diffs to be reviewed before committing; treat snapshot updates as code changes, not CI noise |
+
+## Self-Verification Checklist
+
+- [ ] Coverage ≥80% — `jest --coverage` (or `vitest --coverage`) exits 0 and reports line coverage ≥80% for changed modules
+- [ ] No tests marked `skip` without an issue tracker reference — `grep -r "\.skip\|xit\|xdescribe" tests/` shows 0 results without a linked issue comment
+- [ ] All mocked dependencies have contract tests — each mock has a corresponding integration or contract test verifying the mock matches reality
+- [ ] All edge cases are covered: empty inputs, null/undefined, boundary values, and error paths each have a dedicated test
+- [ ] Tests are isolated: no test depends on another test's state or shared mutable variables
+- [ ] Async tests properly await results and assert on resolved/rejected values, not promises
+
+## Success Criteria
+
+This task is complete when:
+1. All new or changed functions have at least one passing test covering the happy path and one covering the primary error path
+2. `jest --coverage` (or project-equivalent) reports no decrease in line/branch coverage from the baseline
+3. The full test suite runs to completion with zero failures

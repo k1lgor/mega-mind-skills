@@ -167,8 +167,36 @@ def process_with_cache(
 
 ---
 
+## Self-Verification Checklist
+
+- [ ] SHA-256 is used: `grep -rn "sha256\|createHash.*sha256\|hashlib.sha256" <cache_implementation>` returns at least 1 match — MD5 or SHA-1 usage returns 0 matches in the same files
+- [ ] Atomic write via temp file + rename: `grep -rn "tmp\|tempfile\|rename\|os.replace\|mv " <cache_write_code>` returns at least 1 match per cache write path — direct writes to the final path return 0 matches
+- [ ] Cache miss falls back gracefully: `grep -rn "cache_miss\|fallback\|except\|catch" <cache_implementation>` returns at least 1 match; running the pipeline with an empty cache exits 0
+- [ ] Corrupted cache entries handled as miss: `grep -rn "json.JSONDecodeError\|SyntaxError\|corrupt\|invalid.*cache\|except.*parse" <cache_implementation>` returns at least 1 match — unhandled parse errors fail this check
+- [ ] Source file path stored in cache entry: `grep -rn "\"source\"\|\"file_path\"\|\"path\"" <cache_entry_schema>` returns at least 1 match; sample cache entries contain a non-empty path value
+- [ ] `.cache/` in `.gitignore`: `grep -c "\.cache" .gitignore` returns >= 1 — missing entry means cache files can be accidentally committed
+- [ ] `--force` bypass implemented: `grep -rn "\-\-force\|force_rebuild\|skip_cache\|bypass" <pipeline_entrypoint>` returns at least 1 match — no bypass mechanism fails this check
+
+## Success Criteria
+
+This skill is complete when: 1) every file processing call checks the SHA-256 content hash before running expensive work, 2) cache hits skip processing and return stored results without re-reading source files, and 3) cache misses and corrupted entries fall back silently to full processing without crashing the pipeline.
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Cache hit returned for file whose content changed but mtime did not update | File on network share or copied with preserved mtime; only mtime checked, not content hash | Always hash file content (SHA-256); never rely on mtime alone as a cache key |
+| Hash collision causes wrong cached result served | Two different inputs produce identical hash (extremely rare but non-zero with weak hashes) | Use SHA-256 or stronger; add content-length to cache key as secondary discriminator |
+| Cache directory grows unbounded, consuming disk | No eviction policy; every unique input accumulates a cache entry | Implement LRU eviction or TTL expiry; add cache size monitoring alert |
+| Cache written without atomic rename, leaving corrupt partial file | Process killed mid-write; partial file accepted as valid on next read | Write to a `.tmp` file, then `fs.rename` atomically; on read, validate file is complete (checksum header) |
+| Cached result from different config served to incompatible consumer | Config hash not included in cache key; cache shared across environments | Include all config-affecting variables in the cache key; scope cache directories per environment |
+
 ## Anti-Patterns
 
-- **Using timestamps only:** `mtime` changes on renames or permission edits without content changes.
-- **Using paths as keys:** Moving a file shouldn't invalidate its expensive previous analysis.
-- **Storing cache in Git:** Unless results are very small and critical for build stability, keep `.cache/` in `.gitignore`.
+- Never use `mtime` as the sole cache key because file renames, permission changes, and network-share copies update the modification timestamp without altering content, causing unnecessary reprocessing and invalidating valid cache entries that cost real compute time to regenerate.
+- Never use file paths as cache keys because renaming or moving a file causes the cache to treat identical content as entirely new work, re-running every downstream step and negating all previously stored computation.
+- Never store the cache directory in Git because committing large binary or derived cache blobs bloats repository history permanently, slows every future `git clone`, and conflates reproducible build outputs with version-controlled source artifacts.
+- Never write cache entries directly to the final destination file without an atomic rename because a process kill or crash mid-write leaves a partial file on disk that will be loaded as valid on the next run, returning corrupt data silently.
+- Never use MD5 or SHA-1 as the hash algorithm because MD5 has known collision vulnerabilities and SHA-1 has practical collision attacks, meaning two different inputs can produce the same key and serve the wrong cached result.
+- Never omit the source file path from the cache entry because debugging a wrong cache hit becomes impossible without knowing which source file produced the stored result, turning data provenance into guesswork.
+- Never skip implementing a `--force` bypass flag because without an explicit cache-busting mechanism, developers cannot recover from a poisoned cache without manually deleting cache files, making operational recovery unnecessarily fragile.

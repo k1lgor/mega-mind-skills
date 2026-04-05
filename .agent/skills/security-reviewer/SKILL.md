@@ -22,6 +22,13 @@ You are a security specialist focused on identifying vulnerabilities and ensurin
 - Checking for vulnerabilities
 - Hardening applications
 
+## When NOT to Use
+
+- Every small code change that doesn't touch auth, input handling, secrets, or external APIs — security review is not needed for cosmetic refactors or documentation updates
+- Before implementation is complete — review security after the logic is stable, not during rapid iteration
+- As a replacement for automated dependency scanning — `npm audit` / `bun pm untrusted` runs in CI; this skill covers code-level review not covered by scanners
+- When the only concern is performance or code style — use `performance-profiler` or `code-polisher` respectively
+
 ## Security Checklist
 
 ### Authentication & Authorization
@@ -249,3 +256,40 @@ app.use((req, res, next) => {
 - Keep dependencies updated
 - Log security events
 - Regular security audits
+
+## Anti-Patterns
+
+- Never skip reviewing dependency versions because a transitive dependency with a known CVE can be exploited without any change to first-party code.
+- Never treat HTTPS as sufficient input sanitisation because transport encryption does not prevent injection attacks on the server.
+- Never hardcode role checks by user ID because individual-user exceptions bypass the permission model and cannot be audited.
+- Never store secrets in environment variables without a secrets manager because environment variables are readable by all processes in the container and leak in crash dumps.
+- Never approve auth code without checking token expiry handling because unexpiring tokens become permanent credentials after account compromise.
+- Never skip rate limiting on unauthenticated endpoints because brute-force attacks enumerate valid usernames within minutes on any publicly reachable service.
+
+## Failure Modes
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| SQL injection vulnerability missed during review | Reviewer checked for string concatenation but missed ORM raw-query escape hatches and stored procedure inputs | Expand review scope to include all query construction paths: ORM raw(), stored procs, and dynamic table/column names |
+| Auth bypass introduced by middleware ordering error | New route registered before the auth middleware in the chain; reviewer checked the handler but not the registration order | Always verify middleware registration order in the entry-point file, not just the handler logic |
+| Hardcoded secret merged to main | Secret present in test fixture or config file; reviewer did not run secret-scanning tool | Run `git log -p` through a secret scanner (truffleHog, gitleaks) as a mandatory pre-review step |
+| IDOR (insecure direct object reference) missed | Reviewer checked authentication but not authorisation; endpoint returns other users' data when ID is guessed | For every endpoint that accepts a user-controlled ID, verify the query explicitly filters by the authenticated user's ID |
+| Dependency with known CVE approved | Reviewer audited first-party code only; transitive dependency vulnerability not visible in the diff | Run `npm audit` / `pip-audit` / `cargo audit` as part of every security review; block on HIGH or CRITICAL findings |
+| Rate limiting gap on newly added endpoint | Rate limiting applied globally but new endpoint registered on a different router that bypasses global middleware | Verify every new endpoint is covered by rate limiting; add an integration test that sends 100 requests and expects 429 |
+
+## Self-Verification Checklist
+
+- [ ] All OWASP Top 10 categories checked: `grep -c "OWASP\|A0[1-9]\|A10" security_review.md` returns >= 10
+- [ ] `npm audit --audit-level=high` (or `bun pm untrusted`) exits 0 — 0 high/critical dependency findings
+- [ ] No hardcoded secrets: `grep -rn "sk-\|Bearer \|password\s*=\|secret\s*=" src/` returns = 0 matches
+- [ ] All user-controlled input validated: `grep -c "sanitize\|validate\|escape\|parameterized" src/` returns > 0
+- [ ] Auth tokens use secure generation with expiration: `grep -c "expiresIn\|exp\|ttl\|crypto\.random" src/auth/` returns > 0
+- [ ] Error responses do not leak internals: `grep -rn "stack\|stackTrace\|schema\|column_name" src/errors/` returns = 0 matches
+- [ ] HTTP security headers present: `grep -c "helmet\|CSP\|HSTS\|X-Frame-Options" src/` returns > 0
+
+## Success Criteria
+
+This task is complete when:
+1. A Security Audit Report exists with findings categorized by severity (Critical/High/Medium/Low)
+2. All Critical and High findings have either been fixed or have an accepted-risk decision recorded
+3. OWASP Top 10 checklist is completed with evidence for each item
