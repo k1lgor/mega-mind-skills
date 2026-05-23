@@ -290,124 +290,62 @@ User: /mega-mind I need to add user authentication with OAuth
 mega-mind-skills/
 ├── README.md                    # Main documentation (this file)
 ├── USAGE.md                     # Installation guide
-├── COMPLETE_REFERENCE.md        # Detailed reference
-├── quick-install.sh             # Simple copy installer (legacy)
+├── CHANGELOG.md                 # Release history
+├── pyproject.toml               # Python package config
+│
+├── scripts/
+│   ├── validate-skill-system.py # Skill system validator
+│   ├── sync-assets.py           # Syncs .agent/ → src/mega_mind/assets/
+│   ├── backup-task-state.sh     # Timestamped task.md backups
+│   └── fix-*.py                 # Portability & normalization fixers
+│
+├── src/mega_mind/
+│   ├── cli.py                   # CLI entry point (mmo init)
+│   ├── installer.py             # Multi-platform installer
+│   └── assets/                  # Distribution copies of .agent/
 │
 └── .agent/
     ├── AGENTS.md                # Master contract and rules
     ├── hooks/
     │   └── hooks.json           # context-mode hooks registry
     ├── instincts/               # Learned patterns & observations
-    ├── skills/
-    │   ├── mega-mind/           # 🧠 Master orchestrator
-    │   │
-    │   ├── # Core Workflow Skills
-    │   ├── brainstorming/
-    │   ├── writing-plans/
-    │   ├── executing-plans/
-    │   ├── test-driven-development/
-    │   ├── debugging/
-    │   ├── requesting-code-review/
-    │   ├── receiving-code-review/
-    │   ├── verification-loop/
-    │   ├── finishing-a-development-branch/
-    │   ├── using-git-worktrees/
-    │   │
-    │   ├── # Domain Expert Skills
-    │   ├── tech-lead/
-    │   ├── frontend-architect/
-    │   ├── backend-architect/
-    │   ├── infra-architect/
-    │   ├── code-polisher/
-    │   ├── migration-upgrader/
-    │   ├── mobile-architect/
-    │   ├── legacy-archaeologist/
-    │   ├── python-patterns/
-    │   ├── test-genius/
-    │   ├── e2e-test-specialist/
-    │   ├── debugging/
-    │   ├── eval-harness/
-    │   ├── ci-config-helper/
-    │   ├── docker-expert/
-    │   ├── k8s-orchestrator/
-    │   ├── observability-specialist/
-    │   ├── data-engineer/
-    │   ├── data-analyst/
-    │   ├── ml-engineer/
-    │   ├── search-vector-architect/
-    │   ├── database-migrations/
-    │   ├── regex-vs-llm-structured-text/
-    │   ├── security-reviewer/
-    │   ├── performance-profiler/
-    │   ├── doc-writer/
-    │   ├── ux-designer/
-    │   ├── product-manager/
-    │   ├── workflow-orchestrator/
-    │   └── skill-generator/
-    │   │
-    │   ├── # Meta & Learning Skills
-    │   ├── continuous-learning-v2/
-    │   ├── search-first/
-    │   ├── autonomous-loops/
-    │   ├── skill-stocktake/
-    │   ├── cost-aware-llm-pipeline/
-    │   ├── verification-loop/
-    │   ├── iterative-retrieval/
-    │   ├── content-hash-cache-pattern/
-    │   ├── multi-plan/
-    │   ├── multi-execute/
-    │   └── plankton-code-quality/
-    │   │
-    │   └── # Token Optimization & Context
-    │       ├── rtk/
-    │       └── context-optimizer/
+    ├── skills/                  # 53 SKILL.md files (one per skill)
+    ├── shared/                  # DE-SLOPPIFY.md, RTK_GUIDE.md, VERIFICATION-GATE.md
     │
-    ├── shared/
-    │   ├── DE-SLOPPIFY.md
-    │   ├── RTK_GUIDE.md
-    │   └── VERIFICATION-GATE.md
+    ├── workflows/               # 9 executable workflow chains
+    │   ├── brainstorm.md        # Structured exploration
+    │   ├── write-plan.md        # Implementation planning
+    │   ├── execute-plan.md      # Disciplined execution
+    │   ├── high-complexity-dev.md # Multi-agent orchestration
+    │   ├── review.md            # Code review
+    │   ├── debug.md             # Root cause analysis
+    │   ├── ship.md              # Merge and deploy
+    │   ├── incident-response.md # Production incidents
+    │   └── release.md           # Versioning and rollout
     │
-    ├── workflows/
-    │   ├── brainstorm.md
-    │   ├── debug.md
-    │   ├── execute-plan.md
-    │   ├── high-complexity-dev.md
-    │   ├── review.md
-    │   ├── ship.md
-    │   └── write-plan.md
-    │
-    ├── agents/
-    │   ├── architect.md
-    │   ├── code-reviewer.md
-    │   ├── planner.md
-    │   ├── qa-engineer.md
-    │   ├── security-reviewer.md
-    │   └── tech-lead.md
+    └── agents/                  # 11 specialized agent personas
+        ├── architect.md         # System design and ADRs
+        ├── planner.md           # Task decomposition
+        ├── tech-lead.md         # Technical leadership
+        ├── code-reviewer.md     # Code quality review
+        ├── qa-engineer.md       # Testing and verification
+        ├── security-reviewer.md # Security vulnerability audit
+        ├── accessibility-auditor.md  # WCAG compliance
+        ├── adversarial-tester.md     # Chaos and fuzz testing
+        ├── data-privacy-officer.md   # GDPR/CCPA/SOC2
+        ├── incident-commander.md     # Incident response
+        └── release-manager.md        # Release coordination
 ```
 
 ---
 
-## Skill Routing Matrix
+## Full Routing Matrix
 
-The `mega-mind` orchestrator automatically routes requests to appropriate skills:
-
-| Request Type  | Primary Skill           | Secondary Skills                |
-| ------------- | ----------------------- | ------------------------------- |
-| New feature   | tech-lead               | brainstorming, writing-plans    |
-| Bug fix       | debugging               | -                               |
-| Code quality  | code-polisher           | -                               |
-| Performance   | performance-profiler    | -                               |
-| Security      | security-reviewer       | -                               |
-| Testing       | test-driven-development | test-genius                     |
-| Documentation | doc-writer              | -                               |
-| API design    | backend-architect       | -                               |
-| Frontend      | frontend-architect      | ux-designer                     |
-| Backend       | backend-architect       | -                               |
-| DevOps        | infra-architect         | docker-expert, k8s-orchestrator |
-| Data          | data-engineer           | data-analyst                    |
-| ML/AI         | ml-engineer             | -                               |
-| Mobile        | mobile-architect        | -                               |
-| Legacy code   | legacy-archaeologist    | -                               |
+The complete routing matrix with all 53 skills, 11 agents, and 7 categories
+(Architecture & Design, Development, Testing & Quality, Debugging & Fixing,
+DevOps & Infrastructure, Data & AI, Documentation & UX, Meta & Learning,
+Compliance & Privacy) is defined in `.agent/skills/mega-mind/SKILL.md`.
+Use `/mega-mind route <request>` to let the orchestrator dispatch automatically.
 
 ---
 
@@ -435,6 +373,20 @@ writing-plans → autonomous-loops → [Loop Execution] → verification-loop �
 continuous-learning-v2
 ```
 
+### Incident Response Chain
+
+```
+incident-commander → [Mitigation] → debugging → test-driven-development →
+verification-loop → finishing-a-development-branch
+```
+
+### Release Chain
+
+```
+release-manager → verification-loop → finishing-a-development-branch →
+observability-specialist → continuous-learning-v2
+```
+
 ### Bug Fix
 
 ```
@@ -442,10 +394,18 @@ debugging → test-driven-development →
 verification-loop → finishing-a-development-branch → continuous-learning-v2
 ```
 
-### Code Improvement
+### Accessibility Audit Chain
 
 ```
-plankton-code-quality → code-polisher → test-driven-development → verification-loop
+accessibility-auditor → [Fixes] → verification-loop → requesting-code-review →
+finishing-a-development-branch
+```
+
+### Adversarial Test Chain
+
+```
+adversarial-tester → [Chaos/Fuzz] → debugging → executing-plans →
+verification-loop → finishing-a-development-branch
 ```
 
 ---
