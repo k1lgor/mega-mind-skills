@@ -5,19 +5,27 @@ development lifecycle from planning through production operations and compliance
 
 <div class="grid cards" markdown>
 
--   :material-brain: **53 Skills**
+-   :material-brain:{ .lg .middle } **53 Skills**
+
+    ---
 
     Core workflow, domain expert, meta/learning, and token optimization skills — each with triggers, anti-patterns, and self-verification.
 
--   :material-account-group: **11 Agent Personas**
+-   :material-account-group:{ .lg .middle } **11 Agent Personas**
+
+    ---
 
     Deep-dive personas for architecture, QA, security, accessibility, adversarial testing, privacy, incidents, and releases.
 
--   :material-graph: **9 Workflow Chains**
+-   :material-graph:{ .lg .middle } **9 Workflow Chains**
 
-    Executable sequences covering the full lifecycle: brainstorm → plan → build → verify → ship → release → operate → learn.
+    ---
 
--   :material-cloud: **6 Platforms**
+    Executable sequences covering the full lifecycle: brainstorm &rarr; plan &rarr; build &rarr; verify &rarr; ship &rarr; release &rarr; operate &rarr; learn.
+
+-   :material-cloud:{ .lg .middle } **6 Platforms**
+
+    ---
 
     Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
 
@@ -57,35 +65,35 @@ appropriate skill or agent, chains multi-step workflows, and tracks progress via
 
 ### Skill Categories
 
-| Category | Count | Purpose |
-|---|---|---|
-| Core Workflow | 9 | Brainstorming, planning, TDD, debugging, review, shipping |
-| Domain Expert | 30 | Architecture, DevOps, data, ML, security, performance, UX |
-| Meta & Learning | 12 | Continuous learning, search-first, verification, autonomous loops |
-| Token Optimization | 2 | RTK proxy, context optimization |
+| Category           | Count | Purpose                                                           |
+| ------------------ | ----- | ----------------------------------------------------------------- |
+| Core Workflow      | 9     | Brainstorming, planning, TDD, debugging, review, shipping         |
+| Domain Expert      | 30    | Architecture, DevOps, data, ML, security, performance, UX         |
+| Meta & Learning    | 12    | Continuous learning, search-first, verification, autonomous loops |
+| Token Optimization | 2     | RTK proxy, context optimization                                   |
 
 ### Agent Personas
 
-| Category | Personas |
-|---|---|
-| Development | `tech-lead`, `planner`, `architect` |
-| Quality & Testing | `code-reviewer`, `qa-engineer`, `accessibility-auditor`, `adversarial-tester` |
-| Security & Compliance | `security-reviewer`, `data-privacy-officer` |
-| Operations & Releases | `incident-commander`, `release-manager` |
+| Category              | Personas                                                                      |
+| --------------------- | ----------------------------------------------------------------------------- |
+| Development           | `tech-lead`, `planner`, `architect`                                           |
+| Quality & Testing     | `code-reviewer`, `qa-engineer`, `accessibility-auditor`, `adversarial-tester` |
+| Security & Compliance | `security-reviewer`, `data-privacy-officer`                                   |
+| Operations & Releases | `incident-commander`, `release-manager`                                       |
 
 ### Workflow Chains
 
-| Workflow | Purpose |
-|---|---|
-| brainstorm | Structured exploration |
-| write-plan | Implementation planning |
-| execute-plan | Disciplined step-by-step execution |
-| high-complexity-dev | Multi-agent orchestration |
-| review | Structured code review |
-| debug | Root cause analysis |
-| ship | Merge, deploy, branch cleanup |
-| incident-response | Production incident lifecycle |
-| release | Versioning, rollout, monitoring |
+| Workflow            | Purpose                            |
+| ------------------- | ---------------------------------- |
+| brainstorm          | Structured exploration             |
+| write-plan          | Implementation planning            |
+| execute-plan        | Disciplined step-by-step execution |
+| high-complexity-dev | Multi-agent orchestration          |
+| review              | Structured code review             |
+| debug               | Root cause analysis                |
+| ship                | Merge, deploy, branch cleanup      |
+| incident-response   | Production incident lifecycle      |
+| release             | Versioning, rollout, monitoring    |
 
 [Full reference &rarr;](reference.md)
 
