@@ -41,3 +41,19 @@ Run `rtk gain` periodically to check cumulative token savings for the session.
 - When you need the full, unfiltered output for debugging
 - When piping output to another tool that needs the raw format
 - For interactive commands that require user input
+
+## Fallback Protocol (When RTK is NOT Installed)
+
+If `rtk` is not installed or produces an error, fall back to the bare command:
+
+```bash
+# Detect if RTK is available
+rtk --version 2>/dev/null || RTK_AVAILABLE=false
+
+# If RTK_AVAILABLE is false, use bare commands directly:
+bun test          # Instead of rtk bun test
+tsc --noEmit      # Instead of rtk tsc
+git status        # Instead of rtk git status
+```
+
+**Rule**: Before running any RTK-wrapped command, check availability. If RTK is absent, run the equivalent bare command with the same flags. Document in task.md when RTK was unavailable so the session can install it later.

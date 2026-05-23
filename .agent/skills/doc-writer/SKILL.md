@@ -1,6 +1,6 @@
 ---
 name: doc-writer
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Generating docs, READMEs, and inline comments. Use for all documentation needs.
 triggers:
   - "write documentation"
@@ -279,13 +279,13 @@ This document describes the high-level architecture of our system.
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Code example in docs doesn't compile against current API version | Example was written for an older API version and not updated when the API changed | Run all code examples through the actual compiler/interpreter; fix any that exit non-zero; add a CI step to run doc examples on every API change |
-| Parameter names in docs don't match function signatures | Docs were copied from a draft signature that was later renamed during implementation | Run `grep` to diff documented param names against actual function signatures; update docs to match source of truth |
-| Docs generated from stale snapshot, diverged from live code | Generated docs (TypeDoc, Sphinx, etc.) last ran against a commit that predates recent refactors | Re-run the doc generator against the current HEAD; commit the regenerated output; add doc generation to the CI pipeline |
-| Missing required parameter documented as optional | Parameter was made required during a refactor but the docs still show `(optional)` | Audit all `@param` annotations for required fields; cross-reference with function signatures; update optionality markers |
-| Changelog entry references wrong PR number | Entry copy-pasted from a previous release and the PR number not updated | Verify each changelog PR link resolves to the correct PR; run a link-check script that exits non-zero on broken GitHub PR URLs |
+| Failure                                                          | Cause                                                                                           | Recovery                                                                                                                                         |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Code example in docs doesn't compile against current API version | Example was written for an older API version and not updated when the API changed               | Run all code examples through the actual compiler/interpreter; fix any that exit non-zero; add a CI step to run doc examples on every API change |
+| Parameter names in docs don't match function signatures          | Docs were copied from a draft signature that was later renamed during implementation            | Run `grep` to diff documented param names against actual function signatures; update docs to match source of truth                               |
+| Docs generated from stale snapshot, diverged from live code      | Generated docs (TypeDoc, Sphinx, etc.) last ran against a commit that predates recent refactors | Re-run the doc generator against the current HEAD; commit the regenerated output; add doc generation to the CI pipeline                          |
+| Missing required parameter documented as optional                | Parameter was made required during a refactor but the docs still show `(optional)`              | Audit all `@param` annotations for required fields; cross-reference with function signatures; update optionality markers                         |
+| Changelog entry references wrong PR number                       | Entry copy-pasted from a previous release and the PR number not updated                         | Verify each changelog PR link resolves to the correct PR; run a link-check script that exits non-zero on broken GitHub PR URLs                   |
 
 ## Self-Verification Checklist
 
@@ -300,6 +300,7 @@ This document describes the high-level architecture of our system.
 ## Success Criteria
 
 This task is complete when:
+
 1. A developer unfamiliar with the codebase can follow the documentation to accomplish the primary use case without asking questions
 2. All public API surface area has documented parameters, return values, and at least one usage example
 3. Documentation is co-located with or linked from the code it describes (no orphaned docs)

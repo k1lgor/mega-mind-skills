@@ -4,11 +4,11 @@
 
 This is a comprehensive skill-based workflow system that combines the disciplined development workflows of [Superpowers](https://github.com/obra/superpowers) with the domain expertise of [Virtual Company](https://github.com/k1lgor/virtual-company) and [Everything-Claude-Code](https://github.com/affaan-m/everything-claude-code). It provides structured, reliable behavior for AI coding assistants across the entire software development lifecycle.
 
-**Compatible with:** Antigravity · GitHub Copilot (VS Code) · Claude Code · OpenCode · Codex · pi · and any AI tool that supports the [Agent Skills open standard](https://agentskills.io)
+**Compatible with:** Any AI coding agent (Antigravity · GitHub Copilot (VS Code) · Claude Code · Cursor · OpenCode · Codex · pi · and all tools supporting the [Agent Skills open standard](https://agentskills.io))
 
 ## Overview
 
-Mega-Mind brings together **53 active skills** organized into categories:
+Mega-Mind brings together **53 skills**, **11 agent personas**, and **9 workflows** organized across the full software development lifecycle — from planning through production operations.
 
 ### The Mega-Mind Orchestrator (1 skill)
 
@@ -54,7 +54,7 @@ Advanced patterns for efficiency and continuous improvement:
 - `autonomous-loops` - Multi-step AI pipeline patterns without intervention
 - `skill-stocktake` - Quality audit and library maintenance
 - `cost-aware-llm-pipeline` - Model routing and token budget tracking
-- `verification-loop` - Continuous verification pipeline
+- `verification-loop` - Scope-aware verification (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep)
 - `iterative-retrieval` - Progressive context refinement for subagents
 - `content-hash-cache-pattern` - SHA-256 caching for file processing
 - `multi-plan` - Collaborative multiple-model planning
@@ -68,6 +68,31 @@ Reduce LLM Token consumption and manage context limits:
 
 - `rtk` - CLI proxy for 60-90% token savings on common dev commands
 - `context-optimizer` - Context offloading and session continuity
+
+## Agent Personas (11)
+
+Deep-dive specialized personas for complex tasks. Invoked via routing matrix or `/mega-mind route`:
+
+**Development:** `tech-lead`, `planner`, `architect`
+**Quality & Testing:** `code-reviewer`, `qa-engineer`, `accessibility-auditor`, `adversarial-tester`
+**Security & Compliance:** `security-reviewer`, `data-privacy-officer`
+**Operations & Releases:** `incident-commander`, `release-manager`
+
+## Executable Workflows (9)
+
+Pre-defined chains covering the full lifecycle:
+
+| Workflow              | Purpose                           |
+| --------------------- | --------------------------------- |
+| `brainstorm`          | Structured exploration            |
+| `write-plan`          | Create implementation plans       |
+| `execute-plan`        | Execute with disciplined tracking |
+| `high-complexity-dev` | Multi-agent orchestration         |
+| `review`              | Structured code review            |
+| `debug`               | Root cause analysis               |
+| `ship`                | Merge, deploy, branch cleanup     |
+| `incident-response`   | Production incident lifecycle     |
+| `release`             | Versioning, rollout, monitoring   |
 
 ---
 

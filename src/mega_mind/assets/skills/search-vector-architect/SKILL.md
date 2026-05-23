@@ -1,6 +1,6 @@
 ---
 name: search-vector-architect
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Design and implement production-grade semantic search and RAG systems: embedding model selection, chunking strategy, hybrid search (BM25 + vector), reranking, retrieval evaluation (NDCG, MRR), and production concerns (latency, index size, cost). Use when building search infrastructure, RAG pipelines, or troubleshooting retrieval quality in LLM-powered applications.
 triggers:
   - "vector search"
@@ -27,7 +27,7 @@ triggers:
 
 You are a search and retrieval systems engineer who designs pipelines that LLMs can reason over accurately. You understand that retrieval quality is the primary determinant of RAG system quality — a perfect generator cannot fix poor retrieval. You make deliberate trade-offs between semantic accuracy and lexical precision using hybrid search, invest in evaluation infrastructure (NDCG, MRR, recall@k) before optimizing, and treat embedding model selection as a consequential architectural decision — not a default. You know that hallucination in RAG systems is almost always a retrieval failure, not a generation failure, and you diagnose accordingly.
 
-## When to Activate
+## When to Use
 
 - Building a new RAG pipeline or semantic search system from scratch
 - Selecting an embedding model or vector database for a production use case
@@ -97,14 +97,14 @@ Query Input
 
 Chunking is not a hyperparameter to grid-search — it must match the document structure.
 
-| Document Type | Recommended Strategy | Chunk Size (tokens) | Notes |
-|---|---|---|---|
-| Long-form articles / docs | Recursive text splitter on paragraphs | 512–1024 | Preserve paragraph boundaries |
-| Code files | Split by function/class boundaries | Variable | Never split mid-function |
-| Conversational transcripts | Split by speaker turn + time window | 256–512 | Include speaker label in chunk |
-| Legal / financial docs | Split by numbered sections or clauses | 512–1024 | Preserve section header in metadata |
-| Short product descriptions | No chunking — embed full record | Full | Semantic unit is the record |
-| Dense technical manuals | Sentence-level splitting with overlap | 256 with 50-token overlap | Overlap prevents boundary loss |
+| Document Type              | Recommended Strategy                  | Chunk Size (tokens)       | Notes                               |
+| -------------------------- | ------------------------------------- | ------------------------- | ----------------------------------- |
+| Long-form articles / docs  | Recursive text splitter on paragraphs | 512–1024                  | Preserve paragraph boundaries       |
+| Code files                 | Split by function/class boundaries    | Variable                  | Never split mid-function            |
+| Conversational transcripts | Split by speaker turn + time window   | 256–512                   | Include speaker label in chunk      |
+| Legal / financial docs     | Split by numbered sections or clauses | 512–1024                  | Preserve section header in metadata |
+| Short product descriptions | No chunking — embed full record       | Full                      | Semantic unit is the record         |
+| Dense technical manuals    | Sentence-level splitting with overlap | 256 with 50-token overlap | Overlap prevents boundary loss      |
 
 **Critical rule:** Always include document title, section header, and page/URL as metadata on each chunk. Retrieval without metadata is a dead end for citations.
 
@@ -147,13 +147,13 @@ def chunk_document(
 
 ## Embedding Model Selection
 
-| Model | Dim | Max Tokens | Strengths | When to Use |
-|---|---|---|---|---|
-| text-embedding-3-small (OpenAI) | 1536 | 8192 | General purpose, low cost | Default for English general-domain |
-| text-embedding-3-large (OpenAI) | 3072 | 8192 | Higher accuracy, higher cost | When quality matters more than cost |
-| all-MiniLM-L6-v2 (local) | 384 | 256 | Fast, offline, zero cost | High-throughput local deployments |
-| BAAI/bge-large-en-v1.5 (local) | 1024 | 512 | SOTA open-source English | Production-grade offline search |
-| e5-mistral-7b-instruct | 4096 | 32768 | Long-context, instruction-following | Long documents, complex queries |
+| Model                           | Dim  | Max Tokens | Strengths                           | When to Use                         |
+| ------------------------------- | ---- | ---------- | ----------------------------------- | ----------------------------------- |
+| text-embedding-3-small (OpenAI) | 1536 | 8192       | General purpose, low cost           | Default for English general-domain  |
+| text-embedding-3-large (OpenAI) | 3072 | 8192       | Higher accuracy, higher cost        | When quality matters more than cost |
+| all-MiniLM-L6-v2 (local)        | 384  | 256        | Fast, offline, zero cost            | High-throughput local deployments   |
+| BAAI/bge-large-en-v1.5 (local)  | 1024 | 512        | SOTA open-source English            | Production-grade offline search     |
+| e5-mistral-7b-instruct          | 4096 | 32768      | Long-context, instruction-following | Long documents, complex queries     |
 
 **Selection rule:** Always run MTEB benchmark on your specific domain before choosing. Do not rely on general leaderboard rankings for specialized corpora.
 
@@ -438,24 +438,24 @@ def evaluate_retrieval(eval_set: list[dict], retrieve_fn, k: int = 5) -> Retriev
 
 ### Latency Budget Allocation (example for 200ms SLA)
 
-| Stage | Budget |
-|---|---|
-| Query embedding | 20ms |
-| ANN vector search | 30ms |
-| BM25 keyword search | 20ms |
-| RRF merge | 2ms |
-| Cross-encoder reranking (top-50) | 60ms |
-| LLM generation | 1000ms (separate SLA) |
-| Total retrieval | ~130ms |
+| Stage                            | Budget                |
+| -------------------------------- | --------------------- |
+| Query embedding                  | 20ms                  |
+| ANN vector search                | 30ms                  |
+| BM25 keyword search              | 20ms                  |
+| RRF merge                        | 2ms                   |
+| Cross-encoder reranking (top-50) | 60ms                  |
+| LLM generation                   | 1000ms (separate SLA) |
+| Total retrieval                  | ~130ms                |
 
 ### Index Size vs. Accuracy Trade-offs
 
-| Configuration | Index Size | Recall@10 | Notes |
-|---|---|---|---|
-| Full HNSW (ef=200) | Large | ~95% | Best accuracy, most memory |
-| HNSW (ef=100) | Medium | ~90% | Good balance |
-| IVF flat (nlist=100) | Small | ~85% | CPU-friendly, lower recall |
-| Binary quantization | Tiny | ~75% | Only for scale-out scenarios |
+| Configuration        | Index Size | Recall@10 | Notes                        |
+| -------------------- | ---------- | --------- | ---------------------------- |
+| Full HNSW (ef=200)   | Large      | ~95%      | Best accuracy, most memory   |
+| HNSW (ef=100)        | Medium     | ~90%      | Good balance                 |
+| IVF flat (nlist=100) | Small      | ~85%      | CPU-friendly, lower recall   |
+| Binary quantization  | Tiny       | ~75%      | Only for scale-out scenarios |
 
 ---
 
@@ -464,13 +464,13 @@ def evaluate_retrieval(eval_set: list[dict], retrieve_fn, k: int = 5) -> Retriev
 Before declaring the retrieval system ready for integration:
 
 - [ ] Retrieval eval set exists with >= 50 labeled query-document pairs: `wc -l eval/labeled_queries.jsonl` returns >= 50
-- [ ] Recall@5 measured and meets threshold: `grep -c "recall_at_5\|Recall@5" eval/results.json` returns > 0 and value >= 0.80
-- [ ] NDCG@5 and MRR logged for every pipeline change: `grep -c "ndcg\|mrr" eval/results.json` returns > 0
-- [ ] Chunking strategy documented: `grep -c "chunk_size\|overlap\|chunking" docs/retrieval_design.md` returns > 0
-- [ ] Embedding model benchmarked against domain-specific test set: `grep -c "benchmark\|domain" eval/embedding_eval.md` returns > 0
+      grep -cE "recall_at_5|Recall@5"
+      grep -cE "ndcg|mrr"
+      grep -cE "chunk_size|overlap|chunking"
+      grep -cE "benchmark|domain"
 - [ ] Reranker enabled and within P95 SLA: reranker latency p95 <= defined SLA threshold
-- [ ] All chunks carry source metadata: `grep -c "doc_id\|source_title\|section" src/chunker.*` returns > 0
-- [ ] LLM prompt instructs citation: `grep -c "cite\|source\|refuse" src/prompts/rag_prompt.*` returns > 0
+      grep -cE "doc_id|source_title|section"
+      grep -cE "cite|source|refuse"
 
 ## Success Criteria
 
@@ -498,15 +498,15 @@ A retrieval system is production-ready when:
 
 ## Failure Modes
 
-| Situation | Response |
-|---|---|
-| LLM hallucinating answers not in the corpus | This is a retrieval miss. Check recall@k. Increase top_k, add reranker, or refine chunking. Add grounding instruction to prompt. |
-| Retrieval returns irrelevant chunks for specific queries | Check if query uses terminology not in the corpus. Add query expansion or synonym mapping. Consider BM25 hybrid for exact-match terms. |
-| Embedding model produces poor similarity for domain terms | Fine-tune on domain data or switch to a domain-specific model. Run MTEB-style eval on your corpus first. |
-| Index latency exceeds SLA under load | Profile: embedding latency vs. ANN search latency separately. Consider approximate quantization or pre-computing query embeddings for known query patterns. |
-| Reranker is too slow for the latency budget | Reduce candidate pool (top-20 instead of top-50). Use a smaller cross-encoder. Move reranker to async pre-fetch if the UI allows. |
-| RAG answers are coherent but cite wrong sources | The LLM is hallucinating citations. Add structured citation format requirement and validate cited IDs against retrieved chunk IDs in post-processing. |
-| Pinecone / vector DB costs growing unexpectedly | Audit index size. Implement TTL-based expiry for time-sensitive documents. Consider pgvector (self-hosted) for cost-stable workloads. |
+| Situation                                                 | Response                                                                                                                                                    |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LLM hallucinating answers not in the corpus               | This is a retrieval miss. Check recall@k. Increase top_k, add reranker, or refine chunking. Add grounding instruction to prompt.                            |
+| Retrieval returns irrelevant chunks for specific queries  | Check if query uses terminology not in the corpus. Add query expansion or synonym mapping. Consider BM25 hybrid for exact-match terms.                      |
+| Embedding model produces poor similarity for domain terms | Fine-tune on domain data or switch to a domain-specific model. Run MTEB-style eval on your corpus first.                                                    |
+| Index latency exceeds SLA under load                      | Profile: embedding latency vs. ANN search latency separately. Consider approximate quantization or pre-computing query embeddings for known query patterns. |
+| Reranker is too slow for the latency budget               | Reduce candidate pool (top-20 instead of top-50). Use a smaller cross-encoder. Move reranker to async pre-fetch if the UI allows.                           |
+| RAG answers are coherent but cite wrong sources           | The LLM is hallucinating citations. Add structured citation format requirement and validate cited IDs against retrieved chunk IDs in post-processing.       |
+| Pinecone / vector DB costs growing unexpectedly           | Audit index size. Implement TTL-based expiry for time-sensitive documents. Consider pgvector (self-hosted) for cost-stable workloads.                       |
 
 ---
 

@@ -48,7 +48,7 @@ def init(target_dir, force, copilot, claude, opencode, codex, pi):
         install_skills(target_dir, force, copilot, claude, opencode, codex, pi)
         click.echo(
             click.style(
-                f" ✅ Successfully initialized Mega-Mind in {target_dir}",
+                f"[OK] Successfully initialized Mega-Mind in {target_dir}",
                 fg="green",
             )
         )
@@ -106,7 +106,7 @@ def init(target_dir, force, copilot, claude, opencode, codex, pi):
                 )
             )
     except Exception as e:
-        click.echo(click.style(f" ❌ Error: {str(e)}", fg="red"), err=True)
+        click.echo(click.style(f"[ERROR] {str(e)}", fg="red"), err=True)
         sys.exit(1)
 
 

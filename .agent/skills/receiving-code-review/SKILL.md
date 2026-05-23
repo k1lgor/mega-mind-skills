@@ -1,6 +1,6 @@
 ---
 name: receiving-code-review
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Handling feedback systematically. Use when you receive code review feedback.
 triggers:
   - "got review feedback"
@@ -219,13 +219,13 @@ Thanks for the thorough review! Please let me know if you have any other concern
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Reviewer leaves nit comments without distinguishing blockers from suggestions | Reviewer uses a flat list with no severity label; author treats all comments as equally optional | Ask reviewer to prefix comments with `blocker:`, `suggestion:`, or `nit:` before addressing any; re-read the thread with that lens |
-| Reviewer approves without reading critical path changes | Large PR; reviewer only skimmed the summary and approved to unblock | Request a targeted re-review of the specific critical files; add a comment pointing the reviewer to the files that need scrutiny |
+| Failure                                                                        | Cause                                                                                                               | Recovery                                                                                                                                       |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewer leaves nit comments without distinguishing blockers from suggestions  | Reviewer uses a flat list with no severity label; author treats all comments as equally optional                    | Ask reviewer to prefix comments with `blocker:`, `suggestion:`, or `nit:` before addressing any; re-read the thread with that lens             |
+| Reviewer approves without reading critical path changes                        | Large PR; reviewer only skimmed the summary and approved to unblock                                                 | Request a targeted re-review of the specific critical files; add a comment pointing the reviewer to the files that need scrutiny               |
 | Author pushes new commits during active review, invalidating previous comments | Author receives first round of feedback and immediately starts fixing and pushing without waiting for all reviewers | Batch all fixes from a single review round before pushing; note in the PR thread "addressing round 1 feedback" with a single consolidated push |
-| Review focused on style not logic, missing semantic bugs | Reviewer fixates on formatting/naming while the algorithmic logic is wrong | Explicitly ask reviewer to focus on correctness of the business logic; run the feature through the `debugging` checklist independently |
-| Stale approval after force-push, merging unreviewed changes | Author force-pushed a rebase or amended commits; GitHub kept the old approval; unreviewed diff merged | Enable "dismiss stale reviews on push" in branch protection rules; never merge after a force-push without fresh approval |
+| Review focused on style not logic, missing semantic bugs                       | Reviewer fixates on formatting/naming while the algorithmic logic is wrong                                          | Explicitly ask reviewer to focus on correctness of the business logic; run the feature through the `debugging` checklist independently         |
+| Stale approval after force-push, merging unreviewed changes                    | Author force-pushed a rebase or amended commits; GitHub kept the old approval; unreviewed diff merged               | Enable "dismiss stale reviews on push" in branch protection rules; never merge after a force-push without fresh approval                       |
 
 ## Self-Verification Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: performance-profiler
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Optimization and performance tuning. Use for performance analysis and optimization.
 triggers:
   - "optimize performance"
@@ -230,13 +230,13 @@ curl -w "Time: %{time_total}s\n" -o /dev/null -s URL
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Profiling overhead distorts latency measurements (observer effect) | Attaching a sampling profiler at 10ms intervals on a service with 5ms median latency inflates p99 by 40%+ | Switch to a lower-overhead continuous profiler (e.g., async-profiler at 1ms interval); validate overhead is <5% before treating numbers as representative |
-| Benchmark run on debug build, showing 3× worse numbers than production | Developer ran `cargo build` or `node --inspect` instead of `cargo build --release` or production node binary | Re-run benchmark explicitly on the release build; document build flags used alongside every benchmark result |
-| Optimization eliminates hot path but introduces regression in cold path | Caching or memoization speeds up the profiled workload but degrades first-request latency or memory under varied input | Run the full benchmark suite (not just the hot path) before and after; add a cold-start latency test to the benchmark suite |
-| Memory leak fix reduces heap but increases GC pause frequency | Shorter-lived objects cause more frequent minor GC cycles, increasing p99 latency even as average drops | Capture GC pause duration before and after (use `--expose-gc` or equivalent); confirm p99 GC pauses remain within SLA |
-| Profiler attached to wrong process PID, returning unrelated data | PID reuse or multiple instances running; profiler targeting a sidecar or proxy instead of the application | Verify PID with `ps aux | grep <process-name>` before attaching; cross-reference with process start time to confirm correct target |
+| Failure                                                                 | Cause                                                                                                                  | Recovery                                                                                                                                                  |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Profiling overhead distorts latency measurements (observer effect)      | Attaching a sampling profiler at 10ms intervals on a service with 5ms median latency inflates p99 by 40%+              | Switch to a lower-overhead continuous profiler (e.g., async-profiler at 1ms interval); validate overhead is <5% before treating numbers as representative |
+| Benchmark run on debug build, showing 3× worse numbers than production  | Developer ran `cargo build` or `node --inspect` instead of `cargo build --release` or production node binary           | Re-run benchmark explicitly on the release build; document build flags used alongside every benchmark result                                              |
+| Optimization eliminates hot path but introduces regression in cold path | Caching or memoization speeds up the profiled workload but degrades first-request latency or memory under varied input | Run the full benchmark suite (not just the hot path) before and after; add a cold-start latency test to the benchmark suite                               |
+| Memory leak fix reduces heap but increases GC pause frequency           | Shorter-lived objects cause more frequent minor GC cycles, increasing p99 latency even as average drops                | Capture GC pause duration before and after (use `--expose-gc` or equivalent); confirm p99 GC pauses remain within SLA                                     |
+| Profiler attached to wrong process PID, returning unrelated data        | PID reuse or multiple instances running; profiler targeting a sidecar or proxy instead of the application              | Verify PID with `ps aux                                                                                                                                   | grep <process-name>` before attaching; cross-reference with process start time to confirm correct target |
 
 ## Self-Verification Checklist
 
@@ -251,6 +251,7 @@ curl -w "Time: %{time_total}s\n" -o /dev/null -s URL
 ## Success Criteria
 
 This task is complete when:
+
 1. A before/after performance comparison exists with concrete numbers (e.g. "API p95 latency reduced from 850ms to 210ms")
 2. The bottleneck identified by profiling is confirmed fixed, not just masked by caching
 3. The optimization is deployed and monitoring confirms the improvement holds under real load

@@ -1,6 +1,6 @@
 ---
 name: tech-lead
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Complex project planning and orchestration. Use for architectural decisions, project planning, and coordinating multiple features or team members.
 triggers:
   - "plan this project"
@@ -221,6 +221,7 @@ Microservices-based e-commerce platform with:
 ## Success Criteria
 
 This task is complete when:
+
 1. A Project Kickoff document exists with architecture, technology decisions with rationale, and timeline
 2. All identified risks have mitigation strategies documented
 3. The implementation plan is broken into executable tasks with clear dependencies and estimates
@@ -236,22 +237,22 @@ This task is complete when:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Analysis paralysis: Z-Pattern produces 4 plans, team waits for decision | Too many alternatives generated without a defined decision owner or time-box | Time-box the decision to 24 hours; the tech lead makes a final call with documented rationale even if consensus is incomplete |
-| Ivory-tower design: architecture chosen doesn't match team skill set | Tech lead designs for an ideal team, not the actual team; no skill-set validation step | Before finalising architecture, explicitly list the skills required and cross-check against the team's current proficiencies |
-| Premature optimization: perf concerns raised before correctness verified | Tech lead adds caching, sharding, and async queues to a design that hasn't shipped yet | Enforce a correctness-first rule: performance optimisations are deferred to Phase 2 unless there's a measured baseline showing a problem |
-| Scope explosion: Z-Pattern reveals complexity, stakeholder adds more features | Stakeholder treats the planning session as a feature request session; scope grows during planning | Lock the scope before the planning session; any additions go to the backlog and are addressed in a separate planning session |
-| Handoff failure: plan documented but not communicated, team builds wrong thing | Plan written and filed but never presented; team proceeds from memory or guesses | Every plan must have a designated synchronous or async communication step (standup presentation or written summary with acknowledgement) |
+| Failure                                                                        | Cause                                                                                             | Recovery                                                                                                                                 |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Analysis paralysis: Z-Pattern produces 4 plans, team waits for decision        | Too many alternatives generated without a defined decision owner or time-box                      | Time-box the decision to 24 hours; the tech lead makes a final call with documented rationale even if consensus is incomplete            |
+| Ivory-tower design: architecture chosen doesn't match team skill set           | Tech lead designs for an ideal team, not the actual team; no skill-set validation step            | Before finalising architecture, explicitly list the skills required and cross-check against the team's current proficiencies             |
+| Premature optimization: perf concerns raised before correctness verified       | Tech lead adds caching, sharding, and async queues to a design that hasn't shipped yet            | Enforce a correctness-first rule: performance optimisations are deferred to Phase 2 unless there's a measured baseline showing a problem |
+| Scope explosion: Z-Pattern reveals complexity, stakeholder adds more features  | Stakeholder treats the planning session as a feature request session; scope grows during planning | Lock the scope before the planning session; any additions go to the backlog and are addressed in a separate planning session             |
+| Handoff failure: plan documented but not communicated, team builds wrong thing | Plan written and filed but never presented; team proceeds from memory or guesses                  | Every plan must have a designated synchronous or async communication step (standup presentation or written summary with acknowledgement) |
 
 ## Self-Verification Checklist
 
-- [ ] Z-Pattern produced >= 2 alternatives: `grep -c "^## Option\|^### Option\|^## Alternative\|^### Approach" decision_doc.md` returns >= 2
-- [ ] Decision recorded with rationale: `grep -c "Decision\|Chosen\|Rejected" decision_doc.md` returns > 0
-- [ ] Plan communicated to team: `grep -c "standup\|communicated\|acknowledged" task.md` returns > 0
-- [ ] All functional requirements listed before any implementation decision: `grep -c "^- \[ \]\|requirement" requirements.md` returns > 0
-- [ ] Technical risks documented with mitigations: `grep -c "Risk\|risk\|Mitigation\|mitigation" decision_doc.md` returns > 0
-- [ ] Dependencies between components mapped: `grep -c "depends on\|dependency\|requires" task.md` returns > 0
+grep -cE "^## Option|^### Option|^## Alternative|^### Approach"
+grep -cE "Decision|Chosen|Rejected"
+grep -cE "standup|communicated|acknowledged"
+grep -cE "^- \[ \]|requirement"
+grep -cE "Risk|risk|Mitigation|mitigation"
+grep -cE "depends on|dependency|requires"
 
 ## Tips
 

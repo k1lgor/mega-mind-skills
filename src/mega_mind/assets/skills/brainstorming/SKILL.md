@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Structured exploration before committing to an approach. Use when facing ambiguous problems, new features, architectural decisions, or any situation where multiple approaches are possible.
 triggers:
   - "I need to design"
@@ -111,6 +111,7 @@ For each approach, consider:
 
 - Coordination with downstream steps: brainstorm outputs should include a clear handoff directive to the next stage.
 - Output format (example):
+
 ```
 Next: writing-plans
 Rationale: aligns with architecture decisions and reduces rework
@@ -254,10 +255,11 @@ Our API is experiencing high latency under load. We need to implement a caching 
 
 ## Self-Verification Checklist
 
-- [ ] At least 3 distinct approaches generated: `grep -c "^### Approach\|^## Option\|^### Option" brainstorm.md` returns >= 3
+grep -cE "^### Approach|^## Option|^### Option"
+
 - [ ] `search-first` was invoked before generating approaches — existing solutions documented and `grep -c "search-first" task.md` returns > 0
-- [ ] Trade-offs documented for every approach: `grep -c "pros\|cons\|tradeoff\|trade-off" brainstorm.md` returns >= 3
-- [ ] A recommendation is stated with explicit rationale — `grep -c "Recommendation\|recommend\|chosen" brainstorm.md` returns > 0
+      grep -cE "pros|cons|tradeoff|trade-off"
+      grep -cE "Recommendation|recommend|chosen"
 - [ ] The mandatory user confirmation gate is present — no code or files written before user selects an approach
 - [ ] The chosen approach is recorded in the session output or task.md
 
@@ -276,10 +278,10 @@ This skill is complete when: 1) at least 3 meaningfully distinct approaches have
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Session produces ideas but no decision made, leaving agent in open loop | Brainstorm phase never transitions to evaluation/narrowing phase | Set a hard time-box; end every brainstorm with an explicit "narrow to N options" step |
-| All options evaluated as equal, blocking progress | Criteria not defined before evaluation; agent avoids commitment | Define decision criteria (cost, risk, reversibility) before generating options |
-| Brainstorm output used as final plan without narrowing | Output handed directly to execution without a selection step | Treat brainstorm output as raw material; always run a separate "pick and justify" step |
-| Time-boxed exploration skipped, jumping straight to implementation | Pressure to ship overrides structured thinking | Enforce brainstorm as a mandatory phase gate; record why it was skipped if bypassed |
-| Only happy path explored, missing edge cases that block implementation | Agent anchors on positive scenarios; adversarial thinking not prompted | Explicitly prompt for failure scenarios, edge cases, and worst-case outcomes as a separate brainstorm round |
+| Failure                                                                 | Cause                                                                  | Recovery                                                                                                    |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Session produces ideas but no decision made, leaving agent in open loop | Brainstorm phase never transitions to evaluation/narrowing phase       | Set a hard time-box; end every brainstorm with an explicit "narrow to N options" step                       |
+| All options evaluated as equal, blocking progress                       | Criteria not defined before evaluation; agent avoids commitment        | Define decision criteria (cost, risk, reversibility) before generating options                              |
+| Brainstorm output used as final plan without narrowing                  | Output handed directly to execution without a selection step           | Treat brainstorm output as raw material; always run a separate "pick and justify" step                      |
+| Time-boxed exploration skipped, jumping straight to implementation      | Pressure to ship overrides structured thinking                         | Enforce brainstorm as a mandatory phase gate; record why it was skipped if bypassed                         |
+| Only happy path explored, missing edge cases that block implementation  | Agent anchors on positive scenarios; adversarial thinking not prompted | Explicitly prompt for failure scenarios, edge cases, and worst-case outcomes as a separate brainstorm round |

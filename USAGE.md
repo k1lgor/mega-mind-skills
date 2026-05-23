@@ -63,7 +63,7 @@ Navigate to your project root and run:
 uvx mmo init
 ```
 
-This copies the full `.agent/` directory — containing all 53 active skills, workflows, shared snippets, and agent definitions — into your project.
+This copies the full `.agent/` directory — containing all 53 active skills, 11 agent personas, 9 executable workflows, shared snippets, and agent definitions — into your project.
 
 When you pass one or more platform flags, `mmo init` installs only those platform-specific files and does **not** also create `.agent/`.
 
@@ -75,7 +75,7 @@ To also install in the format Claude Code expects, add the `--claude` flag:
 uvx mmo init --claude
 ```
 
-This installs `CLAUDE.md`, `.claude/skills/`, `.claude/commands/`, `.claude/agents/`, `.claude/shared/`, and `.claude/hooks/hooks.json`.
+This installs `CLAUDE.md`, `.claude/skills/` (53 skills), `.claude/commands/` (9 workflows), `.claude/agents/` (11 agent personas), `.claude/shared/`, and `.claude/hooks/hooks.json`.
 
 ### For GitHub Copilot (VS Code)
 
@@ -85,7 +85,7 @@ To also install in the format GitHub Copilot expects, add the `--copilot` flag:
 uvx mmo init --copilot
 ```
 
-This installs `.github/copilot-instructions.md`, `.github/skills/`, `.github/agents/`, `.github/shared/`, and `.github/hooks/hooks.json`.
+This installs `.github/copilot-instructions.md`, `.github/skills/` (53 skills), `.github/agents/` (11 agent personas), `.github/shared/`, and `.github/hooks/hooks.json`.
 
 ### For OpenCode
 
@@ -124,6 +124,7 @@ This installs:
 - `.github/` — Specialized for GitHub Copilot in VS Code
 - `.opencode/` — Specialized for OpenCode
 - `.codex/` — Specialized for Codex
+- `.pi/` — Specialized for pi-coding-agent
 
 ### Target a specific directory
 

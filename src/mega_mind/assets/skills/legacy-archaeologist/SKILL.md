@@ -1,6 +1,6 @@
 ---
 name: legacy-archaeologist
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Understanding and refactoring legacy code. Use for working with existing/legacy systems.
 triggers:
   - "legacy code"
@@ -295,13 +295,13 @@ class OvernightShipping implements ShippingCalculator {
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Refactor changes observable behaviour because of undocumented side effects | Original code had hidden side effects (global state mutation, I/O) not visible from its signature | Write characterisation tests that capture all observable outputs including side effects before touching any code |
-| Test written for legacy code tests the bug, not the intended behaviour | Agent tests what the code does, not what it should do; bug is baked into the test | Consult original spec or product owner to determine intended behaviour; write tests against intent, not implementation |
-| Dead code deleted but called via reflection or dynamic dispatch | Static analysis reports no references; runtime uses `require(variable)` or plugin registry | Search for dynamic dispatch patterns (eval, require with variable, plugin registration) before deleting any "unreferenced" code |
-| Modernisation introduces a dependency that conflicts with an existing pinned version | New library added without checking existing lockfile constraints | Check `npm ls` / `pip check` / `go mod graph` after adding any dependency; resolve conflicts before proceeding |
-| Partial refactor leaves codebase in worse state than original | Refactor scope expanded mid-task; incomplete transformation mixed with original pattern | Refactor in atomic commits; each commit must leave the codebase in a consistent state; never leave a half-migrated pattern |
+| Failure                                                                              | Cause                                                                                             | Recovery                                                                                                                        |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Refactor changes observable behaviour because of undocumented side effects           | Original code had hidden side effects (global state mutation, I/O) not visible from its signature | Write characterisation tests that capture all observable outputs including side effects before touching any code                |
+| Test written for legacy code tests the bug, not the intended behaviour               | Agent tests what the code does, not what it should do; bug is baked into the test                 | Consult original spec or product owner to determine intended behaviour; write tests against intent, not implementation          |
+| Dead code deleted but called via reflection or dynamic dispatch                      | Static analysis reports no references; runtime uses `require(variable)` or plugin registry        | Search for dynamic dispatch patterns (eval, require with variable, plugin registration) before deleting any "unreferenced" code |
+| Modernisation introduces a dependency that conflicts with an existing pinned version | New library added without checking existing lockfile constraints                                  | Check `npm ls` / `pip check` / `go mod graph` after adding any dependency; resolve conflicts before proceeding                  |
+| Partial refactor leaves codebase in worse state than original                        | Refactor scope expanded mid-task; incomplete transformation mixed with original pattern           | Refactor in atomic commits; each commit must leave the codebase in a consistent state; never leave a half-migrated pattern      |
 
 ## Anti-Patterns
 
@@ -314,17 +314,19 @@ class OvernightShipping implements ShippingCalculator {
 
 ## Self-Verification Checklist
 
-- [ ] Code Archaeology Report file exists and is non-empty: `test -s <report_file> && echo EXISTS` exits 0; `grep -c "entry point\|critical path\|framework\|estimated age" <report_file>` returns >= 4 matches
-- [ ] All external dependencies catalogued with status: `wc -l <dependency_catalogue>` >= number of `import`/`require` statements found by `grep -rn "^import \|^require(" src/ | wc -l`; each entry is labelled current, outdated, or EOL
-- [ ] Characterization tests exist for every critical path: `grep -rn "characterization\|golden master\|snapshot" tests/ | wc -l` >= number of critical paths documented in the report
-- [ ] Refactoring pattern chosen and documented before code change: `grep -n "Strangler Fig\|Extract Method\|pattern chosen" <report_file>` returns at least 1 match; `git log --oneline --before=<first_code_change_date>` shows the report commit predates any production file changes
-- [ ] Every refactoring step verified by test run: `git log --oneline` shows alternating implement/test commits — `git log --oneline | grep -c "test\|verify"` >= number of refactoring steps
-- [ ] Hidden dependencies documented: `grep -c "global\|singleton\|ENV\|environment variable\|implicit order" <report_file>` returns >= 1 match; undocumented globals found by `grep -rn "global " src/ | wc -l` equals 0 or all are listed in the report
+grep -cE "entry point|critical path|framework|estimated age"
+grep -rnE "^import |^require("
+grep -rnE "characterization|golden master|snapshot"
+grep -nE "Strangler Fig|Extract Method|pattern chosen"
+grep -cE "test|verify"
+grep -cE "global|singleton|ENV|environment variable|implicit order"
+
 - [ ] No regressions after refactoring: test runner exits 0 after final step — `npm test (or pytest)` returns exit code 0 with 0 newly failing tests compared to pre-refactoring baseline
 
 ## Success Criteria
 
 This task is complete when:
+
 1. A System Map document exists covering data flow, dependency tree, and critical paths
 2. Characterization tests cover the critical paths with enough confidence to detect regressions
 3. A refactoring plan with incremental steps is documented, prioritized by risk level

@@ -1,6 +1,6 @@
 ---
 name: regex-vs-llm-structured-text
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Decision framework and hybrid implementation for regex vs LLM text parsing. Use when parsing structured text (forms, logs, tables) to optimize cost and accuracy.
 triggers:
   - "regex vs llm"
@@ -17,7 +17,7 @@ triggers:
 
 You are an extraction and parsing specialist. You know that LLMs are powerful but expensive and sometimes inconsistent, while Regex is fast and deterministic but brittle. You don't choose one — you build a hybrid pipeline that uses Regex for 95% of the work and LLMs strictly for the edge cases.
 
-## When to Activate
+## When to Use
 
 - Parsing documents with repeating patterns (questions, forms, logs, legacy reports)
 - Deciding between regex and LLM for a new extraction task
@@ -144,13 +144,13 @@ def validate_with_llm(raw_text: str, current_data: dict, client) -> dict:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Confidence threshold miscalibrated, LLM passes low-confidence output downstream | Threshold set too low (e.g., 0.5) during development; never tuned on production distribution | Run threshold calibration on a labelled sample of 100+ real records; pick the threshold that minimises false-passes at target precision |
-| Regex has catastrophic backtracking on adversarial input causing CPU spike | Pattern uses nested quantifiers (e.g., `(.+)+`) on user-controlled input; not tested against malicious strings | Audit all regexes with a backtracking analyser (e.g., `safe-regex` for Node.js); replace greedy quantifiers with possessive or atomic groups |
-| LLM cost overrun on high-volume endpoint (expected regex, got 100× cost) | Confidence gate threshold too strict; nearly all records routed to LLM on inputs that regex handles well | Lower the LLM routing threshold; improve regex patterns to raise coverage above 95% on representative samples before deploying |
-| Hybrid pipeline latency regression from synchronous LLM call on hot path | LLM validation inserted inline on a synchronous request handler with 200ms p99 SLA | Move LLM calls to an async queue; return regex best-effort result immediately; apply LLM correction asynchronously and store |
-| Training data staleness causes LLM to miss newly introduced format variant | Document format changed (new field added, date format shifted); LLM prompt not updated; regex pattern misses new structure | Maintain a golden test set with format variants; run it on every prompt change; add the new variant as a test case before deploying |
+| Failure                                                                         | Cause                                                                                                                      | Recovery                                                                                                                                     |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Confidence threshold miscalibrated, LLM passes low-confidence output downstream | Threshold set too low (e.g., 0.5) during development; never tuned on production distribution                               | Run threshold calibration on a labelled sample of 100+ real records; pick the threshold that minimises false-passes at target precision      |
+| Regex has catastrophic backtracking on adversarial input causing CPU spike      | Pattern uses nested quantifiers (e.g., `(.+)+`) on user-controlled input; not tested against malicious strings             | Audit all regexes with a backtracking analyser (e.g., `safe-regex` for Node.js); replace greedy quantifiers with possessive or atomic groups |
+| LLM cost overrun on high-volume endpoint (expected regex, got 100× cost)        | Confidence gate threshold too strict; nearly all records routed to LLM on inputs that regex handles well                   | Lower the LLM routing threshold; improve regex patterns to raise coverage above 95% on representative samples before deploying               |
+| Hybrid pipeline latency regression from synchronous LLM call on hot path        | LLM validation inserted inline on a synchronous request handler with 200ms p99 SLA                                         | Move LLM calls to an async queue; return regex best-effort result immediately; apply LLM correction asynchronously and store                 |
+| Training data staleness causes LLM to miss newly introduced format variant      | Document format changed (new field added, date format shifted); LLM prompt not updated; regex pattern misses new structure | Maintain a golden test set with format variants; run it on every prompt change; add the new variant as a test case before deploying          |
 
 ## Self-Verification Checklist
 

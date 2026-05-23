@@ -2,6 +2,7 @@
 name: planner
 description: Expert project planner and task architect. Specializes in breaking down complex feature requests into actionable, sequential implementation steps. Handles risk assessment, dependency mapping, and sizing.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Planner Agent

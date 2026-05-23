@@ -1,5 +1,6 @@
 ---
 description: Systematic root cause analysis and resolution workflow. Use when encountering bugs, errors, or unexpected behavior.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Debug Workflow

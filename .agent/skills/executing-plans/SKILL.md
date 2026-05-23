@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Disciplined plan execution with dependency graph resolution, review gates, progress tracking, and quality cleanup. Use when you have a plan to implement and need to track progress systematically, including complex sequential tasks with ordered dependencies.
 triggers:
   - "execute the plan"
@@ -72,8 +72,9 @@ For each step in the plan:
 2. **Implement the step** following the plan's guidance
 3. **🧹 Run De-Sloppify pass** — see `.agent/shared/DE-SLOPPIFY.md`
 4. **Test locally** before moving on
-5. **Update task tracker** when complete (DO NOT run `git add` or `git commit` here. Committing is reserved for the end of the workflow).
-6. **Run verification** for the phase (if at a checkpoint) — see `.agent/shared/VERIFICATION-GATE.md`
+5. **Back up task tracker** before modifying: run `scripts/backup-task-state.sh backup` to create a timestamped snapshot in `docs/plans/backups/`. This prevents the single-point-of-failure from losing session state on interruption.
+6. **Update task tracker** when complete (DO NOT run `git add` or `git commit` here. Committing is reserved for the end of the workflow).
+7. **Run verification** for the phase (if at a checkpoint) — see `.agent/shared/VERIFICATION-GATE.md`
 
 ### Step 3: Handle Deviations
 
@@ -197,26 +198,34 @@ Every single-flow session must establish an explicit contract before starting:
 
 ```markdown
 # Execution Contract: [Task Name]
+
 Date: [YYYY-MM-DD]
 Session ID: [if resuming, include prior session reference]
 
 ## Goal
+
 [One sentence: what is the concrete deliverable when this is done?]
 
 ## Success Criteria
+
 [Measurable: "task is complete when X, Y, Z are all true"]
+
 1. [criterion 1]
 2. [criterion 2]
 3. [criterion 3]
 
 ## Scope Boundaries
+
 IN SCOPE:
+
 - [explicit list]
 
 OUT OF SCOPE (do not touch):
+
 - [explicit list — prevents scope creep mid-execution]
 
 ## Escalation Threshold
+
 If any subtask [describe condition], STOP and re-plan before continuing.
 Example: "If the API response schema differs from the documented spec, stop."
 ```
@@ -230,23 +239,25 @@ Break the task into ordered subtasks and identify the dependency graph:
 
 ### Subtasks (Ordered)
 
-| ID | Subtask | Depends On | Review Gate? |
-| --- | --- | --- | --- |
-| 1 | Set up database schema | - | No |
-| 2 | Create API endpoints | 1 | Yes (API design) |
-| 3 | Add request validation | 2 | No |
-| 4 | Build frontend components | 2 | No |
-| 5 | Write unit + integration tests | 3, 4 | Yes (coverage) |
-| 6 | Document API (OpenAPI spec) | 2, 3 | No |
-| 7 | Final smoke test | 5, 6 | No |
+| ID  | Subtask                        | Depends On | Review Gate?     |
+| --- | ------------------------------ | ---------- | ---------------- |
+| 1   | Set up database schema         | -          | No               |
+| 2   | Create API endpoints           | 1          | Yes (API design) |
+| 3   | Add request validation         | 2          | No               |
+| 4   | Build frontend components      | 2          | No               |
+| 5   | Write unit + integration tests | 3, 4       | Yes (coverage)   |
+| 6   | Document API (OpenAPI spec)    | 2, 3       | No               |
+| 7   | Final smoke test               | 5, 6       | No               |
 
 ### Dependency Graph (visual)
+
 1 → 2 → 3 → 5 → 7
-        ↘ 4 ↗
-          6 ↗
+↘ 4 ↗
+6 ↗
 ```
 
 **Rules:**
+
 - A subtask with no dependencies can start immediately
 - A subtask with dependencies cannot start until ALL its dependencies are marked `completed`
 - Review gates block progression until explicitly cleared
@@ -256,6 +267,7 @@ Break the task into ordered subtasks and identify the dependency graph:
 A review gate is a hard stop where human judgment is required before proceeding.
 
 Place review gates:
+
 - After any API design decision (contract changes are expensive to reverse)
 - After any database schema change (migrations are expensive to undo)
 - After security-sensitive code (auth, crypto, payments)
@@ -266,10 +278,12 @@ Place review gates:
 ## Review Gates
 
 ### Gate A: API Design Review (after Subtask 2)
+
 Review: Do the endpoint contracts match the original spec?
 Decision: Approve to continue | Reject to revise Task 2
 
 ### Gate B: Test Coverage Review (after Subtask 5)
+
 Review: Is coverage >= 80% on all new code paths?
 Decision: Approve if yes | Reject if below threshold (add more tests)
 ```
@@ -278,6 +292,7 @@ Decision: Approve if yes | Reject if below threshold (add more tests)
 
 ```markdown
 # Task Queue: [Task Name]
+
 Last Updated: [YYYY-MM-DD HH:MM]
 Session: [session reference for resumability]
 
@@ -285,15 +300,15 @@ Session: [session reference for resumability]
 
 ## Tasks
 
-| ID | Subtask | Status | Skill | Started | Completed | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Set up database schema | completed | python-patterns | 2025-04-03 | 2025-04-03 | Used Alembic |
-| 2 | Create API endpoints | in_progress | backend-architect | 2025-04-03 | - | |
-| 3 | Add request validation | pending | - | - | - | Blocked by 2 |
-| 4 | Build frontend components | pending | - | - | - | Blocked by 2 |
-| 5 | Write tests | pending | - | - | - | Blocked by 3, 4 |
-| 6 | Document API | pending | - | - | - | Blocked by 2, 3 |
-| 7 | Final smoke test | pending | - | - | - | Blocked by 5, 6 |
+| ID  | Subtask                   | Status      | Skill             | Started    | Completed  | Notes           |
+| --- | ------------------------- | ----------- | ----------------- | ---------- | ---------- | --------------- |
+| 1   | Set up database schema    | completed   | python-patterns   | 2025-04-03 | 2025-04-03 | Used Alembic    |
+| 2   | Create API endpoints      | in_progress | backend-architect | 2025-04-03 | -          |                 |
+| 3   | Add request validation    | pending     | -                 | -          | -          | Blocked by 2    |
+| 4   | Build frontend components | pending     | -                 | -          | -          | Blocked by 2    |
+| 5   | Write tests               | pending     | -                 | -          | -          | Blocked by 3, 4 |
+| 6   | Document API              | pending     | -                 | -          | -          | Blocked by 2, 3 |
+| 7   | Final smoke test          | pending     | -                 | -          | -          | Blocked by 5, 6 |
 
 ## Review Gates
 
@@ -307,28 +322,34 @@ After completing each subtask, record the execution context. This enables resump
 
 ```markdown
 ## Execution Context Snapshot
+
 After: Task 2 (Create API endpoints)
 Time: 2025-04-03 14:32
 
 ### Decisions Made
+
 - Used FastAPI with async endpoints (not Flask — see ADR-001)
 - Auth uses Bearer token in Authorization header (not cookie)
 - Pagination: cursor-based (not offset) — decision locked
 
 ### Files Modified
+
 - src/api/routes/users.py (created)
 - src/api/routes/posts.py (created)
 - src/api/dependencies.py (modified — added auth dependency)
 
 ### State to Carry Forward
+
 - The User model was extended with `last_active_at` (affects Task 4 frontend)
 - API base URL is `/api/v2/` (not `/v1/` as originally planned — check docs)
 
 ### Current Test Status
+
 - 12 new tests added; all passing
 - Coverage: 67% (target 80% — Tasks 3 and 5 will close this gap)
 
 ### Next Unblocked Tasks
+
 - Task 3: Add request validation (ready to start)
 - Gate A review: pending (present to user before starting Task 3)
 ```
@@ -354,6 +375,7 @@ RECOVERY PROTOCOL:
 Escalate immediately when a subtask reveals the overall plan is wrong.
 
 **Escalation triggers:**
+
 - A dependency does not exist and cannot be created within the current task
 - A subtask reveals a requirement contradiction that makes two other tasks mutually exclusive
 - A completed task must be fundamentally redesigned (not just patched) to unblock a later task
@@ -364,9 +386,10 @@ Escalate immediately when a subtask reveals the overall plan is wrong.
 
 ```markdown
 ## ESCALATION NOTICE
+
 Triggered by: Task 4 (Build frontend components)
 Reason: The API response shape from Task 2 is incompatible with the component library's
-        required data format. This is a design mismatch, not an implementation bug.
+required data format. This is a design mismatch, not an implementation bug.
 
 Options:
 A) Revise Task 2 API to match component library expectations (affects Tasks 3, 6)
@@ -391,19 +414,19 @@ Do not continue executing after a valid escalation trigger. Stop, document, and 
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Step marked complete before output verified | Agent marks todo done on tool call success, not on output validation | Add an explicit "verify output" substep after every action step; only mark complete after verification passes |
-| Plan executed out of order because dependencies not identified | Step list treated as unordered; agent picks next available step without checking prerequisites | Map dependencies between steps before execution starts; execute in topological order |
-| Step fails silently because error output not captured | Tool returns non-zero exit but agent checks stdout only; stderr discarded | Capture both stdout and stderr; treat any non-zero exit code as a step failure regardless of stdout content |
-| Rollback path not defined, leaving system in partial state after failure | Plan written without failure scenarios; no undo steps specified | Define rollback actions for every destructive step before execution begins; test rollback path in a dry run |
-| Plan step scope creep: agent adds unrequested changes during execution | Agent identifies "improvements" while executing a step and implements them inline | Execute the plan exactly as written; log improvements as separate todos for a follow-up task; never expand scope mid-execution |
-| Session interrupted mid-task | Work state lost without context snapshot | Read task queue + last context snapshot. Resume from start of the in_progress task. Verify before advancing. |
-| Review gate rejected | Gate rejected without re-work path | Re-open the affected subtask(s) (set back to pending). Clear the gate checkbox. Implement the feedback. Re-run verification. Re-present to gate. |
-| Subtask verification fails after multiple attempts | Fix requires changing a prior completed task | Escalate. Do not hack around the root cause. |
-| Dependency graph contains a cycle | Two tasks cannot both depend on each other | Decompose one into smaller units to break the cycle. |
-| Subtask scope explodes during execution | Undiscovered requirements | Stop. Update the task queue with new subtasks. Re-analyze the dependency graph. Do not absorb the scope expansion silently. |
-| Task queue document is missing (session lost) | Reconstruct from git log, file modification times, and code inspection. Do not assume any task is complete without verification. |
+| Failure                                                                  | Cause                                                                                                                            | Recovery                                                                                                                                         |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Step marked complete before output verified                              | Agent marks todo done on tool call success, not on output validation                                                             | Add an explicit "verify output" substep after every action step; only mark complete after verification passes                                    |
+| Plan executed out of order because dependencies not identified           | Step list treated as unordered; agent picks next available step without checking prerequisites                                   | Map dependencies between steps before execution starts; execute in topological order                                                             |
+| Step fails silently because error output not captured                    | Tool returns non-zero exit but agent checks stdout only; stderr discarded                                                        | Capture both stdout and stderr; treat any non-zero exit code as a step failure regardless of stdout content                                      |
+| Rollback path not defined, leaving system in partial state after failure | Plan written without failure scenarios; no undo steps specified                                                                  | Define rollback actions for every destructive step before execution begins; test rollback path in a dry run                                      |
+| Plan step scope creep: agent adds unrequested changes during execution   | Agent identifies "improvements" while executing a step and implements them inline                                                | Execute the plan exactly as written; log improvements as separate todos for a follow-up task; never expand scope mid-execution                   |
+| Session interrupted mid-task                                             | Work state lost without context snapshot                                                                                         | Read task queue + last context snapshot. Resume from start of the in_progress task. Verify before advancing.                                     |
+| Review gate rejected                                                     | Gate rejected without re-work path                                                                                               | Re-open the affected subtask(s) (set back to pending). Clear the gate checkbox. Implement the feedback. Re-run verification. Re-present to gate. |
+| Subtask verification fails after multiple attempts                       | Fix requires changing a prior completed task                                                                                     | Escalate. Do not hack around the root cause.                                                                                                     |
+| Dependency graph contains a cycle                                        | Two tasks cannot both depend on each other                                                                                       | Decompose one into smaller units to break the cycle.                                                                                             |
+| Subtask scope explodes during execution                                  | Undiscovered requirements                                                                                                        | Stop. Update the task queue with new subtasks. Re-analyze the dependency graph. Do not absorb the scope expansion silently.                      |
+| Task queue document is missing (session lost)                            | Reconstruct from git log, file modification times, and code inspection. Do not assume any task is complete without verification. |
 
 ## Anti-Patterns
 
@@ -434,4 +457,4 @@ Do not continue executing after a valid escalation trigger. Stop, document, and 
 
 ## Success Criteria
 
-This skill is complete when: 1) every step in the plan is marked completed in task.md with verification confirmed, 2) all phase verification gates have passed (tests, linting, build), 3) the De-Sloppify pass has been run after every implementation step with no debug artifacts remaining, 4) all review gates are cleared, and 5) the execution context snapshot captures all non-obvious decisions made during execution.
+This skill is complete when: 1) every step in the plan is marked completed in task.md with verification confirmed, 2) all phase verification gates have passed (tests, linting, build), 3) the De-Sloppify pass has been run after every implementation step with no debug artifacts remaining, 4) all review gates are cleared, 5) the execution context snapshot captures all non-obvious decisions made during execution, and 6) the **Handoff block** has been emitted with `next_skill` pointing to `verification-loop` (or the next chain step) and `status: completed`.

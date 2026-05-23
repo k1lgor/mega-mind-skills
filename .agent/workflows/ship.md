@@ -1,5 +1,6 @@
 ---
 description: Final branch wrap-up and merge workflow. Use when a feature branch is fully verified and ready to deploy.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Ship Workflow

@@ -1,6 +1,6 @@
 ---
 name: skill-generator
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Creating and debugging new SKILL.md files. Use for creating custom skills.
 triggers:
   - "create skill"
@@ -218,14 +218,16 @@ Triggers should be unambiguous.
 ```markdown
 Good:
 triggers:
-  - "debug API"
-  - "API not working"
-  - "endpoint error"
+
+- "debug API"
+- "API not working"
+- "endpoint error"
 
 Bad:
 triggers:
-  - "help"
-  - "fix"
+
+- "help"
+- "fix"
 ```
 
 ### 3. Actionable Steps
@@ -366,16 +368,16 @@ This skill is complete when: 1) the SKILL.md file is fully filled out with domai
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Skill never triggers in practice because trigger phrases too narrow | Trigger phrases are exact strings the author would say, not phrases users naturally use | Test the skill with 5 different phrasings a user might actually type; broaden triggers to natural-language variants |
-| Skill triggers conflict with existing skill, causing ambiguous routing | Two skills share a trigger phrase; routing is undefined | Run `grep -r "trigger" .agent/skills/` to find overlaps; rename the new skill's trigger or narrow it with a more specific phrase |
-| Skill too broad (matches everything), displacing more specific skills | Description contains generic words like "coding", "development", "fix" | Rewrite description with domain-specific nouns rather than generic verbs |
-| Skill prompt is too long, eating context before agent begins work | Skill includes full implementation examples, large tables, and repeated boilerplate; total >300 lines | Trim to instructions + one minimal example; move exhaustive reference to a linked doc |
-| Self-verify section omitted, no way to know if skill applied correctly | Skill created from template but self-verify section left as placeholder or deleted | Add a self-verify section with at least 3 measurable checkboxes before publishing the skill |
-| Skill is too generic to produce different behaviour than the base model | Instructions written at the level of "be thorough"; no domain-specific decision rules | Identify the 3 highest-impact decisions an agent makes in this domain; write explicit rules for each |
-| Anti-patterns section has no "because Y" rationale | Entries written as "Never do X" without explaining the consequence | Every anti-pattern must state the concrete failure mode it prevents; add "because Y" to every entry |
-| Skill routing section missing or too permissive | No "When NOT to Use" section; skill applied in every situation | Add "When NOT to Use" with at least 2 explicit exclusion cases |
+| Failure                                                                 | Cause                                                                                                 | Recovery                                                                                                                         |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Skill never triggers in practice because trigger phrases too narrow     | Trigger phrases are exact strings the author would say, not phrases users naturally use               | Test the skill with 5 different phrasings a user might actually type; broaden triggers to natural-language variants              |
+| Skill triggers conflict with existing skill, causing ambiguous routing  | Two skills share a trigger phrase; routing is undefined                                               | Run `grep -r "trigger" .agent/skills/` to find overlaps; rename the new skill's trigger or narrow it with a more specific phrase |
+| Skill too broad (matches everything), displacing more specific skills   | Description contains generic words like "coding", "development", "fix"                                | Rewrite description with domain-specific nouns rather than generic verbs                                                         |
+| Skill prompt is too long, eating context before agent begins work       | Skill includes full implementation examples, large tables, and repeated boilerplate; total >300 lines | Trim to instructions + one minimal example; move exhaustive reference to a linked doc                                            |
+| Self-verify section omitted, no way to know if skill applied correctly  | Skill created from template but self-verify section left as placeholder or deleted                    | Add a self-verify section with at least 3 measurable checkboxes before publishing the skill                                      |
+| Skill is too generic to produce different behaviour than the base model | Instructions written at the level of "be thorough"; no domain-specific decision rules                 | Identify the 3 highest-impact decisions an agent makes in this domain; write explicit rules for each                             |
+| Anti-patterns section has no "because Y" rationale                      | Entries written as "Never do X" without explaining the consequence                                    | Every anti-pattern must state the concrete failure mode it prevents; add "because Y" to every entry                              |
+| Skill routing section missing or too permissive                         | No "When NOT to Use" section; skill applied in every situation                                        | Add "When NOT to Use" with at least 2 explicit exclusion cases                                                                   |
 
 ## Tips for Skill Creators
 

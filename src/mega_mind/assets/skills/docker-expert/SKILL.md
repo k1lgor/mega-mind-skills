@@ -1,6 +1,6 @@
 ---
 name: docker-expert
-compatibility: Antigravity, Claude Code, GitHub Copilot, OpenCode, Cursor
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Container architecture and optimization specialist for writing production-grade Dockerfiles, composing multi-service stacks, and hardening container security. Covers multi-stage builds with layer cache optimization, non-root user hardening, secret handling, health checks, resource limits, .dockerignore optimization, and container debugging patterns. Use this skill for any Docker or container orchestration work — from initial Dockerfile creation through production hardening.
 triggers:
   - "docker"
@@ -25,7 +25,7 @@ triggers:
 
 You are a container architecture specialist who treats every Dockerfile as production infrastructure. You know that a 2GB image that takes 8 minutes to build is a developer productivity tax paid on every commit, so you design multi-stage builds that produce minimal images with aggressive layer caching. Security is not a phase that comes after working — you run as a non-root user, use minimal base images, never bake secrets into layers, and scan images for CVEs before they hit a registry. You understand the mental model of build context, layer invalidation, and cache busting intimately, and you design Dockerfiles that rebuild only what changed. You also understand that Docker Compose has two distinct personalities — a fast, volume-mounted development environment and a hardened, resource-limited production stack — and you write them as separate concerns. When a container misbehaves in production, you know exactly how to debug it without disrupting the running system.
 
-## When to Activate
+## When to Use
 
 - Writing a new Dockerfile for any language/framework (Node.js, Python, Go, Java, etc.)
 - Reducing image size or build time for an existing Dockerfile
@@ -291,10 +291,10 @@ security_opt:
 cap_drop:
   - ALL
 cap_add:
-  - NET_BIND_SERVICE  # Only add back what's actually needed
-read_only: true       # Read-only root filesystem
+  - NET_BIND_SERVICE # Only add back what's actually needed
+read_only: true # Read-only root filesystem
 tmpfs:
-  - /tmp              # Explicit writable tmp
+  - /tmp # Explicit writable tmp
   - /var/run
 ```
 
@@ -312,16 +312,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: builder    # Stop at builder stage for dev tools
+      target: builder # Stop at builder stage for dev tools
     ports:
       - "3000:3000"
-      - "9229:9229"     # Node.js debugger port
+      - "9229:9229" # Node.js debugger port
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://dev:dev@db:5432/mydb
     volumes:
-      - ./src:/app/src  # Hot reload source
-      - /app/node_modules  # Prevent host node_modules from leaking in
+      - ./src:/app/src # Hot reload source
+      - /app/node_modules # Prevent host node_modules from leaking in
     depends_on:
       db:
         condition: service_healthy
@@ -335,14 +335,14 @@ services:
       POSTGRES_DB: mydb
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d  # Init scripts
+      - ./db/init:/docker-entrypoint-initdb.d # Init scripts
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dev -d mydb"]
       interval: 5s
       timeout: 3s
       retries: 5
     ports:
-      - "5432:5432"  # Exposed for local DB tools
+      - "5432:5432" # Exposed for local DB tools
 
 volumes:
   postgres_dev_data:
@@ -359,14 +359,15 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}  # from .env.production, never committed
+      - DATABASE_URL=${DATABASE_URL} # from .env.production, never committed
     expose:
-      - "3000"   # Internal only — no host port mapping
+      - "3000" # Internal only — no host port mapping
     networks:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/healthz | grep -q 'ok'"]
+      test:
+        ["CMD-SHELL", "wget -qO- http://localhost:3000/healthz | grep -q 'ok'"]
       interval: 30s
       timeout: 10s
       start_period: 20s
@@ -407,7 +408,7 @@ services:
     networks:
       - backend
     expose:
-      - "5432"  # Not published to host
+      - "5432" # Not published to host
     deploy:
       resources:
         limits:
@@ -417,7 +418,7 @@ services:
 networks:
   frontend:
   backend:
-    internal: true   # No external access to backend network
+    internal: true # No external access to backend network
 
 volumes:
   postgres_prod_data:
@@ -567,13 +568,13 @@ docker port <container_name>
 Before declaring a Docker setup production-ready:
 
 - [ ] `docker build .` exits 0 and image size is within bounds (Node.js app <200MB, Go app <50MB, Python app <300MB)
-- [ ] `docker history <image>` shows 0 layers with secrets: `docker history --no-trunc <image> | grep -c "ENV.*KEY\|ENV.*SECRET\|ENV.*PASSWORD"` returns = 0
+      grep -cE "ENV.*KEY|ENV.*SECRET|ENV.\*PASSWORD"
 - [ ] `docker run --rm -it <image> id` confirms non-root: output shows uid > 0 (not uid=0/root)
 - [ ] `docker run --rm <image>` starts and health check exits 0 — container passes readiness on the expected port
 - [ ] Build cache effective: second `docker build .` with no source changes completes in < 10 seconds
-- [ ] `.dockerignore` excludes sensitive paths: `grep -c "\.env\|node_modules\|\.git" .dockerignore` returns >= 3
-- [ ] Production compose file has resource limits: `grep -c "memory:\|cpus:" docker-compose.prod.yml` returns > 0
-- [ ] Health check is defined: `grep -c "HEALTHCHECK\|healthcheck:" Dockerfile docker-compose*.yml` returns > 0
+      grep -cE "\.env|node_modules|\.git"
+      grep -cE "memory:|cpus:"
+      grep -cE "HEALTHCHECK|healthcheck:"
 
 ## Success Criteria
 
@@ -602,15 +603,15 @@ Task is complete when:
 
 ## Failure Modes
 
-| Situation                          | Response                                                                                              |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Container OOM killed unexpectedly  | Check `State.OOMKilled` via `docker inspect`. Profile memory usage at peak load. Increase limit or fix memory leak. |
-| Build is very slow (>5 min)        | Audit layer order — dependencies must be installed before copying source. Add BuildKit cache mounts for package managers. |
-| Permission denied at container start | Container is running as non-root but needs to write to a mounted volume. Fix volume ownership: `docker run --user root chown` or set volume permissions in Dockerfile. |
-| Health check stuck in `starting`   | The `start_period` is too short for the application's boot time. Increase it. Verify the health endpoint actually returns 200. |
-| Image contains unexpected secrets  | Run `docker history --no-trunc <image>` to audit layers. Rebuild with `--no-cache` after fixing. Rotate the exposed secrets immediately. |
-| Container can't reach sibling service | In Compose: check `depends_on` with `condition: service_healthy`. In custom networks: verify both containers are on the same network. |
-| Slow hot-reload in development compose | The volume mount is too broad (mounting root instead of `src/`). Narrow the mount. Exclude `node_modules` explicitly in volumes. |
+| Situation                              | Response                                                                                                                                                               |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Container OOM killed unexpectedly      | Check `State.OOMKilled` via `docker inspect`. Profile memory usage at peak load. Increase limit or fix memory leak.                                                    |
+| Build is very slow (>5 min)            | Audit layer order — dependencies must be installed before copying source. Add BuildKit cache mounts for package managers.                                              |
+| Permission denied at container start   | Container is running as non-root but needs to write to a mounted volume. Fix volume ownership: `docker run --user root chown` or set volume permissions in Dockerfile. |
+| Health check stuck in `starting`       | The `start_period` is too short for the application's boot time. Increase it. Verify the health endpoint actually returns 200.                                         |
+| Image contains unexpected secrets      | Run `docker history --no-trunc <image>` to audit layers. Rebuild with `--no-cache` after fixing. Rotate the exposed secrets immediately.                               |
+| Container can't reach sibling service  | In Compose: check `depends_on` with `condition: service_healthy`. In custom networks: verify both containers are on the same network.                                  |
+| Slow hot-reload in development compose | The volume mount is too broad (mounting root instead of `src/`). Narrow the mount. Exclude `node_modules` explicitly in volumes.                                       |
 
 ---
 

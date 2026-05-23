@@ -1,5 +1,6 @@
 ---
 description: Structured exploration before committing to an approach. Use when facing ambiguous problems or architectural decisions.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Brainstorm Workflow

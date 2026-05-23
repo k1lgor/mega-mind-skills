@@ -1,7 +1,7 @@
 ---
 name: verification-loop
-compatibility: Antigravity, Claude Code, GitHub Copilot
-description: Comprehensive 6-phase verification system with continuous mode. Replaces ad-hoc "does this work?" checks with a rigorous, structured verification that produces a machine-readable report. Use before any PR or major handoff.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
+description: Scope-aware tiered verification system (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep) with continuous quick-check mode. Classifies change risk before running phases to avoid over-testing cosmetic changes while guaranteeing deep verification for risky ones. Replaces ad-hoc "does this work?" checks with a rigorous, structured verification that produces a machine-readable report. Use before any PR or major handoff.
 triggers:
   - "/verify"
   - "verification loop"
@@ -51,7 +51,7 @@ Before running any automated checks, scan all changed files for artifacts.
 > See: `.agent/shared/DE-SLOPPIFY.md` for the full checklist.
 
 ```bash
-git diff --name-only HEAD | xargs grep -l "console\.log\|debugger\|TODO\|FIXME\|pdb\.set_trace\|import pdb" 2>/dev/null
+grep -lE "console\.log|debugger|TODO|FIXME|pdb\.set_trace|import pdb"
 ```
 
 - [ ] No debug code (console.log, print, debugger, breakpoints)
@@ -156,7 +156,7 @@ If coverage is below target → write tests before proceeding.
 
 ```bash
 # Check for hardcoded secrets / API keys
-git diff --name-only HEAD | xargs grep -nE "(sk-|api_key|API_KEY|secret|password)\s*=\s*['\"][^'\"]{10}" 2>/dev/null | head -10
+git diff --name-only HEAD | xargs grep -nE "(sk-|api_key|API_KEY|secret|password)[[:space:]]*=[[:space:]]*['\"][^'\"]{10}" 2>/dev/null | head -10
 
 # Check for console.log in source (not test) files
 grep -rn "console\.log" --include="*.ts" --include="*.tsx" src/ 2>/dev/null | grep -v ".test." | head -10
@@ -287,24 +287,58 @@ Type Errors to Fix:
 
 ## Common Verification Failures
 
-| Failure Type | Example | Fix |
-|---|---|---|
-| Tests Failing | New field in model not in test fixtures | Update fixtures to match model |
-| Build Failing | `Type 'string \| undefined' not assignable to 'string'` | Add null check with default value |
-| Manual Failure | Feature works but shows console error | Add error boundary component |
+| Failure Type   | Example                                                 | Fix                               |
+| -------------- | ------------------------------------------------------- | --------------------------------- |
+| Tests Failing  | New field in model not in test fixtures                 | Update fixtures to match model    |
+| Build Failing  | `Type 'string \| undefined' not assignable to 'string'` | Add null check with default value |
+| Manual Failure | Feature works but shows console error                   | Add error boundary component      |
 
 ---
 
-## Continuous Mode
+## Tiered Verification (Scope-Based Depth Selection)
+
+Instead of always running all 10 phases, assess the change scope first and pick the
+appropriate tier. This prevents a one-line CSS fix from running 10 phases, while still
+guaranteeing deep verification for high-risk changes.
+
+### Step 0: Scope Classification
+
+Classify the change before running any phase:
+
+| Classification | Definition                                                             | Examples                                                                      |
+| -------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Cosmetic**   | No logic change. Docs, comments, whitespace, config formatting.        | README typo, `.gitignore` entry, comment update, indentation fix              |
+| **Standard**   | Code change within one module. No new dependencies, no schema changes. | New component, utility function, bug fix in existing logic                    |
+| **Deep**       | Cross-cutting, risky, or security-sensitive.                           | Schema migration, auth logic, payment flow, new dependency, public API change |
+
+### Step 1: Pick the Tier
+
+| Tier                  | When                         | Phases to Run                                  |
+| --------------------- | ---------------------------- | ---------------------------------------------- |
+| **Tier 1 — Surface**  | Cosmetic changes only        | Phase 0 (De-Sloppify) → Phase 1 (Build)        |
+| **Tier 2 — Standard** | Standard changes             | Phase 0 → 1 → 2 (Types) → 3 (Lint) → 4 (Tests) |
+| **Tier 3 — Deep**     | Deep changes + before any PR | All 10 phases (0-9)                            |
 
 ```
-QUICK CHECK (every 15 min or after each function/component):
-  1. Build ─ does it compile?
-  2. Types ─ any new type errors?
-  3. Tests ─ do existing tests still pass?
+DECISION RULES:
+- Change touches ONLY .md, .yml, .gitignore?  → Tier 1 (Surface)
+- Change touches ONLY one module, no migrations?  → Tier 2 (Standard)
+- Change adds/changes: auth, payments, DB schema, deps, public API?  → Tier 3 (Deep)
+- Unsure?  → Default to Tier 3 (Deep)
+- Running before a PR?  → Always Tier 3 (Deep)
+```
 
-FULL VERIFY (before PR):
-  All phases
+### Quick Reference
+
+```
+TIER 1 (Surface — <30s):
+  0. De-Sloppify → 1. Build
+
+TIER 2 (Standard — <2min):
+  0. De-Sloppify → 1. Build → 2. Types → 3. Lint → 4. Tests
+
+TIER 3 (Deep — before PR):
+  All 10 phases (0-9)
 ```
 
 ---
@@ -324,16 +358,16 @@ FULL VERIFY (before PR):
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Loop exits early because agent misidentifies warning as pass | Exit condition checks absence of errors not warnings | Treat warnings as failures for blocking phases; use `--strict` flags |
-| Verification criteria defined after implementation | Criteria shaped by what passes, not what should pass | Define acceptance criteria before writing code |
-| Loop runs against wrong environment | Dev used instead of staging | Parameterise verification target; default to staging |
-| Results not recorded after loop | Agent runs phases but does not persist outcome | Write phase results to structured log after each phase |
-| Phase gate skipped due to ambiguous output | Agent interprets ambiguous output as pass | Default ambiguous output to FAIL; require explicit pass signal |
-| Build passes but tests not run | Test command omitted; CI and local scripts diverged | Consolidate into a single script; run locally before every completion claim |
-| Coverage threshold met by trivial tests | Tests execute code without asserting behaviour | Require meaningful assertions; check assertion-to-line ratio |
-| Regression in adjacent module not caught | Verification scoped to changed files only | Run full integration test suite; check import graph for affected consumers |
+| Failure                                                      | Cause                                                | Recovery                                                                    |
+| ------------------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| Loop exits early because agent misidentifies warning as pass | Exit condition checks absence of errors not warnings | Treat warnings as failures for blocking phases; use `--strict` flags        |
+| Verification criteria defined after implementation           | Criteria shaped by what passes, not what should pass | Define acceptance criteria before writing code                              |
+| Loop runs against wrong environment                          | Dev used instead of staging                          | Parameterise verification target; default to staging                        |
+| Results not recorded after loop                              | Agent runs phases but does not persist outcome       | Write phase results to structured log after each phase                      |
+| Phase gate skipped due to ambiguous output                   | Agent interprets ambiguous output as pass            | Default ambiguous output to FAIL; require explicit pass signal              |
+| Build passes but tests not run                               | Test command omitted; CI and local scripts diverged  | Consolidate into a single script; run locally before every completion claim |
+| Coverage threshold met by trivial tests                      | Tests execute code without asserting behaviour       | Require meaningful assertions; check assertion-to-line ratio                |
+| Regression in adjacent module not caught                     | Verification scoped to changed files only            | Run full integration test suite; check import graph for affected consumers  |
 
 ## Anti-Patterns
 
@@ -350,22 +384,27 @@ FULL VERIFY (before PR):
 
 ## Self-Verification Checklist
 
-- [ ] All phases run in order and each has PASS or documented exception
+- [ ] Scope classified before phases: classification is recorded (Cosmetic / Standard / Deep)
+- [ ] Tier selected matches scope: Tier 1 for Cosmetic, Tier 2 for Standard, Tier 3 for Deep or PR
+- [ ] All phases for chosen tier run in order and each has PASS or documented exception
 - [ ] Build passed before Phase 2 (exits 0)
-- [ ] Test coverage >= 80% confirmed
-- [ ] Security scan: `grep -rn "password\s*=\|api_key\s*=\|sk-" src/` = 0 matches
+- [ ] Test coverage >= 80% confirmed (Tier 2+)
+- [ ] Security scan: `grep -rnE "password[[:space:]]*=|api_key[[:space:]]*=|sk-" src/` = 0 matches (Tier 3)
 - [ ] Diff review confirmed all changes intentional
 - [ ] `rtk bun test` exits code 0 (zero test failures); `rtk tsc` zero type errors; `rtk lint` no errors
-- [ ] Manual walkthrough confirms expected behavior end-to-end
+- [ ] Manual walkthrough confirms expected behavior end-to-end (Tier 3)
 - [ ] Verification Report produced with READY / NOT READY verdict
 
 ## Success Criteria
 
-This skill is complete when: 1) All phases have been run and each has a PASS or documented acceptable exception. 2) The Verification Report is produced and shows an overall READY verdict. 3) Any NOT READY verdict has specific fixes listed and the loop is re-run after fixing.
+This skill is complete when: 1) All phases have been run and each has a PASS or documented acceptable exception. 2) The Verification Report is produced and shows an overall READY verdict. 3) Any NOT READY verdict has specific fixes listed and the loop is re-run after fixing. 4) The **Handoff block** has been emitted with `next_skill` pointing to `requesting-code-review` (or the next chain step) and `status: completed`.
 
 ## Tips
 
-- **Run phases in order** — each phase builds on the previous
+> **Run phases in order** — each phase builds on the previous.
+> **Phases 0-5 are automated** (code + build + type + lint + test + security).
+> **Phases 6-9 are manual/eval** (diff review + manual walkthrough + integration check + eval harness).
+
 - **Never open a PR without Phase 4 passing** — failing tests are resolved by authors, not reviewers
 - **Use RTK wrappers** for all phases to save context: `rtk bun test`, `rtk tsc`, `rtk lint`
 - **Save the report** — paste it in the PR description so reviewers see it immediately

@@ -1,6 +1,6 @@
 ---
 name: ci-config-helper
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: CI/CD (GitHub Actions, GitLab) setup. Use for configuring continuous integration and deployment.
 triggers:
   - "CI/CD"
@@ -323,27 +323,28 @@ strategy:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Pipeline runs but tests never fail (false green) because test runner exits 0 on syntax errors | Test framework swallows parse errors and reports 0 tests run as a passing suite | Add an explicit check that at least N tests ran: assert `test-count > 0` in the pipeline step; run a known-failing test to confirm the pipeline goes red |
-| Secrets leaking via env vars printed in step output | Debug `echo` or verbose logging in a step prints the value of a secret env var to the public log | Audit all `run:` steps for `echo $SECRET` patterns; enable log masking in the CI provider; rotate any exposed secrets immediately |
-| Cache invalidation misconfigured causing stale build artifacts | Cache key does not include lockfile hash, so dependency changes do not bust the cache | Set cache key to `${{ hashFiles('**/package-lock.json') }}`; add a manual cache-clear run after the fix to confirm fresh install |
-| Workflow triggers on every push including draft PRs causing quota burn | `on: pull_request` without `types` filter triggers on draft open, synchronize, and reopen events | Add `types: [opened, synchronize, reopened]` and exclude draft PRs with `if: github.event.pull_request.draft == false` |
-| Matrix build passes but one OS combination never ran | `exclude:` rule accidentally excludes a required combination, or matrix entry has a typo in the OS name | Print the matrix strategy in a debug step; verify all expected combinations appear in the workflow run summary |
+| Failure                                                                                       | Cause                                                                                                   | Recovery                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pipeline runs but tests never fail (false green) because test runner exits 0 on syntax errors | Test framework swallows parse errors and reports 0 tests run as a passing suite                         | Add an explicit check that at least N tests ran: assert `test-count > 0` in the pipeline step; run a known-failing test to confirm the pipeline goes red |
+| Secrets leaking via env vars printed in step output                                           | Debug `echo` or verbose logging in a step prints the value of a secret env var to the public log        | Audit all `run:` steps for `echo $SECRET` patterns; enable log masking in the CI provider; rotate any exposed secrets immediately                        |
+| Cache invalidation misconfigured causing stale build artifacts                                | Cache key does not include lockfile hash, so dependency changes do not bust the cache                   | Set cache key to `${{ hashFiles('**/package-lock.json') }}`; add a manual cache-clear run after the fix to confirm fresh install                         |
+| Workflow triggers on every push including draft PRs causing quota burn                        | `on: pull_request` without `types` filter triggers on draft open, synchronize, and reopen events        | Add `types: [opened, synchronize, reopened]` and exclude draft PRs with `if: github.event.pull_request.draft == false`                                   |
+| Matrix build passes but one OS combination never ran                                          | `exclude:` rule accidentally excludes a required combination, or matrix entry has a typo in the OS name | Print the matrix strategy in a debug step; verify all expected combinations appear in the workflow run summary                                           |
 
 ## Self-Verification Checklist
 
 - [ ] Pipeline YAML lints without error: `actionlint` (GitHub Actions) or `gitlab-ci-lint` exits 0
 - [ ] Pipeline runs to completion on a test branch and exits with code 0 for a known-good commit
 - [ ] At least one step fails when injecting a known bad input (e.g., a deliberate lint error causes the lint step to exit non-zero)
-- [ ] No secrets appear in plaintext in step logs: `grep -rn "password\s*=\|api_key\s*=\|secret\s*=" .github/workflows/` returns 0 matches
+      grep -rnE "password[[:space:]]_=|api_key[[:space:]]_=|secret[[:space:]]\*="
 - [ ] Dependency cache key includes lockfile hash: `grep -c "hashFiles" .github/workflows/*.yml` returns > 0
-- [ ] Deployment jobs are gated: `grep -c "main\|production\|manual" .github/workflows/*.yml` returns > 0 for deployment jobs
-- [ ] Build matrix covers all required runtime versions: `grep -c "node-version\|python-version\|java-version" .github/workflows/*.yml` returns >= 1
+      grep -cE "main|production|manual"
+      grep -cE "node-version|python-version|java-version"
 
 ## Success Criteria
 
 This task is complete when:
+
 1. The pipeline passes on the `main` branch with zero failures, running all lint/test/build steps
 2. A PR against `main` triggers CI and reports a passing status check before merge is allowed
 3. Production deployments are gated behind a branch protection rule or manual approval step

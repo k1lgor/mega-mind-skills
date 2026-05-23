@@ -1,6 +1,6 @@
 ---
 name: frontend-architect
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: UI, Components, and Responsive Design. Use for frontend architecture decisions.
 triggers:
   - "frontend architecture"
@@ -258,13 +258,13 @@ src/
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Component re-renders on every parent update due to missing memoization | Child component is defined inline or props include new object/array literals on every render | Wrap component with `React.memo`; memoize object/array props with `useMemo`; confirm with React DevTools Profiler that render count drops |
-| CSS specificity conflict causing style to silently override | Two rules target the same element with equal or unpredictable specificity; one silently wins | Use browser devtools to identify which rule wins; refactor to BEM, CSS Modules, or scoped utility classes to eliminate the conflict |
-| Bundle size regression from unintentional import of full library | `import { one } from 'big-library'` pulls in the entire library because the package lacks tree-shaking | Run `npm run build -- --analyze` (or `source-map-explorer`); identify the offending import; switch to a direct subpath import or a lighter alternative; confirm bundle size is within 5% of baseline |
-| Hydration mismatch between SSR and client rendering | Component renders different HTML on server vs client (e.g., reads `window`, `Date.now()`, or random values at render time) | Move non-deterministic reads behind `useEffect` or `typeof window !== 'undefined'` guards; fix all React hydration warnings (0 warnings in console) |
-| Accessibility violation: interactive element missing keyboard focus handling | Button or link implemented as `<div onClick>` with no `tabIndex`, `role`, or keyboard event handler | Replace `<div onClick>` with semantic `<button>` or `<a>`; run axe-core and confirm 0 critical violations |
+| Failure                                                                      | Cause                                                                                                                      | Recovery                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Component re-renders on every parent update due to missing memoization       | Child component is defined inline or props include new object/array literals on every render                               | Wrap component with `React.memo`; memoize object/array props with `useMemo`; confirm with React DevTools Profiler that render count drops                                                            |
+| CSS specificity conflict causing style to silently override                  | Two rules target the same element with equal or unpredictable specificity; one silently wins                               | Use browser devtools to identify which rule wins; refactor to BEM, CSS Modules, or scoped utility classes to eliminate the conflict                                                                  |
+| Bundle size regression from unintentional import of full library             | `import { one } from 'big-library'` pulls in the entire library because the package lacks tree-shaking                     | Run `npm run build -- --analyze` (or `source-map-explorer`); identify the offending import; switch to a direct subpath import or a lighter alternative; confirm bundle size is within 5% of baseline |
+| Hydration mismatch between SSR and client rendering                          | Component renders different HTML on server vs client (e.g., reads `window`, `Date.now()`, or random values at render time) | Move non-deterministic reads behind `useEffect` or `typeof window !== 'undefined'` guards; fix all React hydration warnings (0 warnings in console)                                                  |
+| Accessibility violation: interactive element missing keyboard focus handling | Button or link implemented as `<div onClick>` with no `tabIndex`, `role`, or keyboard event handler                        | Replace `<div onClick>` with semantic `<button>` or `<a>`; run axe-core and confirm 0 critical violations                                                                                            |
 
 ## Anti-Patterns
 
@@ -289,6 +289,7 @@ src/
 ## Success Criteria
 
 This task is complete when:
+
 1. Component architecture is documented with the folder structure and responsibility boundaries defined
 2. State management strategy is selected and implemented with no duplicate state across local and global stores
 3. Responsive layout renders correctly at sm (640px), md (768px), and lg (1024px) breakpoints

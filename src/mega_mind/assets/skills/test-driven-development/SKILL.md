@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Write tests first, implement second. Use when building new features that benefit from a test-first approach.
 triggers:
   - "implement with TDD"
@@ -196,20 +196,20 @@ This skill is complete when: 1) Every new unit of functionality has at least one
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Testing implementation details not behaviour, test breaks on safe refactor | Test asserts on internal variable names, method call counts, or private state instead of observable output | Rewrite the test to assert only on inputs and public outputs; if the test breaks on a rename, the test is testing the wrong thing |
-| Test passes but logic is wrong (false green from mocked dependency) | Mock returns a hardcoded value that never matches production; actual integration never exercised | Add at least one integration test (no mocks) for each critical path; use contract tests to verify mock behaviour matches the real dependency |
-| Refactor step skipped under time pressure, accumulating technical debt | Team treats RED → GREEN as done; refactor is deferred indefinitely under sprint pressure | Enforce the refactor step as a mandatory phase; a story is not done until the REFACTOR pass is completed and the test suite is still green |
-| Test suite too slow (>30s) for TDD red-green-refactor loop to be practical | Full integration suite runs on every `npm test`; unit tests mixed with database-hitting tests | Separate fast unit tests from slow integration tests; ensure `npm test` runs only fast tests (<10s); run integration tests in CI only |
-| Test written after implementation, not driving design (TDD theatre) | Developer writes implementation first, then writes a test to confirm the code they already wrote | Verify the RED phase via `git log --oneline` — test commit must precede implementation commit; if not, rewrite using TDD retroactively |
+| Failure                                                                    | Cause                                                                                                      | Recovery                                                                                                                                     |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Testing implementation details not behaviour, test breaks on safe refactor | Test asserts on internal variable names, method call counts, or private state instead of observable output | Rewrite the test to assert only on inputs and public outputs; if the test breaks on a rename, the test is testing the wrong thing            |
+| Test passes but logic is wrong (false green from mocked dependency)        | Mock returns a hardcoded value that never matches production; actual integration never exercised           | Add at least one integration test (no mocks) for each critical path; use contract tests to verify mock behaviour matches the real dependency |
+| Refactor step skipped under time pressure, accumulating technical debt     | Team treats RED → GREEN as done; refactor is deferred indefinitely under sprint pressure                   | Enforce the refactor step as a mandatory phase; a story is not done until the REFACTOR pass is completed and the test suite is still green   |
+| Test suite too slow (>30s) for TDD red-green-refactor loop to be practical | Full integration suite runs on every `npm test`; unit tests mixed with database-hitting tests              | Separate fast unit tests from slow integration tests; ensure `npm test` runs only fast tests (<10s); run integration tests in CI only        |
+| Test written after implementation, not driving design (TDD theatre)        | Developer writes implementation first, then writes a test to confirm the code they already wrote           | Verify the RED phase via `git log --oneline` — test commit must precede implementation commit; if not, rewrite using TDD retroactively       |
 
 ## Self-Verification Checklist
 
 - [ ] Test written BEFORE implementation: `git log --oneline` shows test commit precedes implementation commit for each cycle
 - [ ] All tests green after refactor step: full test suite exits 0 after each REFACTOR pass
 - [ ] Test suite completes in < 30s for TDD loop: `time npm test` (or equivalent) confirms duration <= 30s
-- [ ] The RED phase was confirmed: `grep -c "FAIL\|failing\|red" tdd_log.md` returns > 0 (test actually failed before implementation)
+      grep -cE "FAIL|failing|red"
 - [ ] GREEN implementation is minimal: `git diff --stat HEAD~1 HEAD` shows = 0 files changed beyond what the test required
 - [ ] No implementation code written without a failing test: `git log --oneline` count of test commits >= count of implementation commits
 

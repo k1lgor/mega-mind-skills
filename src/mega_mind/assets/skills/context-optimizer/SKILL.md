@@ -1,6 +1,6 @@
 ---
 name: context-optimizer
-compatibility: Antigravity, Claude Code, GitHub Copilot, OpenCode, Cursor
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Context window preservation and session continuity skill for AI coding agents. Orchestrates the context-mode MCP plugin — ctx_execute, ctx_index, ctx_search, ctx_batch_execute, ctx_execute_file, ctx_fetch_and_index — to keep raw data out of the LLM context window and retrieve only what's needed on demand. Use this skill proactively whenever commands, files, or API responses would produce more than ~20 lines of output, and reactively when context is nearing exhaustion or a session has been compacted.
 triggers:
   - "optimize context"
@@ -31,7 +31,7 @@ triggers:
 
 You are a context window steward for AI coding sessions. Your job is to ensure that the LLM context window contains only what is needed RIGHT NOW, not a dump of every file read, command output, or API response collected over the session. You treat context space as a finite, precious resource — every token consumed by raw tool output is a token stolen from reasoning and implementation. You instrument sessions with the context-mode MCP plugin, routing heavy operations through a SQLite-backed sandbox where data lives indefinitely but only the relevant excerpts surface into context when queried. When a session is compacted and history is lost, you recover gracefully using indexed memory. You are proactive: you identify operations that will produce large outputs BEFORE running them and choose the context-safe tool automatically.
 
-## When to Activate
+## When to Use
 
 - Before running any command whose output exceeds ~20 lines (test suites, build logs, API responses, git log)
 - Before reading any file larger than 200 lines (especially log files, large source files, data dumps)
@@ -67,18 +67,18 @@ You are a context window steward for AI coding sessions. Your job is to ensure t
 
 ## Tool Selection Decision Table
 
-| Operation                                    | Standard Approach (avoid)        | Context-Safe Approach          | Expected Savings |
-| -------------------------------------------- | -------------------------------- | ------------------------------ | ---------------- |
-| Run test suite                               | `bash("npm test")`               | `ctx_execute(shell, "npm test", intent="failing tests")` | 95-99% |
-| Run build command                            | `bash("npm run build")`          | `ctx_execute(shell, "npm run build", intent="build errors")` | 80-99% |
-| Read a large log file                        | `read("app.log")`                | `ctx_execute_file("app.log", python, intent="errors after 14:00")` | 99% |
-| Fetch API documentation                      | `webfetch("https://docs.x.com")` | `ctx_fetch_and_index("https://docs.x.com", source="X API Docs")` | 99% |
-| Search indexed docs for specific info        | Re-fetch the URL                 | `ctx_search(["authentication endpoint", "rate limits"])` | 100% |
-| Run 3+ independent commands                  | 3 separate `bash()` calls        | `ctx_batch_execute([cmd1, cmd2, cmd3], queries=[...])` | High |
-| Analyze a large source file for patterns     | `read("large_file.py")`          | `ctx_execute_file("large_file.py", python, intent="class definitions")` | 95% |
-| Load README into memory for reference        | `read("README.md")`              | `ctx_index("README.md", source="Project README")` | 99% |
-| Run git log to find recent changes           | `bash("git log --oneline -50")`  | `ctx_execute(shell, "git log --oneline -50", intent="recent changes")` | 85% |
-| Check context savings for the session        | N/A                              | `ctx_stats()`                  | N/A |
+| Operation                                | Standard Approach (avoid)        | Context-Safe Approach                                                   | Expected Savings |
+| ---------------------------------------- | -------------------------------- | ----------------------------------------------------------------------- | ---------------- |
+| Run test suite                           | `bash("npm test")`               | `ctx_execute(shell, "npm test", intent="failing tests")`                | 95-99%           |
+| Run build command                        | `bash("npm run build")`          | `ctx_execute(shell, "npm run build", intent="build errors")`            | 80-99%           |
+| Read a large log file                    | `read("app.log")`                | `ctx_execute_file("app.log", python, intent="errors after 14:00")`      | 99%              |
+| Fetch API documentation                  | `webfetch("https://docs.x.com")` | `ctx_fetch_and_index("https://docs.x.com", source="X API Docs")`        | 99%              |
+| Search indexed docs for specific info    | Re-fetch the URL                 | `ctx_search(["authentication endpoint", "rate limits"])`                | 100%             |
+| Run 3+ independent commands              | 3 separate `bash()` calls        | `ctx_batch_execute([cmd1, cmd2, cmd3], queries=[...])`                  | High             |
+| Analyze a large source file for patterns | `read("large_file.py")`          | `ctx_execute_file("large_file.py", python, intent="class definitions")` | 95%              |
+| Load README into memory for reference    | `read("README.md")`              | `ctx_index("README.md", source="Project README")`                       | 99%              |
+| Run git log to find recent changes       | `bash("git log --oneline -50")`  | `ctx_execute(shell, "git log --oneline -50", intent="recent changes")`  | 85%              |
+| Check context savings for the session    | N/A                              | `ctx_stats()`                                                           | N/A              |
 
 ---
 
@@ -91,8 +91,8 @@ Use `ctx_execute` for any command or code that might produce large output. The `
 ctx_execute({
   language: "shell",
   code: "npm test -- --reporter=verbose",
-  intent: "failing tests and error messages"
-})
+  intent: "failing tests and error messages",
+});
 // Returns: summary of failing tests + top matching sections
 // Full output stays in SQLite sandbox
 
@@ -107,26 +107,27 @@ data = json.loads(result.stdout)
 print(f"Total records: {data['total']}")
 print(f"Anomalies: {data['anomalies'][:5]}")  # First 5 only
   `,
-  intent: "anomalies and summary statistics"
-})
+  intent: "anomalies and summary statistics",
+});
 
 // Pattern 3: Check build errors without flooding context
 ctx_execute({
   language: "shell",
   code: "tsc --noEmit 2>&1",
-  intent: "TypeScript compilation errors"
-})
+  intent: "TypeScript compilation errors",
+});
 ```
 
 ### When intent is provided and output is large (>5KB):
+
 The engine indexes the output and returns section titles + previews. Use `ctx_search` to drill into specific sections.
 
 ```typescript
 // After ctx_execute returns "Searchable terms: TS2304, TS2345, cannot find name"
 ctx_search({
   queries: ["TS2304 cannot find name", "implicit any type error"],
-  source: "TypeScript build output"
-})
+  source: "TypeScript build output",
+});
 ```
 
 ---
@@ -151,8 +152,8 @@ print(f"Total errors: {len(errors)}")
 for err in errors[-10:]:  # Last 10 errors
     print(err)
   `,
-  intent: "recent errors and their patterns"
-})
+  intent: "recent errors and their patterns",
+});
 
 // Pattern 2: Summarize a large source file's structure
 ctx_execute_file({
@@ -166,8 +167,8 @@ methods = re.findall(r'^\\s+(?:async\\s+)?(?:public|private|protected)?\\s*(\\w+
 print(f"Classes: {classes}")
 print(f"Methods ({len(methods)}): {methods[:20]}")
   `,
-  intent: "class structure and method names"
-})
+  intent: "class structure and method names",
+});
 ```
 
 ---
@@ -180,31 +181,31 @@ Index content that will be queried multiple times during the session. Search it 
 // Index a large README for the session
 ctx_index({
   path: "README.md",
-  source: "Project README"
-})
+  source: "Project README",
+});
 
 // Index API documentation from a URL
 ctx_fetch_and_index({
   url: "https://docs.stripe.com/api",
-  source: "Stripe API Docs"
-})
+  source: "Stripe API Docs",
+});
 
 // Search indexed content — batch all questions in ONE call
 ctx_search({
   queries: [
     "webhook signature verification",
     "charge create endpoint parameters",
-    "idempotency key usage"
+    "idempotency key usage",
   ],
   source: "Stripe API Docs",
-  limit: 3  // Top 3 results per query
-})
+  limit: 3, // Top 3 results per query
+});
 
 // Search without source filter (searches all indexed content)
 ctx_search({
   queries: ["authentication flow", "JWT token refresh"],
-  contentType: "code"  // Only return code blocks
-})
+  contentType: "code", // Only return code blocks
+});
 ```
 
 ---
@@ -217,20 +218,23 @@ Use `ctx_batch_execute` whenever you need to run multiple independent commands A
 // Pattern: Project state assessment — run everything in one shot
 ctx_batch_execute({
   commands: [
-    { label: "Package JSON",   command: "cat package.json" },
+    { label: "Package JSON", command: "cat package.json" },
     { label: "TypeScript Config", command: "cat tsconfig.json" },
-    { label: "Source Tree",    command: "find src -name '*.ts' | head -30" },
+    { label: "Source Tree", command: "find src -name '*.ts' | head -30" },
     { label: "Recent Commits", command: "git log --oneline -10" },
-    { label: "Test Status",    command: "npm test -- --passWithNoTests 2>&1 | tail -20" },
-    { label: "Lint Status",    command: "npm run lint 2>&1 | tail -20" }
+    {
+      label: "Test Status",
+      command: "npm test -- --passWithNoTests 2>&1 | tail -20",
+    },
+    { label: "Lint Status", command: "npm run lint 2>&1 | tail -20" },
   ],
   queries: [
     "main entry point and framework",
     "failing tests",
     "lint errors",
-    "recent changes to auth or payment code"
-  ]
-})
+    "recent changes to auth or payment code",
+  ],
+});
 // All 6 commands run, all output indexed, all 4 queries answered — 1 context token round trip
 ```
 
@@ -242,12 +246,12 @@ When context is nearing exhaustion or after a compaction event:
 
 ### Signal Thresholds
 
-| Context Usage    | Action Required                                                  |
-| ---------------- | ---------------------------------------------------------------- |
-| >60% consumed    | Stop indexing new documentation. Use only `ctx_search`.          |
-| >80% consumed    | Begin active compaction: summarize current state, clear raw data.|
-| >90% consumed    | Emergency compaction. Emit a structured session summary to indexed memory. |
-| Post-compaction  | Run `ctx_search` with 5-8 broad queries to reconstruct session state. |
+| Context Usage   | Action Required                                                            |
+| --------------- | -------------------------------------------------------------------------- |
+| >60% consumed   | Stop indexing new documentation. Use only `ctx_search`.                    |
+| >80% consumed   | Begin active compaction: summarize current state, clear raw data.          |
+| >90% consumed   | Emergency compaction. Emit a structured session summary to indexed memory. |
+| Post-compaction | Run `ctx_search` with 5-8 broad queries to reconstruct session state.      |
 
 ### Emergency Compaction Procedure
 
@@ -255,28 +259,34 @@ When context is nearing exhaustion or after a compaction event:
 ## Session State Snapshot — [timestamp]
 
 ### Task in Progress
+
 [1-2 sentences: what we are building/fixing]
 
 ### Files Modified
+
 - [file path]: [what changed and why]
 
 ### Key Decisions Made
+
 - [decision]: [rationale]
 
 ### Current Blockers
+
 - [blocker]: [attempted approaches]
 
 ### Next Steps
+
 1. [next action]
 2. [following action]
 ```
 
 Index this summary immediately:
+
 ```typescript
 ctx_index({
   content: "<the snapshot markdown above>",
-  source: "Session Snapshot " + new Date().toISOString()
-})
+  source: "Session Snapshot " + new Date().toISOString(),
+});
 ```
 
 ### Post-Compaction Recovery
@@ -289,9 +299,9 @@ ctx_search({
     "files modified changes made",
     "blockers and decisions",
     "next steps todo",
-    "errors encountered"
-  ]
-})
+    "errors encountered",
+  ],
+});
 ```
 
 ---
@@ -326,17 +336,21 @@ Strategic compaction preserves critical state by compacting at **logical task bo
 ### Protocol: Compact with Intention
 
 **Before Compacting:**
+
 1. Save decisions, file paths, and next steps to `docs/plans/session-notes.md` — anything not on disk is lost
 2. Update `docs/plans/task.md` — task tracker must be current
 3. Commit work in progress if at a stable point (optional but recommended)
 
 **Compacting:**
+
 ```
 /compact Focus on implementing [next phase]. Context: [key facts to carry forward]
 ```
+
 The custom message is your bridge — be specific about what to focus on next.
 
 **After Compacting:**
+
 1. Read `docs/plans/task.md` and `docs/plans/session-notes.md` to restore state
 2. Continue from exactly where the notes say to continue
 
@@ -356,6 +370,7 @@ The custom message is your bridge — be specific about what to focus on next.
 ### Context Compaction Signals
 
 Watch for these 5 warning signs that context pressure is building:
+
 - Responses become repetitive or miss earlier context
 - You're re-reading files you already read earlier in the session
 - The session has run >100 tool calls
@@ -396,26 +411,29 @@ Step 4: After compaction
 
 ```typescript
 // 1. Check if previous session data exists
-ctx_stats()
+ctx_stats();
 
 // 2. If indexed content exists, search for context
 ctx_search({
   queries: [
     "task status and progress",
     "last known errors",
-    "files being worked on"
-  ]
-})
+    "files being worked on",
+  ],
+});
 
 // 3. Quickly re-orient with current project state
 ctx_batch_execute({
   commands: [
-    { label: "Git Status",     command: "git status" },
+    { label: "Git Status", command: "git status" },
     { label: "Recent Changes", command: "git diff --stat HEAD~3" },
-    { label: "Test Status",    command: "npm test -- --passWithNoTests 2>&1 | tail -10" }
+    {
+      label: "Test Status",
+      command: "npm test -- --passWithNoTests 2>&1 | tail -10",
+    },
   ],
-  queries: ["what changed", "test failures", "uncommitted work"]
-})
+  queries: ["what changed", "test failures", "uncommitted work"],
+});
 ```
 
 ---
@@ -427,10 +445,10 @@ Before concluding that context-mode is properly in use for a session:
 - [ ] `ctx_doctor()` returns no errors: MCP server is running, SQLite FTS5 database is accessible, and all hooks are registered — output contains 0 lines matching "ERROR\|FAIL\|not found"
 - [ ] `ctx_stats()` shows context savings ratio > 0.5: output line matching `context_savings_ratio` contains a value >= 0.50 — ratio < 0.5 after substantial work means context-mode is not being used correctly
 - [ ] At least 1 `ctx_batch_execute` call used: session transcript contains `ctx_batch_execute` — `grep -c "ctx_batch_execute" <session_log>` returns >= 1; multiple sequential `ctx_execute` calls for independent commands are absent
-- [ ] No large file read with standard `read()` when `ctx_execute_file` was appropriate: `grep -rn "read(.*\.(log\|json\|csv\|md))" <session_log>` returns 0 matches for files > 200 lines — confirmed by checking file sizes
+      grep -rnE "read(.\*\.(log|json|csv|md))"
 - [ ] No URL fetched with `webfetch()` when `ctx_fetch_and_index + ctx_search` was appropriate: `grep -c "webfetch" <session_log>` returns 0 for documentation or reference URLs — allowed only for one-off quick lookups
 - [ ] All indexed documentation is queryable: `ctx_search(["<topic>"])` returns at least 1 result for each major topic indexed in the session — 0 results for a recently indexed topic is a failure
-- [ ] Session state recoverable after compaction without asking user: `grep -c "ctx_search\|ctx_index" <post_compaction_log>` returns >= 1 — state was restored via search, not by asking the user to re-provide context
+      grep -cE "ctx_search|ctx_index"
 - [ ] Compact output contains every decision made in the original context (count "decided", "chose", "selected", "will use" in original vs compact — must match)
 - [ ] Every decision in the compact has a "because Y" rationale preserved (count decisions without rationale = 0)
 - [ ] Compact triggers only at a task boundary (last action before compaction was a completed step, not a mid-operation tool call)
@@ -440,7 +458,7 @@ Before concluding that context-mode is properly in use for a session:
 Task is complete when:
 
 1. `ctx_stats()` reports context savings ratio >50% for sessions with substantial tool usage
-2. No command output longer than 5KB appears directly in the conversation context (all routed through ctx_* tools)
+2. No command output longer than 5KB appears directly in the conversation context (all routed through ctx\_\* tools)
 3. Documentation URLs are indexed exactly once per session and retrieved via `ctx_search` thereafter
 4. After a simulated compaction, session state can be reconstructed via `ctx_search` in one call without user input
 5. `ctx_doctor()` returns a clean bill of health with all systems operational
@@ -469,19 +487,19 @@ Task is complete when:
 
 ## Failure Modes
 
-| Situation                                          | Response                                                                                     |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `ctx_execute` hangs or times out                   | Stuck sandboxed process. Kill via `ctx_doctor`. Check if the command hangs interactively. Add a timeout parameter. |
-| Index is corrupted or returns empty results        | Re-index with `ctx_index` (overwrite). Run `ctx_doctor` to check FTS5 database health. |
-| Context savings ratio is 0% or negative            | Context-mode tools not being invoked. Check hooks via `ctx_doctor`. Verify calls use `ctx_*` prefix. |
-| Session compacted, memory lost                     | Run `ctx_search` with broad queries (task, files, errors). Check if index was cleared between sessions. |
-| `ctx_search` returns irrelevant results            | Query too broad. Use 2-4 specific technical terms. Filter by `source` if multiple docs are indexed. |
-| `ctx_batch_execute` output is too large            | Output auto-indexed when >5KB. Use the `queries` parameter to extract relevant sections. |
-| Compaction loses decision rationale                | Summary too high-level ("decided X" without "because Y"). Always preserve rationale — it's more valuable than the decision. |
-| Compaction hits wrong context window               | Agent compacted working memory instead of history. Separate active memory from completed history before compacting. |
-| Summary at wrong granularity                       | Too high-level causes re-derivation in next phase. Calibrate detail to the next phase's needs. |
-| Compact triggered mid-task                         | Partial state discarded. Only compact at task boundaries — never mid-operation. |
-| Compacted output not validated                     | Missing constraints propagate silently. Diff compact against original on all decision points after compacting. |
+| Situation                                   | Response                                                                                                                    |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `ctx_execute` hangs or times out            | Stuck sandboxed process. Kill via `ctx_doctor`. Check if the command hangs interactively. Add a timeout parameter.          |
+| Index is corrupted or returns empty results | Re-index with `ctx_index` (overwrite). Run `ctx_doctor` to check FTS5 database health.                                      |
+| Context savings ratio is 0% or negative     | Context-mode tools not being invoked. Check hooks via `ctx_doctor`. Verify calls use `ctx_*` prefix.                        |
+| Session compacted, memory lost              | Run `ctx_search` with broad queries (task, files, errors). Check if index was cleared between sessions.                     |
+| `ctx_search` returns irrelevant results     | Query too broad. Use 2-4 specific technical terms. Filter by `source` if multiple docs are indexed.                         |
+| `ctx_batch_execute` output is too large     | Output auto-indexed when >5KB. Use the `queries` parameter to extract relevant sections.                                    |
+| Compaction loses decision rationale         | Summary too high-level ("decided X" without "because Y"). Always preserve rationale — it's more valuable than the decision. |
+| Compaction hits wrong context window        | Agent compacted working memory instead of history. Separate active memory from completed history before compacting.         |
+| Summary at wrong granularity                | Too high-level causes re-derivation in next phase. Calibrate detail to the next phase's needs.                              |
+| Compact triggered mid-task                  | Partial state discarded. Only compact at task boundaries — never mid-operation.                                             |
+| Compacted output not validated              | Missing constraints propagate silently. Diff compact against original on all decision points after compacting.              |
 
 ---
 

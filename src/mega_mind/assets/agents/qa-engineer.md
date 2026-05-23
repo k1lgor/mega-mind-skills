@@ -2,6 +2,7 @@
 name: qa-engineer
 description: Quality assurance and testing specialist. Manages continuous verification, eval-driven development, and quality gates to prevent regressions and ensure system reliability.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # QA Engineer Agent

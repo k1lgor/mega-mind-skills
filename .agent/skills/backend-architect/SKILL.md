@@ -1,6 +1,6 @@
 ---
 name: backend-architect
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Server-side logic, architecture patterns, and API contract design. Use for backend architecture decisions, service/repository implementation, and designing REST/GraphQL API contracts.
 triggers:
   - "backend architecture"
@@ -245,7 +245,7 @@ GET    /api/v1/users/:id/orders
 POST   /api/v1/orders/:id/cancel
 ```
 
-Naming rules: ✅ `/api/v1/team-members` (kebab-case, plural)  ❌ `/api/v1/getUsers` (verb in URL)
+Naming rules: ✅ `/api/v1/team-members` (kebab-case, plural) ❌ `/api/v1/getUsers` (verb in URL)
 
 **HTTP Methods & Status Codes:**
 
@@ -273,7 +273,13 @@ Naming rules: ✅ `/api/v1/team-members` (kebab-case, plural)  ❌ `/api/v1/getU
 ### Response Formats
 
 ```json
-{ "data": { "id": "abc-123", "name": "Alice", "created_at": "2025-01-15T10:30:00Z" } }
+{
+  "data": {
+    "id": "abc-123",
+    "name": "Alice",
+    "created_at": "2025-01-15T10:30:00Z"
+  }
+}
 ```
 
 Error response (machine-readable):
@@ -283,7 +289,13 @@ Error response (machine-readable):
   "error": {
     "code": "validation_error",
     "message": "Request validation failed",
-    "details": [{ "field": "email", "message": "Must be valid email", "code": "invalid_format" }]
+    "details": [
+      {
+        "field": "email",
+        "message": "Must be valid email",
+        "code": "invalid_format"
+      }
+    ]
   }
 }
 ```
@@ -392,17 +404,17 @@ export const transferFunds = async (
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| N+1 query in ORM layer causing 10x DB load under traffic | ORM fetches related records one-by-one inside a loop instead of a single JOIN or `include` | Replace with eager loading (`include`/`select_related`) and verify query count drops to 1 in test with query logging enabled |
-| Missing database index on join column causing full table scan | Foreign key or filter column has no index; invisible at low data volume but catastrophic at scale | Run `EXPLAIN ANALYZE` on the slow query, add index on the join/filter column, confirm sequential scan becomes index scan |
-| Unhandled async rejection crashing Node/Python worker silently | `await` call inside an event emitter or background task with no `.catch()` or `try/catch` wrapper | Add a global `unhandledRejection` handler that logs and alerts; audit all fire-and-forget async calls for error handling |
-| JWT secret hardcoded in source, leaking in git history | Secret pasted directly into source file and committed; rotation requires code change | Rotate the secret immediately, move to environment variable / secrets manager, run `git filter-repo` to purge from history |
-| Rate limiter not applied to auth endpoint, enabling brute-force | Rate-limiting middleware placed after the auth route or only on non-auth paths | Move rate limiter middleware to apply before auth routes; confirm with a load test that >N requests/minute returns 429 |
-| Breaking change in response schema silently accepted by client | Client uses loose deserialization and ignores unknown fields; downstream consumers not tested | Add contract tests (e.g. Pact) that fail on schema change; version the endpoint |
-| Missing auth on new endpoint due to global middleware ordering | New route registered before auth middleware is applied | Audit middleware registration order; add integration test that hits the endpoint unauthenticated and expects 401 |
-| Request body not validated, enabling injection | Validation schema omitted or `additionalProperties: true` left in place | Add JSON Schema / Zod validation for every incoming body; reject unknown fields by default |
-| Pagination not implemented, causing full table scan on large dataset | Endpoint returns all rows; dataset size not anticipated at design time | Add `limit`/`offset` or cursor pagination to every list endpoint; document max page size |
+| Failure                                                              | Cause                                                                                             | Recovery                                                                                                                     |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| N+1 query in ORM layer causing 10x DB load under traffic             | ORM fetches related records one-by-one inside a loop instead of a single JOIN or `include`        | Replace with eager loading (`include`/`select_related`) and verify query count drops to 1 in test with query logging enabled |
+| Missing database index on join column causing full table scan        | Foreign key or filter column has no index; invisible at low data volume but catastrophic at scale | Run `EXPLAIN ANALYZE` on the slow query, add index on the join/filter column, confirm sequential scan becomes index scan     |
+| Unhandled async rejection crashing Node/Python worker silently       | `await` call inside an event emitter or background task with no `.catch()` or `try/catch` wrapper | Add a global `unhandledRejection` handler that logs and alerts; audit all fire-and-forget async calls for error handling     |
+| JWT secret hardcoded in source, leaking in git history               | Secret pasted directly into source file and committed; rotation requires code change              | Rotate the secret immediately, move to environment variable / secrets manager, run `git filter-repo` to purge from history   |
+| Rate limiter not applied to auth endpoint, enabling brute-force      | Rate-limiting middleware placed after the auth route or only on non-auth paths                    | Move rate limiter middleware to apply before auth routes; confirm with a load test that >N requests/minute returns 429       |
+| Breaking change in response schema silently accepted by client       | Client uses loose deserialization and ignores unknown fields; downstream consumers not tested     | Add contract tests (e.g. Pact) that fail on schema change; version the endpoint                                              |
+| Missing auth on new endpoint due to global middleware ordering       | New route registered before auth middleware is applied                                            | Audit middleware registration order; add integration test that hits the endpoint unauthenticated and expects 401             |
+| Request body not validated, enabling injection                       | Validation schema omitted or `additionalProperties: true` left in place                           | Add JSON Schema / Zod validation for every incoming body; reject unknown fields by default                                   |
+| Pagination not implemented, causing full table scan on large dataset | Endpoint returns all rows; dataset size not anticipated at design time                            | Add `limit`/`offset` or cursor pagination to every list endpoint; document max page size                                     |
 
 ## Anti-Patterns
 
@@ -426,7 +438,7 @@ export const transferFunds = async (
 - [ ] `lsp_diagnostics` returns 0 errors on all changed files
 - [ ] Build exits with code 0 (`tsc --noEmit` or equivalent compiler check passes)
 - [ ] All existing tests pass — `npm test` (or equivalent) exits 0; any pre-existing failures are documented
-- [ ] No hardcoded secrets: `grep -rn "secret\|password\|api_key" src/` returns 0 matches on literal string values
+      grep -rnE "secret|password|api_key"
 - [ ] Service layer is separated from controller/route layer — no business logic lives in request handlers
 - [ ] All database queries use parameterized statements or ORM query builders (no raw string interpolation)
 - [ ] Repository interfaces are defined and concrete implementations are injected (testable via mock)
@@ -442,6 +454,7 @@ export const transferFunds = async (
 ## Success Criteria
 
 This task is complete when:
+
 1. The layered architecture is implemented with clear separation between controllers, services, and repositories
 2. All public service methods have unit tests with 90%+ function coverage
 3. Error handling is consistent: every error path returns a structured error response, not a raw stack trace

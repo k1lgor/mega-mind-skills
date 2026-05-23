@@ -1,6 +1,6 @@
 ---
 name: product-manager
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Task breakdown and user stories. Use for product planning and task management.
 triggers:
   - "product management"
@@ -228,13 +228,13 @@ Legend:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| User story has no acceptance criteria, developer implements wrong behaviour | Story written as a wish ("I want search") with no Given/When/Then tests defined | Halt implementation until at least 2 acceptance criteria in Given/When/Then format are written and reviewed with the developer |
-| Feature scoped as MVP but stakeholders treat MVP as final product | "MVP" not explicitly defined as a learning milestone with a follow-up iteration planned | Document the MVP scope and explicitly call out the features deliberately excluded; schedule an iteration review before MVP ships |
-| Priority stack-ranked without effort estimates, causing sprint overcommit | Product backlog ordered by value alone; team pulls stories until sprint feels full without checking velocity | Add story-point estimates to all top-10 backlog items before sprint planning; enforce a hard capacity limit (team velocity × 0.85) |
-| "Done" definition missing, causing indefinite QA loop | No Definition of Done checklist agreed upon; "done" means different things to dev, QA, and product | Publish a Definition of Done checklist before sprint starts; any story without a DoD is blocked from moving to In Progress |
-| Dependency on external team not surfaced in story, blocking release | Author assumed the external team would deliver; dependency not listed in the story's Dependencies field | Add a Dependencies field to every story template; flag any story with an external dependency as blocked until the dependency confirms its delivery date |
+| Failure                                                                     | Cause                                                                                                        | Recovery                                                                                                                                                |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User story has no acceptance criteria, developer implements wrong behaviour | Story written as a wish ("I want search") with no Given/When/Then tests defined                              | Halt implementation until at least 2 acceptance criteria in Given/When/Then format are written and reviewed with the developer                          |
+| Feature scoped as MVP but stakeholders treat MVP as final product           | "MVP" not explicitly defined as a learning milestone with a follow-up iteration planned                      | Document the MVP scope and explicitly call out the features deliberately excluded; schedule an iteration review before MVP ships                        |
+| Priority stack-ranked without effort estimates, causing sprint overcommit   | Product backlog ordered by value alone; team pulls stories until sprint feels full without checking velocity | Add story-point estimates to all top-10 backlog items before sprint planning; enforce a hard capacity limit (team velocity × 0.85)                      |
+| "Done" definition missing, causing indefinite QA loop                       | No Definition of Done checklist agreed upon; "done" means different things to dev, QA, and product           | Publish a Definition of Done checklist before sprint starts; any story without a DoD is blocked from moving to In Progress                              |
+| Dependency on external team not surfaced in story, blocking release         | Author assumed the external team would deliver; dependency not listed in the story's Dependencies field      | Add a Dependencies field to every story template; flag any story with an external dependency as blocked until the dependency confirms its delivery date |
 
 ## Self-Verification Checklist
 
@@ -248,6 +248,7 @@ Legend:
 ## Success Criteria
 
 This task is complete when:
+
 1. The sprint backlog contains stories with clear acceptance criteria, estimates, and assignments within capacity
 2. The product roadmap is updated to reflect the current sprint goals and upcoming priorities
 3. All stakeholders have reviewed and signed off on the sprint goal and Definition of Done

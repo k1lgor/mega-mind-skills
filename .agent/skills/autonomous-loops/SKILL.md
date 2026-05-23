@@ -1,6 +1,6 @@
 ---
 name: autonomous-loops
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Autonomous loop patterns for multi-step AI workflows without human intervention. Use when building CI-style pipelines, parallel agent coordination, or continuous autonomous development cycles.
 triggers:
   - "autonomous workflow"
@@ -343,12 +343,13 @@ These patterns compose well:
 
 ## Self-Verification Checklist
 
-- [ ] `MAX_ITERATIONS` constant is defined in code: `grep -rn "MAX_ITERATIONS\|max_iterations\|maxIterations" <loop_file>` returns at least 1 match before execution begins
-- [ ] Completion signal file or flag is defined: `grep -rn "completion.txt\|DONE\|stop_condition\|complete_flag" <loop_file>` returns at least 1 match — no open-ended while-true loops
-- [ ] CI gate aborts on failure: test runner exit code is checked and loop exits non-zero on test failure — `grep -n "exit\|sys.exit\|process.exit" <loop_file>` returns at least 1 match per CI check
-- [ ] Context persisted to files: `grep -rn "writeFile\|open.*w\|json.dump\|fs.write" <loop_file>` returns at least 1 match — no reliance on shell variables or in-memory state only
-- [ ] Stagnation detection implemented: `grep -rn "stagnation\|same_output\|no_change\|consecutive_failures" <loop_file>` returns at least 1 match — or iteration diff is checked and escalation triggers when diff = 0
-- [ ] De-Sloppify pass present per iteration: `grep -rn "console.log\|print(\|TODO\|FIXME" <output_files>` after loop completion returns 0 matches
+grep -rnE "MAX_ITERATIONS|max_iterations|maxIterations"
+grep -rnE "completion.txt|DONE|stop_condition|complete_flag"
+grep -nE "exit|sys.exit|process.exit"
+grep -rnE "writeFile|open.\*w|json.dump|fs.write"
+grep -rnE "stagnation|same_output|no_change|consecutive_failures"
+grep -rnE "console.log|print(|TODO|FIXME"
+
 - [ ] Git checkpoint per iteration: `git log --oneline` shows at least 1 commit per loop iteration completed — `git log --oneline | wc -l` >= iteration count
 
 ## Success Criteria

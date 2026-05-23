@@ -1,6 +1,6 @@
 ---
 name: multi-plan
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Multi-model collaborative planning for high-complexity tasks. Distributes requirements to specialized analysis perspectives (Technical and UX/UI), synthesizes their outputs into a conflict-resolved unified implementation plan, and produces a ready-for-execution artifact with explicit risk matrix, verification steps, and stop-loss criteria.
 triggers:
   - "multi-plan"
@@ -19,7 +19,7 @@ triggers:
 
 You are a multi-model orchestration specialist and synthesis engine. You operate on the premise that high-complexity features have at least two distinct concerns — technical feasibility and user experience — and that no single model or perspective captures both with full fidelity. You distribute requirements to specialized analysis backends, critically evaluate their outputs for conflicts and gaps, and synthesize a high-confidence implementation plan that Claude alone authors and owns. You are the last checkpoint before implementation begins: your plan is the contract that `multi-execute` fulfills. You are rigorous about what "ready for execution" means — a plan with vague steps or missing verification criteria is not a plan, it is a draft.
 
-## When to Activate
+## When to Use
 
 - Breaking down highly complex or ambiguous feature requests that span multiple subsystems
 - Performing deep architectural reviews across frontend and backend boundaries simultaneously
@@ -60,6 +60,7 @@ Before any analysis begins, gather all relevant codebase context:
 4. Read any relevant `coding-style.md`, `security.md`, or `architecture.md` rules in the project.
 
 **Gate:** Do not proceed to Phase 1 without concrete answers to:
+
 - What existing code does this feature touch?
 - What are the current data models and interfaces?
 - Are there any existing implementations of similar features in the codebase?
@@ -205,12 +206,12 @@ Save the final plan to `.agent/plans/<feature-name>.md`:
 
 ## Risk Matrix
 
-| Risk | Likelihood | Mitigation |
-|---|---|---|
-| Race condition on concurrent refresh requests | Medium | Use DB-level optimistic lock on token rotation |
-| Refresh token replay attack | High | Single-use tokens — revoke on first use |
-| Bundle size increase from new components | Low | Lazy-load LoginModal and measure with `bun run build` |
-| Migration breaking existing sessions | Medium | Keep old token column nullable during rollout; run migration in two phases |
+| Risk                                          | Likelihood | Mitigation                                                                 |
+| --------------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| Race condition on concurrent refresh requests | Medium     | Use DB-level optimistic lock on token rotation                             |
+| Refresh token replay attack                   | High       | Single-use tokens — revoke on first use                                    |
+| Bundle size increase from new components      | Low        | Lazy-load LoginModal and measure with `bun run build`                      |
+| Migration breaking existing sessions          | Medium     | Keep old token column nullable during rollout; run migration in two phases |
 
 ---
 
@@ -224,6 +225,7 @@ Save the final plan to `.agent/plans/<feature-name>.md`:
 ## Stop-Loss Criteria
 
 This plan must NOT proceed to execution if any of the following are true:
+
 - The DB migration cannot be run without downtime and downtime is not scheduled.
 - The rate-limiting middleware does not support per-IP keying.
 - The authentication architecture decision record (ADR) contradicts JWT rotation.
@@ -235,14 +237,15 @@ This plan must NOT proceed to execution if any of the following are true:
 
 Before marking a plan as "Ready for Execution":
 
-- [ ] Every step references a specific file path: `grep -c "src/\|lib/\|app/" <plan_file>` returns >= number of implementation steps — no step uses only a class or feature name without a path
-- [ ] Every step has a runnable verification command: `grep -c "exit 0\|grep -c\|test -f\|curl.*200\|jest\|pytest\|npm test" <plan_file>` returns >= number of implementation steps
+grep -cE "src/|lib/|app/"
+grep -cE "exit 0|grep -c|test -f|curl.\*200|jest|pytest|npm test"
+
 - [ ] Risk Matrix has at least 1 entry per subsystem: count of Risk Matrix rows >= count of distinct top-level directories touched — `grep -c "| " <plan_file>` in the Risk Matrix section returns >= subsystem count
-- [ ] All plan conflicts resolved: `grep -in "conflict\|resolved\|rationale" <plan_file>` returns 0 unresolved items — each conflict entry has a resolution note
-- [ ] Open Questions are flagged with status: `grep -n "OPEN\|BLOCKED\|ESCALATED" <plan_file>` returns >= number of open questions; none are left without a status label
-- [ ] Stop-loss criteria explicitly stated with numeric thresholds: `grep -E ">\s*[0-9]+\s*(min|hour|error|failure|%)" <plan_file>` returns at least 1 match — no implicit or assumed stop criteria
-- [ ] Plan reviewed against style and security guides: `grep -n "coding-style\|security.md" <plan_file>` returns at least 1 match confirming the review was done
-- [ ] No vague steps: `grep -in "implement the\|add the\|update the\b" <plan_file>` returns 0 matches — every step names a specific function, file, and operation
+      grep -inE "conflict|resolved|rationale"
+      grep -nE "OPEN|BLOCKED|ESCALATED"
+- [ ] Stop-loss criteria explicitly stated with numeric thresholds: `grep -E ">[[:space:]]*[0-9]+[[:space:]]*(min|hour|error|failure|%)" <plan_file>` returns at least 1 match — no implicit or assumed stop criteria
+      grep -nE "coding-style|security.md"
+      grep -inE "implement the|add the|update the"
 
 ## Success Criteria
 
@@ -269,14 +272,14 @@ A `multi-plan` run is complete when:
 
 ## Failure Modes
 
-| Situation | Response |
-|---|---|
-| Technical and UX backends fundamentally disagree on architecture | Apply conflict resolution protocol. Document both options in the Risk Matrix. Choose based on security > feasibility > UX. Record rationale. |
-| One or both backends return low-quality or vague analysis | Re-dispatch with more specific prompts: provide concrete file content, narrower scope, and explicit output format. |
+| Situation                                                        | Response                                                                                                                                                  |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Technical and UX backends fundamentally disagree on architecture | Apply conflict resolution protocol. Document both options in the Risk Matrix. Choose based on security > feasibility > UX. Record rationale.              |
+| One or both backends return low-quality or vague analysis        | Re-dispatch with more specific prompts: provide concrete file content, narrower scope, and explicit output format.                                        |
 | Plan reveals a critical architectural flaw (stop-loss triggered) | Document the flaw in full. Save the incomplete plan with status "HALTED — Stop-Loss." Do not proceed to implementation. Escalate to human decision-maker. |
-| Plan is too vague after synthesis | Iterate: identify the vague steps, re-run targeted analysis with explicit file-level questions, then re-synthesize. |
-| Codebase context was insufficient during analysis | Re-run Phase 0 context retrieval. Use `iterative-retrieval` to progressively refine the relevant file set before re-dispatching analysis. |
-| Feature scope creep discovered during planning | Add out-of-scope items to the Risk Matrix as "Future Enhancement." Do not expand the plan. Scope changes require a new plan cycle. |
+| Plan is too vague after synthesis                                | Iterate: identify the vague steps, re-run targeted analysis with explicit file-level questions, then re-synthesize.                                       |
+| Codebase context was insufficient during analysis                | Re-run Phase 0 context retrieval. Use `iterative-retrieval` to progressively refine the relevant file set before re-dispatching analysis.                 |
+| Feature scope creep discovered during planning                   | Add out-of-scope items to the Risk Matrix as "Future Enhancement." Do not expand the plan. Scope changes require a new plan cycle.                        |
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: code-polisher
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Refactoring and improving code quality. Use for cleaning up and optimizing existing code.
 triggers:
   - "refactor this"
@@ -310,12 +310,13 @@ const heavyModule = await import("./heavy-module");
 - [ ] Cyclomatic complexity reduced: `npx eslint --rule 'complexity: [error, 10]' src/` exits 0 — no function exceeds 10 branches
 - [ ] No magic numbers remain: `grep -rn "[^a-zA-Z_][0-9]\{2,\}[^0-9]" src/` returns = 0 matches (excluding test fixtures)
 - [ ] No function exceeds 30 lines: `grep -c "^}" src/**/*.ts` cross-referenced with line count confirms <= 30 per function
-- [ ] No deeply nested conditionals: `grep -rn "^\s\{12,\}if\|^\s\{12,\}}" src/` returns = 0 matches (> 3 levels deep)
+      grep -rnE "^[[:space:]]\{12,\}if|^[[:space:]]\{12,\}}"
 - [ ] Dead code removed: `npx eslint --rule 'no-unused-vars: error' src/` exits 0 — 0 unused variables or imports
 
 ## Success Criteria
 
 This task is complete when:
+
 1. The full test suite passes with zero failures after the refactoring
 2. Linter reports no new errors or warnings in the changed files
 3. A code review confirms the refactoring improves readability without changing semantics
@@ -331,13 +332,13 @@ This task is complete when:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Refactor breaks observable behaviour with no test coverage to detect it | Polish applied to untested code path; no baseline test written before refactor | Write characterisation tests before any refactor; run full suite after every change |
-| Overly aggressive rename changes public API surface | Rename applied without checking external callers or exported symbol list | Check all references (LSP find-references) before renaming; treat exported symbols as a breaking change boundary |
-| Polish pass introduces new logic under guise of cleanup | Agent conflates "clean up" with "improve"; logic change hidden in formatting PR | Separate logic changes from cosmetic changes; each PR should do exactly one type of change |
-| Formatting-only change mixed with logic change, obscuring the logic change in review | Both changes committed together; reviewer focuses on formatting noise | Commit formatting separately (e.g. `git commit --only formatting`); logic change gets its own commit |
-| Dead code removal deletes code that is called dynamically | Static analysis misses `require(variable)`, reflection, or plugin registration patterns | Verify with runtime coverage data or grep for dynamic dispatch patterns before deleting |
+| Failure                                                                              | Cause                                                                                   | Recovery                                                                                                         |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Refactor breaks observable behaviour with no test coverage to detect it              | Polish applied to untested code path; no baseline test written before refactor          | Write characterisation tests before any refactor; run full suite after every change                              |
+| Overly aggressive rename changes public API surface                                  | Rename applied without checking external callers or exported symbol list                | Check all references (LSP find-references) before renaming; treat exported symbols as a breaking change boundary |
+| Polish pass introduces new logic under guise of cleanup                              | Agent conflates "clean up" with "improve"; logic change hidden in formatting PR         | Separate logic changes from cosmetic changes; each PR should do exactly one type of change                       |
+| Formatting-only change mixed with logic change, obscuring the logic change in review | Both changes committed together; reviewer focuses on formatting noise                   | Commit formatting separately (e.g. `git commit --only formatting`); logic change gets its own commit             |
+| Dead code removal deletes code that is called dynamically                            | Static analysis misses `require(variable)`, reflection, or plugin registration patterns | Verify with runtime coverage data or grep for dynamic dispatch patterns before deleting                          |
 
 ## Tips
 

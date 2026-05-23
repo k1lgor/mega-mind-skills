@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Create detailed, step-by-step implementation plans. Use after brainstorming to document the execution strategy, or when tasked with creating a plan for a feature or change.
 triggers:
   - "create a plan"
@@ -278,13 +278,13 @@ Implement a secure user authentication system with JWT tokens, supporting email/
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Plan steps are too coarse, causing agent to make unreviewed sub-decisions | Steps written at feature level, not task level; each step contains multiple implicit sub-steps | Decompose each step until it is a single, atomic action with a single verifiable output |
-| Plan has no dependency graph, causing steps to execute out of order | Steps listed as a flat sequence; parallelisable steps not identified; sequential dependencies not marked | Add a dependency annotation to each step (e.g. "requires step 3"); identify steps that can run in parallel |
-| Plan written for the author, not the executor | Assumes shared context; omits file paths, tool names, and expected outputs | Write every step as if the executor has no prior context; include exact file paths, commands, and expected outputs |
-| Plan scope creep: executor adds unrequested work mid-execution | Steps are underspecified; executor fills gaps with its own judgment | Add a "scope boundary" section listing what is explicitly out of scope; executor must not cross it without a plan revision |
-| Plan not versioned when requirements change | Plan edited in place without tracking what changed and why; prior decisions lost | Treat the plan as a versioned document; append a changelog entry for every revision with a reason |
+| Failure                                                                   | Cause                                                                                                    | Recovery                                                                                                                   |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Plan steps are too coarse, causing agent to make unreviewed sub-decisions | Steps written at feature level, not task level; each step contains multiple implicit sub-steps           | Decompose each step until it is a single, atomic action with a single verifiable output                                    |
+| Plan has no dependency graph, causing steps to execute out of order       | Steps listed as a flat sequence; parallelisable steps not identified; sequential dependencies not marked | Add a dependency annotation to each step (e.g. "requires step 3"); identify steps that can run in parallel                 |
+| Plan written for the author, not the executor                             | Assumes shared context; omits file paths, tool names, and expected outputs                               | Write every step as if the executor has no prior context; include exact file paths, commands, and expected outputs         |
+| Plan scope creep: executor adds unrequested work mid-execution            | Steps are underspecified; executor fills gaps with its own judgment                                      | Add a "scope boundary" section listing what is explicitly out of scope; executor must not cross it without a plan revision |
+| Plan not versioned when requirements change                               | Plan edited in place without tracking what changed and why; prior decisions lost                         | Treat the plan as a versioned document; append a changelog entry for every revision with a reason                          |
 
 ## Anti-Patterns
 
@@ -306,4 +306,4 @@ Implement a secure user authentication system with JWT tokens, supporting email/
 
 ## Success Criteria
 
-This skill is complete when: 1) The plan has phases with atomic steps, each with a verification checkpoint. 2) Any engineer reading the plan can execute it without needing additional clarification on scope, order, or success criteria. 3) The plan is saved to `docs/plans/` and referenced in `task.md`.
+This skill is complete when: 1) The plan has phases with atomic steps, each with a verification checkpoint. 2) Any engineer reading the plan can execute it without needing additional clarification on scope, order, or success criteria. 3) The plan is saved to `docs/plans/` and referenced in `task.md`. 4) The **Handoff block** has been emitted with `next_skill` pointing to `executing-plans` (or the next chain step) and `status: completed`.

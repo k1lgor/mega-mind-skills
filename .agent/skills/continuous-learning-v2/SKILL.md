@@ -1,6 +1,6 @@
 ---
 name: continuous-learning-v2
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Instinct-based learning system that automatically extracts and evolves patterns from AI sessions. Use to build a growing library of project-specific preferences and workflows that improve the AI's effectiveness over time.
 triggers:
   - "learn from this session"
@@ -126,6 +126,8 @@ domain: [code-style|testing|git|debugging|workflow|security|performance|architec
 source: [session-observation|user-correction|explicit-preference]
 scope: [project|global]
 created: [YYYY-MM-DD]
+last_validated: [YYYY-MM-DD]   # Last session where this instinct was confirmed as still valid
+review_by: [YYYY-MM-DD]         # Auto-calculated: created + 90 days. Instinct expires if not re-validated.
 ---
 
 # [Human-readable name]
@@ -138,14 +140,42 @@ created: [YYYY-MM-DD]
 - [Specific observation 2]
 ```
 
+### Instinct Decay (Anti-Staleness)
+
+Instincts lose relevance over time. The system uses a **decay mechanism** to prevent stale
+preferences from conflicting with current practices:
+
+| Condition                                | Action                                                                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `last_validated` > 90 days old           | Confidence drops by -0.2 (automatic decay)                                                                       |
+| `last_validated` > 180 days old          | Confidence drops by -0.4. Flag for review at session start.                                                      |
+| `last_validated` > 365 days old          | Mark as `status: expired`. Not applied automatically.                                                            |
+| Instinct is validated in a new session   | Reset `last_validated` to today. Confidence increases by +0.05 (max 0.95).                                       |
+| New instinct contradicts an existing one | Both are flagged. The higher-confidence instinct wins. If equal, the newer one wins. Manual resolution required. |
+
+**Rule**: Before every session start, check all instincts with `review_by` in the past.
+Prompt the user to re-validate or archive each expired instinct.
+
+### Conflict Detection
+
+Before adding a new instinct, search existing instincts for conflicts:
+
+```
+1. Search: `grep -rn "<domain>" .agent/instincts/personal/*.yaml` for instincts in the same domain
+2. Compare: does the new instinct's `action` contradict any existing `action`?
+3. If conflict: add a `supersedes: <old-id>` field to the new instinct, and add
+   `superseded_by: <new-id>` to the old instinct
+4. If no conflict: add normally
+```
+
 ### Confidence Scoring Guide
 
-| Score | Meaning                                      | Threshold                |
-| ----- | -------------------------------------------- | ------------------------ |
-| 0.3   | One observation, tentative                   | Apply cautiously         |
-| 0.5   | 2-3 observations                             | Apply in likely contexts |
-| 0.7   | 4-5 observations or correction               | Apply by default         |
-| 0.9   | Explicit preference + multiple confirmations | Always apply             |
+| Score | Meaning                                      | Threshold                | Decay-Adjusted                  |
+| ----- | -------------------------------------------- | ------------------------ | ------------------------------- |
+| 0.3   | One observation, tentative                   | Apply cautiously         | 0.3 - (0.2 per 90d unvalidated) |
+| 0.5   | 2-3 observations                             | Apply in likely contexts | 0.5 - (0.2 per 90d)             |
+| 0.7   | 4-5 observations or correction               | Apply by default         | 0.7 - (0.2 per 90d)             |
+| 0.9   | Explicit preference + multiple confirmations | Always apply             | 0.9 - (0.2 per 90d)             |
 
 ---
 
@@ -296,13 +326,13 @@ BEFORE executing any task:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Instinct extracted from single session over-generalised | One data point treated as a universal pattern; context of the session not recorded | Tag every instinct with its source session and domain; require 2+ independent observations before promoting to instinct |
-| Low-confidence observation promoted to instinct without validation | Agent assigns high confidence to a pattern it observed only once | Add a confidence score to every instinct entry; only promote to active instinct when confidence ≥ 0.7 after validation |
-| Instinct conflicts with existing instinct, causing contradictory behaviour | New instinct added without checking for conflicts in the instinct file | Before adding, search instinct file for related entries; resolve conflicts explicitly with a "supersedes" note |
-| Session observation written too late | Observation captured at end-of-session summary; key decision moments already forgotten | Write observations immediately after each significant decision, not at session end |
-| Instinct file format invalid, causing silent load failure | Malformed YAML/JSON in the instinct file; parser fails silently | Validate instinct file format after every write; add a schema check as part of the session teardown step |
+| Failure                                                                    | Cause                                                                                  | Recovery                                                                                                                |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Instinct extracted from single session over-generalised                    | One data point treated as a universal pattern; context of the session not recorded     | Tag every instinct with its source session and domain; require 2+ independent observations before promoting to instinct |
+| Low-confidence observation promoted to instinct without validation         | Agent assigns high confidence to a pattern it observed only once                       | Add a confidence score to every instinct entry; only promote to active instinct when confidence ≥ 0.7 after validation  |
+| Instinct conflicts with existing instinct, causing contradictory behaviour | New instinct added without checking for conflicts in the instinct file                 | Before adding, search instinct file for related entries; resolve conflicts explicitly with a "supersedes" note          |
+| Session observation written too late                                       | Observation captured at end-of-session summary; key decision moments already forgotten | Write observations immediately after each significant decision, not at session end                                      |
+| Instinct file format invalid, causing silent load failure                  | Malformed YAML/JSON in the instinct file; parser fails silently                        | Validate instinct file format after every write; add a schema check as part of the session teardown step                |
 
 ## Anti-Patterns
 
@@ -316,11 +346,11 @@ BEFORE executing any task:
 ## Self-Verification Checklist
 
 - [ ] At least 1 instinct file written per user correction: `ls .agent/instincts/observations/ | wc -l` >= number of corrections observed in the session — 0 files after a session with corrections is a failure
-- [ ] Every instinct has a non-default confidence score: `grep -c '"confidence": 0\b' .agent/instincts/observations/*.jsonl` returns 0 — no instinct left at confidence 0
+- [ ] Every instinct has a non-default confidence score: `grep -c '"confidence": 0' .agent/instincts/observations/*.jsonl` returns 0 — no instinct left at confidence 0
 - [ ] Instinct files are valid JSONL: `python -c "import sys,json; [json.loads(l) for l in open(sys.argv[1])]" .agent/instincts/observations/<file>.jsonl` exits 0 for every file written this session
-- [ ] High-confidence instincts promoted or justified: `grep -l '"confidence": 0\.[89]\|"confidence": 1\.' .agent/instincts/observations/*.jsonl | wc -l` matches `ls .agent/instincts/personal/ | wc -l` (promoted count) — unpromoted high-confidence instincts have a written justification
+- [ ] High-confidence instincts promoted or justified: `grep -lE '"confidence": 0\.[89]|"confidence": 1\.' .agent/instincts/observations/*.jsonl | wc -l` matches `ls .agent/instincts/personal/ | wc -l` (promoted count) — unpromoted high-confidence instincts have a written justification
 - [ ] Every instinct has a non-empty `evidence` field: `grep -c '"evidence": ""' .agent/instincts/observations/*.jsonl` returns 0 — bare preferences without evidence fail this check
-- [ ] Clusters of 3+ related observations evaluated for skill consolidation: `grep -rn "cluster\|consolidat\|merged into skill" .agent/instincts/observations/` returns >= 1 match if session produced >= 3 instincts on the same topic
+      grep -rnE "cluster|consolidat|merged into skill"
 
 ## Success Criteria
 

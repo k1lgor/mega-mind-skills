@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Parallel branch management with Git worktrees. Use when working on multiple features simultaneously.
 triggers:
   - "work on multiple features"
@@ -266,13 +266,13 @@ clean_merged() {
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Worktree left behind after branch deleted, consuming disk space silently | Developer deletes remote branch and closes the PR but never runs `git worktree remove` | Run `git worktree prune` after each branch deletion; audit with `git worktree list` to confirm no stale entries remain |
-| Same branch checked out in two worktrees, causing lock conflict | Developer adds a new worktree for a branch that is already checked out in the main repo | Before adding a worktree, run `git worktree list` to confirm the branch is not already checked out; detach HEAD in the source worktree first |
-| Worktree path contains spaces, breaking shell scripts referencing it | Worktree directory named "my feature branch" with spaces; unquoted path in scripts fails | Always name worktrees with hyphens not spaces (e.g., `my-feature-branch`); audit existing worktree paths with `git worktree list` |
-| Shared `.env` file modified in worktree, affecting main checkout | `.env` is not gitignored and is shared by symlink or located at project root accessible from all worktrees | Add `.env` to `.gitignore`; use per-worktree `.env.local` files; never symlink shared mutable config files across worktrees |
-| IDE opens wrong worktree root, running tests against stale code | IDE session restored from previous project root; developer edits files in the wrong directory without noticing | Verify the active directory with `git branch --show-current` before running tests; use per-worktree IDE windows, not shared sessions |
+| Failure                                                                  | Cause                                                                                                          | Recovery                                                                                                                                     |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worktree left behind after branch deleted, consuming disk space silently | Developer deletes remote branch and closes the PR but never runs `git worktree remove`                         | Run `git worktree prune` after each branch deletion; audit with `git worktree list` to confirm no stale entries remain                       |
+| Same branch checked out in two worktrees, causing lock conflict          | Developer adds a new worktree for a branch that is already checked out in the main repo                        | Before adding a worktree, run `git worktree list` to confirm the branch is not already checked out; detach HEAD in the source worktree first |
+| Worktree path contains spaces, breaking shell scripts referencing it     | Worktree directory named "my feature branch" with spaces; unquoted path in scripts fails                       | Always name worktrees with hyphens not spaces (e.g., `my-feature-branch`); audit existing worktree paths with `git worktree list`            |
+| Shared `.env` file modified in worktree, affecting main checkout         | `.env` is not gitignored and is shared by symlink or located at project root accessible from all worktrees     | Add `.env` to `.gitignore`; use per-worktree `.env.local` files; never symlink shared mutable config files across worktrees                  |
+| IDE opens wrong worktree root, running tests against stale code          | IDE session restored from previous project root; developer edits files in the wrong directory without noticing | Verify the active directory with `git branch --show-current` before running tests; use per-worktree IDE windows, not shared sessions         |
 
 ## Self-Verification Checklist
 
@@ -287,4 +287,7 @@ clean_merged() {
 ## Success Criteria
 
 This skill is complete when: 1) Each active feature or context has its own worktree with a descriptive name, fully installed dependencies, and the correct branch checked out. 2) Worktrees for completed/merged branches are cleaned up promptly. 3) `git worktree list` reflects only the worktrees currently in active use.
+
+```
+
 ```

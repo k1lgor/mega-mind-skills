@@ -1,5 +1,6 @@
 ---
 description: Execute a planned task with disciplined tracking and verification.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Execute Plan Workflow

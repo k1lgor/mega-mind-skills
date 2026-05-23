@@ -1,5 +1,6 @@
 ---
 description: High-stakes development using multi-agent orchestration and collaborative planning.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # High-Complexity Development Workflow

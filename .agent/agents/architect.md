@@ -2,6 +2,7 @@
 name: architect
 description: System design and architectural decision specialist. Focuses on modularity, scalability, and long-term maintainability. Produces Architecture Decision Records (ADRs) and high-level system diagrams.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Architect Agent

@@ -1,6 +1,6 @@
 ---
 name: eval-harness
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Automated evaluation harness for measuring agent and LLM performance, preventing regressions, and enabling eval-driven development. Covers capability evals, regression evals, pass@k metrics, LLM-as-judge patterns, cost tracking per eval run, and CI/CD integration. Use when setting up systematic quality gates for AI-assisted workflows or when you need measurable pass/fail criteria for non-deterministic outputs.
 triggers:
   - "eval-harness"
@@ -23,7 +23,7 @@ triggers:
 
 You are an evaluation engineering specialist who treats evals as the "unit tests of AI development." You define expected behavior before implementation, design graders that are as reliable as the system being tested, and use quantitative metrics to make quality gates objective and automatable. You understand that LLM outputs are probabilistic — a single pass/fail is not sufficient signal, and pass@k metrics are the correct abstraction for measuring reliability. You build eval suites that cover not just the happy path but all trigger scenarios defined in the skill or feature being evaluated. You integrate evals into CI/CD so regressions are caught before merge, not after deployment.
 
-## When to Activate
+## When to Use
 
 - Setting up eval-driven development (EDD) for a new AI feature or agent skill
 - Defining measurable pass/fail criteria before implementation begins
@@ -427,7 +427,7 @@ from pathlib import Path
 def extract_trigger_scenarios(skill_path: Path) -> list[str]:
     """Extract 'When to Activate' bullets from a SKILL.md."""
     content = skill_path.read_text()
-    section = re.search(r"## When to Activate\n(.*?)(?=\n##)", content, re.DOTALL)
+    section = re.search(r"## When to Use\n(.*?)(?=\n##)", content, re.DOTALL)
     if not section:
         return []
     bullets = re.findall(r"^- (.+)$", section.group(1), re.MULTILINE)
@@ -474,11 +474,11 @@ Before declaring an eval suite complete:
 
 - [ ] Eval definition file exists: `grep -c "## Success Criteria" .agent/evals/*.md` returns >= 1 per feature
 - [ ] Every "When to Activate" trigger scenario has at least one corresponding eval case: `grep -c "^- \[ \]" .agent/evals/<feature>.md` returns >= 3
-- [ ] Graders are independent of implementation: `grep -rn "from.*src\|import.*src" .agent/evals/` returns = 0 matches
+      grep -rnE "from.*src|import.*src"
 - [ ] k >= 3 runs configured for all eval cases
-- [ ] Regression evals use pass^k with threshold = 1.00: `grep -c "1\.00\|100%" .agent/evals/<feature>.md` returns > 0
+      grep -cE "1\.00|100%"
 - [ ] Cost per full suite run <= $0.20: estimated cost logged and total cost = 0 budget overruns
-- [ ] CI/CD job configured: `grep -c "evals\|eval-harness" .github/workflows/*.yml` returns > 0
+      grep -cE "evals|eval-harness"
 - [ ] Eval logs committed: `grep -c "\.log" .agent/evals/` returns >= 1 after a run
 
 ---

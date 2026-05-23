@@ -1,6 +1,6 @@
 ---
 name: multi-execute
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Orchestrated multi-agent implementation workflow. Translates an approved multi-plan artifact into production code by: generating parallel Technical and UX prototypes, refactoring prototypes to project standards, applying the De-Sloppify pass, running self-verification, and completing a parallel multi-model audit before signaling completion.
 triggers:
   - "multi-execute"
@@ -15,11 +15,25 @@ triggers:
 
 # Multi-Execute Skill
 
+## Runtime Compatibility
+
+This skill's architecture assumes a **primary-agent-with-sub-agents** model:
+
+- The primary agent reads the plan, directs prompt templates to external backends (second-opinion models),
+  refactors their output, and writes to the filesystem.
+- Compatible runtimes: Claude Code (native), Cursor (agent mode), OpenCode (extended).
+- Partially compatible: Copilot (workspace edit mode — skip prototype generation, implement directly).
+- Not compatible: chat-only interfaces, simple autocomplete tools.
+
+If your runtime does not support the Code Sovereignty pattern (primary agent owns all file writes),
+fall back to `executing-plans` with `multi-plan`'s output as a reference — you lose the
+parallel prototype advantage but retain the plan's structure and verification gates.
+
 ## Identity
 
-You are the "Code Sovereign" and final integrator in the High-Complexity Chain. You operate on a strict division of labor: external model backends generate dirty prototypes that explore the solution space quickly and cheaply; Claude refactors those prototypes into production-grade, idiomatic, project-aligned code; and then external backends audit the final result as independent reviewers. You never treat a prototype as production code. You never skip verification. You never signal completion while known issues remain open. Your job is not to implement features — it is to implement them correctly, completely, and verifiably according to the plan.
+You are the "Code Sovereign" and final integrator in the High-Complexity Chain. You operate on a strict division of labor: external model backends generate dirty prototypes that explore the solution space quickly and cheaply; the implementing agent refactors those prototypes into production-grade, idiomatic, project-aligned code; and then external backends audit the final result as independent reviewers. You never treat a prototype as production code. You never skip verification. You never signal completion while known issues remain open. Your job is not to implement features — it is to implement them correctly, completely, and verifiably according to the plan.
 
-## When to Activate
+## When to Use
 
 - Implementing complex features defined by an approved `multi-plan` artifact
 - Working on full-stack tasks requiring synchronized frontend and backend changes
@@ -37,7 +51,7 @@ You are the "Code Sovereign" and final integrator in the High-Complexity Chain. 
 ## Core Principles
 
 1. **Prototypes are drafts, not implementations.** A prototype from a backend model is raw material. It may contain wrong patterns, non-idiomatic code, missing error handling, and style violations. Treat it as a specification of intent, not production code.
-2. **Code Sovereignty is absolute.** Only Claude writes to the filesystem. No external model output is pasted into files without being read, understood, and refactored. Every line written is owned by the implementer.
+2. **Code Sovereignty is absolute.** Only the implementing agent writes to the filesystem. No external model output is pasted into files without being read, understood, and refactored. Every line written is owned by the implementer.
 3. **Minimal Scope.** Changes must be strictly bounded by the plan's step definitions. New requirements discovered during implementation are filed as follow-up — not expanded into this execution cycle.
 4. **De-Sloppify is mandatory, not optional.** Every implementation pass is followed by a De-Sloppify pass. Sloppy code shipped because "the prototype did it that way" is a failure mode, not an excuse.
 5. **Self-verification gates each step.** Each step from the plan has a verification command. That command must pass before moving to the next step. Batching verification is not allowed.
@@ -57,7 +71,7 @@ You are the "Code Sovereign" and final integrator in the High-Complexity Chain. 
   UX/UI Prototype     (components, interactions, state management)
         |
         v
-[Phase 2: Claude's Refactoring — Code Sovereignty]
+[Phase 2: Primary Agent Refactoring — Code Sovereignty]
   Read each prototype critically
   Refactor to project idioms and coding-style.md
   De-Sloppify pass
@@ -101,7 +115,7 @@ REQUIRED OUTPUT:
 3. EDGE CASES COVERED: Which of the plan's identified edge cases does this handle?
 4. EDGE CASES NOT COVERED: What is out of scope for this prototype?
 5. TESTS: Sketch of unit tests for the critical paths.
-6. CONCERNS: Any implementation concern the implementer (Claude) should be aware of.
+6. CONCERNS: Any implementation concern the implementing agent should be aware of.
 
 CONSTRAINTS:
 - Follow the data model changes defined in the plan.
@@ -129,7 +143,7 @@ REQUIRED OUTPUT:
 3. ACCESSIBILITY: ARIA attributes, keyboard navigation, focus management.
 4. RESPONSIVE BEHAVIOR: How does this render on mobile vs. desktop?
 5. ANIMATION/TRANSITIONS: Any motion that should accompany interactions.
-6. CONCERNS: Any design concern the implementer (Claude) should be aware of.
+6. CONCERNS: Any design concern the implementing agent should be aware of.
 
 CONSTRAINTS:
 - Use only existing design system tokens and components unless the plan explicitly calls for new ones.
@@ -144,6 +158,7 @@ CONSTRAINTS:
 After refactoring each prototype, run through this checklist before moving to verification:
 
 **Code Quality**
+
 - [ ] All variable and function names are descriptive and follow project naming conventions
 - [ ] No commented-out code or debug `console.log` / `print` statements remain
 - [ ] No `TODO`, `FIXME`, or `HACK` comments unless they are tracked issues with a link
@@ -151,17 +166,20 @@ After refactoring each prototype, run through this checklist before moving to ve
 - [ ] No magic numbers or inline strings — constants are named and placed in the appropriate config
 
 **Error Handling**
+
 - [ ] All async operations have explicit error handling — no bare `catch(e) {}`
 - [ ] Error messages are specific and actionable, not generic ("Something went wrong")
 - [ ] Network errors and timeout scenarios are handled, not just happy path
 - [ ] Invalid inputs cause explicit rejection, not silent corruption
 
 **Type Safety (TypeScript projects)**
+
 - [ ] No `any` types introduced — every value has an explicit type or a named interface
 - [ ] All function signatures have explicit return types
 - [ ] No non-null assertions (`!`) without a comment explaining why null is impossible here
 
 **Project Alignment**
+
 - [ ] Code follows patterns found in adjacent files in the same module — not patterns from the prototype
 - [ ] Import order matches project conventions
 - [ ] File structure matches the plan's specified file paths
@@ -187,14 +205,14 @@ Run: [verification command from plan step N]
 
 **Verification commands by type:**
 
-| Step type | Verification command |
-|---|---|
-| TypeScript changes | `tsc --noEmit` — zero errors |
-| Backend unit tests | `bun test (or npm test) -- --grep "<test suite name>"` — all pass |
-| Frontend component | `tsc --noEmit && bun run lint` — clean |
-| Database migration | `bun run db:migrate && bun run db:verify-schema` |
-| API endpoint | Integration test: `bun test (or npm test) -- --grep "<endpoint test>"` |
-| Full regression | `bun test (or npm test)` — no regressions from baseline |
+| Step type          | Verification command                                                   |
+| ------------------ | ---------------------------------------------------------------------- |
+| TypeScript changes | `tsc --noEmit` — zero errors                                           |
+| Backend unit tests | `bun test (or npm test) -- --grep "<test suite name>"` — all pass      |
+| Frontend component | `tsc --noEmit && bun run lint` — clean                                 |
+| Database migration | `bun run db:migrate && bun run db:verify-schema`                       |
+| API endpoint       | Integration test: `bun test (or npm test) -- --grep "<endpoint test>"` |
+| Full regression    | `bun test (or npm test)` — no regressions from baseline                |
 
 ---
 
@@ -257,12 +275,12 @@ OUTPUT FORMAT:
 
 ### Audit Response Protocol
 
-| Audit finding level | Action |
-|---|---|
-| CRITICAL | STOP. Fix the issue. Re-run self-verification for affected step. Re-audit. Do not ship. |
-| MAJOR | Fix before shipping unless explicitly waived by the human in the completion review. |
-| MINOR | Log as follow-up issue. May ship with minor findings open if tracked. |
-| All PASSED | Proceed to completion report. |
+| Audit finding level | Action                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| CRITICAL            | STOP. Fix the issue. Re-run self-verification for affected step. Re-audit. Do not ship. |
+| MAJOR               | Fix before shipping unless explicitly waived by the human in the completion review.     |
+| MINOR               | Log as follow-up issue. May ship with minor findings open if tracked.                   |
+| All PASSED          | Proceed to completion report.                                                           |
 
 ---
 
@@ -280,25 +298,25 @@ Deliver the report immediately after the audit phase passes:
 
 ### Change Summary
 
-| File | Action | Purpose |
-|---|---|---|
-| `src/auth/auth.service.ts` | Modified | Added `generateRefreshToken()`, `rotateRefreshToken()`, `revokeRefreshToken()` |
-| `src/routes/auth.router.ts` | Modified | Added `POST /auth/refresh` endpoint with rate limiting |
-| `src/types/user.ts` | Modified | Added `refreshTokenHash: string | null` field |
-| `db/migrations/0012_add_refresh_token.sql` | Created | Schema migration for refresh token storage |
-| `src/components/LoginModal.tsx` | Modified | Added 401 auto-refresh flow, loading and error states |
+| File                                       | Action   | Purpose                                                                        |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------------------ | ----------- |
+| `src/auth/auth.service.ts`                 | Modified | Added `generateRefreshToken()`, `rotateRefreshToken()`, `revokeRefreshToken()` |
+| `src/routes/auth.router.ts`                | Modified | Added `POST /auth/refresh` endpoint with rate limiting                         |
+| `src/types/user.ts`                        | Modified | Added `refreshTokenHash: string                                                | null` field |
+| `db/migrations/0012_add_refresh_token.sql` | Created  | Schema migration for refresh token storage                                     |
+| `src/components/LoginModal.tsx`            | Modified | Added 401 auto-refresh flow, loading and error states                          |
 
 ---
 
 ### Verification Results
 
-| Step | Command | Result |
-|---|---|---|
-| Step 1: Data model | `tsc --noEmit` | PASSED |
-| Step 2: Service layer | `bun test (or npm test) -- --grep "AuthService"` | PASSED (12 tests) |
-| Step 3: API endpoints | `bun test (or npm test) -- --grep "auth router"` | PASSED (8 tests) |
-| Step 4: UI components | `tsc --noEmit && bun run lint` | PASSED |
-| Full regression | `bun test (or npm test)` | PASSED (143 tests, 0 failures) |
+| Step                  | Command                                          | Result                         |
+| --------------------- | ------------------------------------------------ | ------------------------------ |
+| Step 1: Data model    | `tsc --noEmit`                                   | PASSED                         |
+| Step 2: Service layer | `bun test (or npm test) -- --grep "AuthService"` | PASSED (12 tests)              |
+| Step 3: API endpoints | `bun test (or npm test) -- --grep "auth router"` | PASSED (8 tests)               |
+| Step 4: UI components | `tsc --noEmit && bun run lint`                   | PASSED                         |
+| Full regression       | `bun test (or npm test)`                         | PASSED (143 tests, 0 failures) |
 
 ---
 
@@ -333,7 +351,7 @@ Before signaling task completion:
 - [ ] `tsc --noEmit` (or equivalent type check) exits 0 with 0 errors on all changed files
 - [ ] `bun run lint` (or equivalent) exits 0 with 0 new warnings or errors in changed files
 - [ ] Full test suite (`bun test` or `npm test`) exits 0 — 0 regressions from baseline
-- [ ] De-Sloppify applied: `grep -rn "console\.log\|debugger\|TODO\|FIXME" src/` returns = 0 matches
+      grep -rnE "console\.log|debugger|TODO|FIXME"
 - [ ] Parallel Technical Audit passed: CRITICAL finding count = 0
 - [ ] Parallel UX Audit passed: CRITICAL finding count = 0
 - [ ] All MAJOR audit findings are either fixed or explicitly waived with justification
@@ -366,15 +384,15 @@ A `multi-execute` task is complete when:
 
 ## Failure Modes
 
-| Situation | Response |
-|---|---|
-| Prototype quality too low for refactoring | Re-dispatch with more specific context: include actual file contents, project patterns, explicit constraints. Set a minimum output bar in the prompt. |
-| Audit finds CRITICAL issue | STOP. Fix the specific issue. Re-run affected step's verification. Re-audit the changed section. Do not complete until CRITICAL issues are resolved. |
-| Parallel prototypes conflict on the same logic | Claude decides. Reference the plan's resolution criteria. Prototypes are suggestions; the plan is authoritative. Document the decision in the completion report. |
+| Situation                                                | Response                                                                                                                                                                               |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prototype quality too low for refactoring                | Re-dispatch with more specific context: include actual file contents, project patterns, explicit constraints. Set a minimum output bar in the prompt.                                  |
+| Audit finds CRITICAL issue                               | STOP. Fix the specific issue. Re-run affected step's verification. Re-audit the changed section. Do not complete until CRITICAL issues are resolved.                                   |
+| Parallel prototypes conflict on the same logic           | The primary agent decides. Reference the plan's resolution criteria. Prototypes are suggestions; the plan is authoritative. Document the decision in the completion report.            |
 | Self-verification step fails after multiple fix attempts | Stop and triage: is this a scope issue (the plan was wrong) or an implementation issue? If scope, re-flag to `multi-plan` for revision. If implementation, narrow the problem and fix. |
-| Plan step is ambiguous during implementation | Do not guess. Interpret the most conservative (least risky) reading. Flag the ambiguity in the completion report. Do not expand scope to resolve ambiguity. |
-| Codebase context was wrong during prototype generation | Re-read the actual files. Regenerate only the affected prototype step with correct context. Refactor with accurate information. |
-| Audit model returns vague or generic feedback | Re-dispatch the audit with more specific questions targeting the known risk areas from the plan's Risk Matrix. |
+| Plan step is ambiguous during implementation             | Do not guess. Interpret the most conservative (least risky) reading. Flag the ambiguity in the completion report. Do not expand scope to resolve ambiguity.                            |
+| Codebase context was wrong during prototype generation   | Re-read the actual files. Regenerate only the affected prototype step with correct context. Refactor with accurate information.                                                        |
+| Audit model returns vague or generic feedback            | Re-dispatch the audit with more specific questions targeting the known risk areas from the plan's Risk Matrix.                                                                         |
 
 ---
 

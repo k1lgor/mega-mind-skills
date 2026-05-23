@@ -2,6 +2,7 @@
 name: tech-lead
 description: Complex project planning and orchestration. Use for architectural decisions, project planning, and coordinating multiple features or team members.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Tech Lead Agent

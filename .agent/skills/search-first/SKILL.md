@@ -1,6 +1,6 @@
 ---
 name: search-first
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Research-before-coding discipline. Always search for existing solutions before writing code. Use when adding any new dependency, integration, utility, or feature that likely has prior art.
 triggers:
   - "add functionality"
@@ -222,13 +222,13 @@ Python: pytest, hypothesis, locust
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Library found but last commit is 3+ years ago, effectively unmaintained | Search ranked by stars not by recency; maintainer abandoned the project | Filter candidates to only those with a commit in the last 12 months; look for active forks or successors |
-| Multiple options with similar star counts, no clear winner, analysis paralysis | Candidates evaluated on stars alone without applying the scoring rubric | Apply the full rubric (functionality 40%, maintenance 20%, community 15%, docs 15%, license 5%, bundle 5%); pick highest total score |
-| Library has known CVE not yet patched, security team blocks it | Security scan skipped; CVE only visible after `npm audit` or Snyk check | Run `npm audit` / `pip-audit` immediately after install; if CVE found, evaluate a patched fork or alternative |
-| License is AGPL, incompatible with proprietary product | License column skipped during evaluation; AGPL copyleft not flagged | Check the LICENSE file before any integration; AGPL requires the consuming product to also be open-source — choose MIT/Apache alternative |
-| Search returns outdated Stack Overflow answer referencing deprecated API | Web search found a high-voted answer from 5+ years ago; library has since changed | Filter web search to last 12 months; cross-reference the Stack Overflow answer with the library's current official docs |
+| Failure                                                                        | Cause                                                                             | Recovery                                                                                                                                  |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Library found but last commit is 3+ years ago, effectively unmaintained        | Search ranked by stars not by recency; maintainer abandoned the project           | Filter candidates to only those with a commit in the last 12 months; look for active forks or successors                                  |
+| Multiple options with similar star counts, no clear winner, analysis paralysis | Candidates evaluated on stars alone without applying the scoring rubric           | Apply the full rubric (functionality 40%, maintenance 20%, community 15%, docs 15%, license 5%, bundle 5%); pick highest total score      |
+| Library has known CVE not yet patched, security team blocks it                 | Security scan skipped; CVE only visible after `npm audit` or Snyk check           | Run `npm audit` / `pip-audit` immediately after install; if CVE found, evaluate a patched fork or alternative                             |
+| License is AGPL, incompatible with proprietary product                         | License column skipped during evaluation; AGPL copyleft not flagged               | Check the LICENSE file before any integration; AGPL requires the consuming product to also be open-source — choose MIT/Apache alternative |
+| Search returns outdated Stack Overflow answer referencing deprecated API       | Web search found a high-voted answer from 5+ years ago; library has since changed | Filter web search to last 12 months; cross-reference the Stack Overflow answer with the library's current official docs                   |
 
 ## Tips
 
@@ -242,11 +242,11 @@ Python: pytest, hypothesis, locust
 
 - [ ] Chosen library has a commit in the last 12 months — verified on GitHub repository's commit history
 - [ ] No open CVEs: `npm audit --audit-level=high` or `pip-audit` exits 0, or all issues documented with justification
-- [ ] License is compatible: `grep -c "MIT\|Apache-2.0\|BSD\|ISC" package.json` returns > 0 for the chosen library
-- [ ] npm/PyPI/GitHub searched before writing implementation: `grep -c "search-first\|npm search\|pypi" task.md` returns > 0
+      grep -cE "MIT|Apache-2.0|BSD|ISC"
+      grep -cE "search-first|npm search|pypi"
 - [ ] Top 3 candidates evaluated against scoring rubric (weekly downloads, last commit, license, bundle size)
-- [ ] Decision documented in a "Search-First Research" block: `grep -c "Search-First Research\|search-first" docs/` returns > 0
-- [ ] MCP server alternatives checked: `grep -c "MCP\|mcp server" task.md` returns >= 1
+      grep -cE "Search-First Research|search-first"
+      grep -cE "MCP|mcp server"
 
 ## Success Criteria
 

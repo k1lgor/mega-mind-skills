@@ -1,6 +1,6 @@
 ---
 name: k8s-orchestrator
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Kubernetes manifests and Helm charts. Use for Kubernetes deployment tasks.
 triggers:
   - "kubernetes"
@@ -54,8 +54,8 @@ Instance 3: v1        (still running v1)
 strategy:
   type: RollingUpdate
   rollingUpdate:
-    maxSurge: 1        # One extra pod during rollout
-    maxUnavailable: 0  # Never reduce capacity below desired
+    maxSurge: 1 # One extra pod during rollout
+    maxUnavailable: 0 # Never reduce capacity below desired
 ```
 
 ### Blue-Green Deployment
@@ -286,8 +286,6 @@ npx prisma migrate resolve --rolled-back <migration-name>
 - [ ] Database migration tested against production-sized data
 - [ ] Runbook for common failure scenarios (DB down, Redis down, OOM)
 - [ ] On-call rotation and escalation path defined
-
-
 
 ### Deployment
 
@@ -565,13 +563,13 @@ helm uninstall myapp
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Pod in CrashLoopBackOff due to missing env var or secret | Required environment variable not defined in the Deployment manifest or the referenced Secret does not exist in the namespace | Run `kubectl describe pod <name>` to read the exit reason; check `kubectl get secret` to confirm the secret exists; add the missing env var or create the secret |
-| OOMKilled because resource limits set below actual memory footprint | `limits.memory` configured lower than the application's steady-state memory usage, causing the kernel OOM killer to terminate the container | Run `kubectl top pod` to measure actual usage; raise `limits.memory` above the P99 memory reading; set `requests.memory` to match measured baseline |
-| ImagePullBackOff from wrong registry URL or missing pull secret | Image tag references a private registry but no `imagePullSecrets` is set, or the image path has a typo | Run `kubectl describe pod <name>` for the exact error; verify the image path with `docker pull`; create and reference an `imagePullSecret` for private registries |
-| PersistentVolumeClaim stuck Pending because StorageClass not found | Manifest references a `storageClassName` that does not exist in the cluster, so no PV is provisioned | Run `kubectl get storageclass` to list available classes; update the PVC to use an existing class or create the missing StorageClass |
-| Liveness probe too aggressive, killing healthy pod under startup load | `initialDelaySeconds` too short or `failureThreshold` too low; probe fires before the app finishes initializing under load | Increase `initialDelaySeconds` to exceed app startup time; use a `startupProbe` for slow-starting containers; validate with `kubectl describe pod` that the probe is not triggering restarts |
+| Failure                                                               | Cause                                                                                                                                       | Recovery                                                                                                                                                                                     |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pod in CrashLoopBackOff due to missing env var or secret              | Required environment variable not defined in the Deployment manifest or the referenced Secret does not exist in the namespace               | Run `kubectl describe pod <name>` to read the exit reason; check `kubectl get secret` to confirm the secret exists; add the missing env var or create the secret                             |
+| OOMKilled because resource limits set below actual memory footprint   | `limits.memory` configured lower than the application's steady-state memory usage, causing the kernel OOM killer to terminate the container | Run `kubectl top pod` to measure actual usage; raise `limits.memory` above the P99 memory reading; set `requests.memory` to match measured baseline                                          |
+| ImagePullBackOff from wrong registry URL or missing pull secret       | Image tag references a private registry but no `imagePullSecrets` is set, or the image path has a typo                                      | Run `kubectl describe pod <name>` for the exact error; verify the image path with `docker pull`; create and reference an `imagePullSecret` for private registries                            |
+| PersistentVolumeClaim stuck Pending because StorageClass not found    | Manifest references a `storageClassName` that does not exist in the cluster, so no PV is provisioned                                        | Run `kubectl get storageclass` to list available classes; update the PVC to use an existing class or create the missing StorageClass                                                         |
+| Liveness probe too aggressive, killing healthy pod under startup load | `initialDelaySeconds` too short or `failureThreshold` too low; probe fires before the app finishes initializing under load                  | Increase `initialDelaySeconds` to exceed app startup time; use a `startupProbe` for slow-starting containers; validate with `kubectl describe pod` that the probe is not triggering restarts |
 
 ## Self-Verification Checklist
 
@@ -579,8 +577,8 @@ helm uninstall myapp
 - [ ] All pods in Running or Completed state: `kubectl get pods -n <namespace> --field-selector=status.phase!=Running,status.phase!=Succeeded | wc -l` returns 0 (header line only) — any pod in CrashLoopBackOff or Pending is a blocking failure
 - [ ] Resource requests and limits set on all containers: `kubectl get pods -n <namespace> -o json | python -c "import sys,json; pods=json.load(sys.stdin); [print(c['name']) for p in pods['items'] for c in p['spec']['containers'] if not c.get('resources',{}).get('limits')]"` returns 0 lines
 - [ ] Liveness and readiness probes configured on every Deployment: `kubectl get deployments -n <namespace> -o json | python -c "import sys,json; d=json.load(sys.stdin); [print(c['name']) for dep in d['items'] for c in dep['spec']['template']['spec']['containers'] if not c.get('livenessProbe')]"` returns 0 lines
-- [ ] Secrets stored in Kubernetes Secret resources: `grep -rn "password\|secret\|token" <manifests_dir>/*.yaml | grep -v "kind: Secret\|secretKeyRef\|secretRef"` returns 0 matches — plaintext secrets in ConfigMap or env literals fail this check
-- [ ] Pod anti-affinity rules set: `grep -rn "podAntiAffinity\|topologyKey" <manifests_dir>` returns at least 1 match per Deployment with replica count > 1
+      grep -rnE "password|secret|token"
+      grep -rnE "podAntiAffinity|topologyKey"
 - [ ] No `latest` image tags: `grep -rn "image:.*:latest" <manifests_dir>` returns 0 matches — all images use a pinned version tag or SHA digest
 
 ## Success Criteria

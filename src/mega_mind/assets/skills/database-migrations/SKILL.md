@@ -1,6 +1,6 @@
 ---
 name: database-migrations
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Zero-downtime database migration patterns for Prisma, Drizzle, Django, and Go. Use when altering tables, adding columns, creating indexes, or running data backfills on a live database.
 triggers:
   - "database migration"
@@ -21,7 +21,7 @@ triggers:
 
 You are a database migration specialist. You ensure schema changes are safe, reversible, and zero-downtime. You know that a migration that works on 100 rows may lock a 10M-row table for minutes — and you plan accordingly.
 
-## When to Activate
+## When to Use
 
 - Creating or altering database tables
 - Adding/removing columns or indexes
@@ -353,7 +353,7 @@ Phase 3: CONTRACT
 - [ ] NOT NULL column has a server-side DEFAULT or a preceding backfill migration: `grep -rn "NOT NULL" <migration_file>` — every NOT NULL column is accompanied by DEFAULT or a prior data migration
 - [ ] Indexes created with `CONCURRENTLY`: `grep -n "CREATE INDEX" <migration_file>` returns 0 matches without `CONCURRENTLY` keyword
 - [ ] Migration tested against production-sized data: row count of test dataset is >= 80% of production row count — confirmed via `SELECT COUNT(*) FROM <table>` on both environments
-- [ ] Schema changes and data migrations are in separate files: `ls migrations/` shows DDL files and DML files with distinct timestamps — no single file contains both `ALTER TABLE` and `UPDATE`/`INSERT` statements (`grep -c "ALTER TABLE\|UPDATE\|INSERT" <file>` returns ≤ 1 statement type per file)
+      grep -cE "ALTER TABLE|UPDATE|INSERT"
 - [ ] Rollback migration tested: DOWN migration runs with exit code 0 and `psql -c "\d <table>"` confirms the schema reverted to the pre-migration state
 - [ ] `lock_timeout` set: `grep -n "lock_timeout" <migration_file>` returns at least 1 match — missing lock_timeout is a blocking issue
 

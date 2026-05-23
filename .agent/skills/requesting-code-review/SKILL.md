@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Structured review flow with checklists. Use when your code is ready for review.
 triggers:
   - "review this code"
@@ -185,12 +185,13 @@ When you receive review feedback:
 
 ## Self-Verification Checklist
 
-- [ ] PR description includes all three required sections: `grep -c "what changed\|why\|how to verify\|motivation\|testing steps" <pr_description>` returns >= 3 matches — missing any section blocks review request
-- [ ] PR diff size within limit: `git diff main...HEAD --stat | tail -1` shows <= 400 lines changed, or a split rationale is documented in the PR description — `grep -c "split rationale\|must be larger" <pr_description>` returns >= 1 for oversized PRs
-- [ ] CI status checks all green before review requested: `gh pr checks <pr_number> | grep -c "fail\|error"` returns 0 — any failing check blocks review request
+grep -cE "what changed|why|how to verify|motivation|testing steps"
+grep -cE "split rationale|must be larger"
+grep -cE "fail|error"
+
 - [ ] Self-review completed with all pre-review items ticked: `grep -c "\[x\]" <pr_checklist>` >= total checkbox count in the pre-review checklist — unticked items fail this check
-- [ ] No debug code remaining: `grep -rn "console\.log\|print(\|TODO\|FIXME" <changed_files>` returns 0 matches — any match is a blocking failure
-- [ ] PR scoped to a single concern: `grep -in "feature\|refactor\|bug fix\|chore" <pr_title>` returns exactly 1 category match — mixed-concern PRs require a documented justification or must be split
+      grep -rnE "console\.log|print(|TODO|FIXME"
+      grep -inE "feature|refactor|bug fix|chore"
 
 ## Success Criteria
 
@@ -207,13 +208,13 @@ This skill is complete when: 1) the self-review checklist is completed with all 
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| PR too large to meaningfully review, reviewer rubber-stamps it | Feature, refactor, and bug fix bundled into one PR; diff exceeds 400 lines | Split the PR into logical chunks (e.g., refactor first, feature second); if splitting is impossible, provide a guided review walkthrough with per-file context |
-| Blocking comment escalates but author and reviewer have no resolution path | Technical disagreement with no escalation process; comment thread grows without progress | Timebox the async thread to 48 hours; if unresolved, escalate to a 15-minute synchronous meeting with a designated decision-maker |
-| CI failing post-review causes delay because fix re-triggers full review cycle | Author merges CI fix after approval, requiring fresh review per branch protection rules | Keep CI green before requesting review; if CI breaks post-approval, communicate to reviewer the exact change made and request targeted re-review of only the fix |
-| Scope creep added to PR after approval, bypassing review | Author adds "one small thing" commit after approval without notifying reviewer | Never push new logic after approval without re-requesting review; use a comment noting the addition and explicitly ping the reviewer |
-| Reviewer ghosting blocks merge for >48h with no escalation path | Reviewer assigned but no response; no SLA defined for review turnaround | Ping the reviewer after 24h; escalate to a second reviewer after 48h; document the escalation path in the team working agreement |
+| Failure                                                                       | Cause                                                                                    | Recovery                                                                                                                                                         |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PR too large to meaningfully review, reviewer rubber-stamps it                | Feature, refactor, and bug fix bundled into one PR; diff exceeds 400 lines               | Split the PR into logical chunks (e.g., refactor first, feature second); if splitting is impossible, provide a guided review walkthrough with per-file context   |
+| Blocking comment escalates but author and reviewer have no resolution path    | Technical disagreement with no escalation process; comment thread grows without progress | Timebox the async thread to 48 hours; if unresolved, escalate to a 15-minute synchronous meeting with a designated decision-maker                                |
+| CI failing post-review causes delay because fix re-triggers full review cycle | Author merges CI fix after approval, requiring fresh review per branch protection rules  | Keep CI green before requesting review; if CI breaks post-approval, communicate to reviewer the exact change made and request targeted re-review of only the fix |
+| Scope creep added to PR after approval, bypassing review                      | Author adds "one small thing" commit after approval without notifying reviewer           | Never push new logic after approval without re-requesting review; use a comment noting the addition and explicitly ping the reviewer                             |
+| Reviewer ghosting blocks merge for >48h with no escalation path               | Reviewer assigned but no response; no SLA defined for review turnaround                  | Ping the reviewer after 24h; escalate to a second reviewer after 48h; document the escalation path in the team working agreement                                 |
 
 ## Tips
 

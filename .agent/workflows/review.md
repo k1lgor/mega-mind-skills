@@ -1,5 +1,6 @@
 ---
 description: Structured code review process. Use when code is ready for review before merging.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Review Workflow

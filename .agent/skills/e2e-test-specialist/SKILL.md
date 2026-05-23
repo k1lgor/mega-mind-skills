@@ -1,6 +1,6 @@
 ---
 name: e2e-test-specialist
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Playwright/Cypress end-to-end testing. Use for E2E testing tasks.
 triggers:
   - "E2E testing"
@@ -239,13 +239,13 @@ test("component visual regression", async ({ page }) => {
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Flaky selector breaks on minor DOM change, masking real regression | Test uses a CSS class or structural XPath that is tied to presentation, not semantics | Replace all non-`data-testid` selectors with `data-testid` attributes; rerun the suite 3 times and confirm 0 intermittent failures |
-| Test environment state leaks between tests (shared auth session) | Tests share a single browser context or storage state without reset between runs | Isolate each test with a fresh login via `storageState` setup per test; confirm with `--headed` that no session cookie carries over |
-| Slow CI timeout causes test to be skipped rather than failed | CI job has a hard timeout shorter than the full suite runtime, and the runner silently marks timed-out tests as skipped | Measure full suite runtime; set CI timeout >= suite runtime + 20% buffer; treat any skipped test as a pipeline failure |
-| Cross-browser divergence hidden by running only Chromium | Pipeline matrix only specifies `chromium`, missing Firefox/WebKit-specific rendering or JS engine bugs | Enable all 3 Playwright projects (chromium, firefox, webkit) in CI; confirm all 3 browsers appear in the HTML report |
-| Auth token expiry mid-test causing false auth failures | Long-running test or slow CI exceeds the token TTL set in the test fixture, causing 401 errors mid-flow | Use a long-lived test token for E2E fixtures (or re-authenticate mid-test); confirm token TTL > maximum expected test duration |
+| Failure                                                            | Cause                                                                                                                   | Recovery                                                                                                                            |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Flaky selector breaks on minor DOM change, masking real regression | Test uses a CSS class or structural XPath that is tied to presentation, not semantics                                   | Replace all non-`data-testid` selectors with `data-testid` attributes; rerun the suite 3 times and confirm 0 intermittent failures  |
+| Test environment state leaks between tests (shared auth session)   | Tests share a single browser context or storage state without reset between runs                                        | Isolate each test with a fresh login via `storageState` setup per test; confirm with `--headed` that no session cookie carries over |
+| Slow CI timeout causes test to be skipped rather than failed       | CI job has a hard timeout shorter than the full suite runtime, and the runner silently marks timed-out tests as skipped | Measure full suite runtime; set CI timeout >= suite runtime + 20% buffer; treat any skipped test as a pipeline failure              |
+| Cross-browser divergence hidden by running only Chromium           | Pipeline matrix only specifies `chromium`, missing Firefox/WebKit-specific rendering or JS engine bugs                  | Enable all 3 Playwright projects (chromium, firefox, webkit) in CI; confirm all 3 browsers appear in the HTML report                |
+| Auth token expiry mid-test causing false auth failures             | Long-running test or slow CI exceeds the token TTL set in the test fixture, causing 401 errors mid-flow                 | Use a long-lived test token for E2E fixtures (or re-authenticate mid-test); confirm token TTL > maximum expected test duration      |
 
 ## Self-Verification Checklist
 
@@ -261,6 +261,7 @@ test("component visual regression", async ({ page }) => {
 ## Success Criteria
 
 This task is complete when:
+
 1. The critical user flows defined in acceptance criteria each have a passing E2E test
 2. The full E2E suite passes with zero failures in CI (with `retries: 2`) across Chromium, Firefox, and WebKit
 3. No test uses a timing-based `page.waitForTimeout()` — all waits use locator assertions or `page.waitForResponse()`

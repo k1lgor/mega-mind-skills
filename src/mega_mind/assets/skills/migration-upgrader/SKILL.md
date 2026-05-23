@@ -1,6 +1,6 @@
 ---
 name: migration-upgrader
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Safe, systematic version upgrades and framework migrations with rollback planning, automated breaking change detection, and staged execution. Covers dependency conflict resolution, monorepo migration patterns, the strangler fig pattern for gradual migration, pre/post health check scripts, and domain-specific playbooks for Python 2→3, React class→hooks, REST→GraphQL, and more. Use for major version bumps and framework migrations that require planning and risk management.
 triggers:
   - "upgrade dependencies"
@@ -23,7 +23,7 @@ triggers:
 
 You are a migration and upgrade specialist who approaches version transitions as engineering projects, not one-time events. You assess risk before touching a single file, produce a staged migration plan with explicit rollback points at every phase, and validate health at each phase boundary before proceeding. You know that a migration that cannot be rolled back is a liability. You use automated tooling (codemods, ast-grep, jscodeshift) to detect and fix breaking changes systematically, not manually — manual find-and-replace in large codebases introduces inconsistency. You design migrations to be incremental: the strangler fig pattern means new code uses the target version while legacy code is migrated gradually, keeping the system operational throughout.
 
-## When to Activate
+## When to Use
 
 - Upgrading a major dependency version (React 16→18, Django 3→5, Node 14→20, Python 3.8→3.12)
 - Migrating between frameworks or paradigms (class components → hooks, REST → GraphQL, Celery → Dramatiq)
@@ -66,12 +66,14 @@ Before creating a plan, generate a complete inventory of what will change.
 ## Migration Assessment: [Source] → [Target]
 
 ### Current State
+
 - Framework: React 16.14.0
 - Node: 14.21.3
 - TypeScript: 4.9.5
 - Test runner: Jest 27
 
 ### Target State
+
 - Framework: React 18.3.1
 - Node: 20.11.0
 - TypeScript: 5.4.5
@@ -79,19 +81,21 @@ Before creating a plan, generate a complete inventory of what will change.
 
 ### Breaking Changes Inventory
 
-| Component | Change | Files Affected | Impact |
-| --- | --- | --- | --- |
-| React | ReactDOM.render → createRoot | 3 files | High |
-| React | Legacy lifecycle methods | 12 components | High |
-| React | act() import changed | 8 test files | Medium |
-| Node | require() ES modules | 2 config files | Medium |
-| TypeScript | Strict null changes | 47 type errors | High |
+| Component  | Change                       | Files Affected | Impact |
+| ---------- | ---------------------------- | -------------- | ------ |
+| React      | ReactDOM.render → createRoot | 3 files        | High   |
+| React      | Legacy lifecycle methods     | 12 components  | High   |
+| React      | act() import changed         | 8 test files   | Medium |
+| Node       | require() ES modules         | 2 config files | Medium |
+| TypeScript | Strict null changes          | 47 type errors | High   |
 
 ### Dependency Conflict Analysis
+
 Run: `npm ls --depth=3` or `uv tree` to find version conflicts
 Conflicts: react-beautiful-dnd requires react@<=17 (incompatible)
 
 ### Risk Assessment
+
 - High: 3 items | Medium: 2 items | Low: 0 items
 - Estimated effort: 3-5 days
 - Rollback complexity: Low (git tag per phase)
@@ -136,6 +140,7 @@ ast-grep --pattern '$VAR % $ARGS' --lang python
 ## Migration Plan: React 16 → React 18
 
 ### Phase 0: Preparation (Day 1)
+
 - [ ] Create feature branch: `migration/react-18`
 - [ ] Run full test suite; record baseline pass rate
 - [ ] Tag git state: `git tag pre-migration-baseline`
@@ -143,12 +148,14 @@ ast-grep --pattern '$VAR % $ARGS' --lang python
 - [ ] Resolve dependency conflict: find react-beautiful-dnd alternative
 
 ### Phase 1: Core React Upgrade (Day 2)
+
 - [ ] `npm install react@18 react-dom@18`
 - [ ] Update ReactDOM.render → createRoot in 3 files (see inventory)
 - [ ] Run test suite; verify no regressions
 - [ ] Tag git state: `git tag phase-1-core-react`
 
 ### Phase 2: Component Migrations (Day 2-3)
+
 - [ ] Run jscodeshift codemod for legacy lifecycle methods
 - [ ] Manually review and fix 12 affected components
 - [ ] Update act() imports in 8 test files
@@ -156,24 +163,28 @@ ast-grep --pattern '$VAR % $ARGS' --lang python
 - [ ] Tag git state: `git tag phase-2-components`
 
 ### Phase 3: TypeScript Upgrade (Day 3-4)
+
 - [ ] `npm install typescript@5`
 - [ ] Fix 47 strict null type errors (tsc --noEmit output)
 - [ ] Run test suite; verify no regressions
 - [ ] Tag git state: `git tag phase-3-typescript`
 
 ### Phase 4: Node Version Update (Day 4)
+
 - [ ] Update .nvmrc / .tool-versions to node 20
 - [ ] Fix 2 ES module config files
 - [ ] Run test suite and build; verify
 - [ ] Tag git state: `git tag phase-4-node`
 
 ### Phase 5: Validation (Day 5)
+
 - [ ] Run full test suite; compare to baseline
 - [ ] Run post-migration health check; compare to pre-migration output
 - [ ] Manual smoke test of critical flows
 - [ ] Performance benchmark vs baseline
 
 ### Rollback Plan
+
 Each phase tag provides a rollback point:
 `git checkout phase-1-core-react` → restores to post-phase-1 state
 `git checkout pre-migration-baseline` → full revert
@@ -387,7 +398,7 @@ export { app };
 ```json
 // package.json
 {
-  "type": "module"  // Enables ESM for .js files
+  "type": "module" // Enables ESM for .js files
 }
 ```
 
@@ -459,21 +470,25 @@ echo "  python scripts/health_check.py"
 ## Post-Migration Validation
 
 ### Functional
+
 - [ ] All tests pass (compare count to pre-migration baseline)
 - [ ] Build succeeds with zero warnings
 - [ ] No new type errors (tsc --noEmit or pyright exits 0)
 - [ ] Linter passes (ruff check / eslint)
 
 ### Performance
+
 - [ ] Import/startup time within 10% of baseline
 - [ ] Memory footprint within 10% of baseline
 - [ ] P95 response latency within 5% of baseline (if applicable)
 
 ### Security
+
 - [ ] `npm audit` or `uv audit` shows no new high/critical vulnerabilities
 - [ ] No pinned-to-old-version packages with known CVEs
 
 ### Documentation
+
 - [ ] README updated with new version requirements
 - [ ] CHANGELOG entry written
 - [ ] Any deprecated API patterns removed from docs
@@ -489,9 +504,9 @@ Before declaring a migration complete:
 - [ ] All phase tags exist in git: `git tag --list "phase-*" | wc -l` >= number of migration phases completed — missing tags means rollback points are unavailable
 - [ ] Test suite pass rate >= pre-migration baseline: `npm test (or pytest) 2>&1 | grep -c "FAIL"` post-migration <= pre-migration FAIL count; pass percentage unchanged or improved
 - [ ] Build exits with code 0: `npm run build (or equivalent)` exits 0 — non-zero exit is a blocking failure
-- [ ] No `--force` or `--legacy-peer-deps` used without justification: `grep -rn "\-\-force\|\-\-legacy-peer-deps" package.json scripts/ .npmrc` returns 0 matches, or each match has a corresponding comment explaining the reason
-- [ ] Dependency conflict resolution documented: `grep -n "conflict\|resolution\|peer dep" <migration_plan>` returns at least 1 match per detected conflict — undocumented resolutions fail this check
-- [ ] Rollback script tested against at least one phase tag: `git log --oneline | grep -c "rollback\|revert"` returns >= 1; rollback exits 0 and app starts cleanly
+      grep -rnE "\-\-force|\-\-legacy-peer-deps"
+      grep -nE "conflict|resolution|peer dep"
+      grep -cE "rollback|revert"
 - [ ] Post-migration startup time and memory within 10% of pre-migration baseline: startup delta <= 10% and memory delta <= 10% — exceeding either threshold requires documented justification
 
 ---
@@ -523,16 +538,16 @@ A migration task is complete when:
 
 ## Failure Modes
 
-| Situation | Response |
-| --- | --- |
-| Dependency conflict blocks upgrade | Audit the conflict graph with `npm ls` or `uv tree`. Identify the constraining package. Find an alternative or fork. Document the decision. |
-| Test suite drops below baseline after phase | Do not proceed to the next phase. Isolate the regression to specific tests. Fix before continuing. |
-| Codemod produces incorrect transformations | Review a sample of 10 transformed files manually. File a bug against the codemod. Apply manual corrections where needed. |
-| Build fails after dependency upgrade | Run `tsc --noEmit` (TypeScript) or `pyright` to surface type errors separately from build errors. Fix type errors first. |
-| Performance regression detected post-migration | Benchmark the critical path before reverting. Profile with `py-spy` or `clinic.js`. May be config, not the upgrade itself. |
-| Rollback needed mid-migration | Run `scripts/rollback.sh phase-N`. Do not attempt to "fix forward" under time pressure unless the window is short. |
-| Monorepo internal imports break after restructure | Run `ast-grep` to find all cross-package relative imports. Update to workspace package names systematically. |
-| Health check script shows new failures | Compare output diffs carefully. Distinguish intentional behavior changes from regressions. Update health check expectations if change is intentional. |
+| Situation                                         | Response                                                                                                                                              |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dependency conflict blocks upgrade                | Audit the conflict graph with `npm ls` or `uv tree`. Identify the constraining package. Find an alternative or fork. Document the decision.           |
+| Test suite drops below baseline after phase       | Do not proceed to the next phase. Isolate the regression to specific tests. Fix before continuing.                                                    |
+| Codemod produces incorrect transformations        | Review a sample of 10 transformed files manually. File a bug against the codemod. Apply manual corrections where needed.                              |
+| Build fails after dependency upgrade              | Run `tsc --noEmit` (TypeScript) or `pyright` to surface type errors separately from build errors. Fix type errors first.                              |
+| Performance regression detected post-migration    | Benchmark the critical path before reverting. Profile with `py-spy` or `clinic.js`. May be config, not the upgrade itself.                            |
+| Rollback needed mid-migration                     | Run `scripts/rollback.sh phase-N`. Do not attempt to "fix forward" under time pressure unless the window is short.                                    |
+| Monorepo internal imports break after restructure | Run `ast-grep` to find all cross-package relative imports. Update to workspace package names systematically.                                          |
+| Health check script shows new failures            | Compare output diffs carefully. Distinguish intentional behavior changes from regressions. Update health check expectations if change is intentional. |
 
 ---
 

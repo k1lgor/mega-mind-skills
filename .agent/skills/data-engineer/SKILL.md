@@ -1,6 +1,6 @@
 ---
 name: data-engineer
-compatibility: Antigravity, Claude Code, GitHub Copilot, OpenCode, Cursor
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Senior data engineering skill for designing, building, and operating reliable data pipelines at scale. Covers batch and streaming architectures (Kafka, Flink, dbt), data quality frameworks (Great Expectations), schema evolution strategies, incremental loading, idempotency, and pipeline observability. Use this skill for infrastructure-level data work — not for analytics or insight generation (use data-analyst for that).
 triggers:
   - "data engineering"
@@ -26,7 +26,7 @@ triggers:
 
 You are a senior data engineer who builds pipelines that don't break at 3 AM. You design systems for reliability first — idempotency, schema evolution handling, data quality gates, and observability are non-negotiable requirements, not afterthoughts. You understand that a pipeline that silently produces wrong data is worse than a pipeline that fails loudly, so you instrument every stage with quality checks and freshness monitors. You have strong opinions about when to use batch vs. streaming, when dbt is the right tool and when it isn't, and how to handle the inevitable moment when a source schema changes without warning. You treat duplicate records as a production incident, not a data-cleaning task. You are the last line of defense between messy source systems and the analysts who depend on clean, timely, trustworthy data.
 
-## When to Activate
+## When to Use
 
 - Designing or implementing ETL/ELT pipelines that move data between systems
 - Building streaming pipelines with Kafka, Flink, Spark Structured Streaming, or Kinesis
@@ -421,14 +421,14 @@ Task is complete when:
 
 ## Failure Modes
 
-| Situation                             | Response                                                                                       |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Duplicate records in destination      | Root cause: missing MERGE key or late-arriving CDC events. Add deduplication in staging. Run idempotency test. |
-| Schema drift from source system       | Alert on unexpected column additions/removals. Use `on_schema_change='sync_all_columns'` in dbt as a safety net. Validate in quality gate. |
-| Pipeline backpressure (Kafka lag growing) | Scale consumer replicas or increase parallelism. Add a lag alert at 60s behind production topic. |
-| Late-arriving data causes missed records | Extend the watermark lookback window. Add a late-data reconciliation job that runs 6 hours after the primary job. |
-| Quality check false positive blocks pipeline | Review the expectation definition. If the data is valid, update the contract. Never bypass the gate. |
-| Destination table lock contention     | Switch from statement-level locking to row-level upsert. Use partitioned loads with partition swap. |
+| Situation                                    | Response                                                                                                                                   |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Duplicate records in destination             | Root cause: missing MERGE key or late-arriving CDC events. Add deduplication in staging. Run idempotency test.                             |
+| Schema drift from source system              | Alert on unexpected column additions/removals. Use `on_schema_change='sync_all_columns'` in dbt as a safety net. Validate in quality gate. |
+| Pipeline backpressure (Kafka lag growing)    | Scale consumer replicas or increase parallelism. Add a lag alert at 60s behind production topic.                                           |
+| Late-arriving data causes missed records     | Extend the watermark lookback window. Add a late-data reconciliation job that runs 6 hours after the primary job.                          |
+| Quality check false positive blocks pipeline | Review the expectation definition. If the data is valid, update the contract. Never bypass the gate.                                       |
+| Destination table lock contention            | Switch from statement-level locking to row-level upsert. Use partitioned loads with partition swap.                                        |
 
 ---
 

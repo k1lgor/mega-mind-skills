@@ -1,5 +1,6 @@
 ---
 description: Create detailed, step-by-step implementation plans. Use to break down complex features into executable tasks.
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Write Plan Workflow

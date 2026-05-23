@@ -1,6 +1,6 @@
 ---
 name: workflow-orchestrator
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Complex task scheduling and orchestration. Use for workflow automation tasks.
 triggers:
   - "workflow automation"
@@ -295,14 +295,16 @@ const result = await withRetry(() => fetchFromExternalAPI(), {
 
 ## Self-Verification Checklist
 
-- [ ] All saga steps have compensation registered: `grep -rn "compensat\|rollback\|undo" <workflow_code>` returns >= number of steps that mutate external state — steps with mutation but no compensation are a blocking failure
-- [ ] Dead-letter queue alert configured and tested: DLQ size metric alert exists in monitoring config; `grep -rn "DLQ\|dead.letter\|deadLetter" <monitoring_config>` returns at least 1 match with a numeric threshold
+grep -rnE "compensat|rollback|undo"
+grep -rnE "DLQ|dead.letter|deadLetter"
+
 - [ ] Orchestrator replica count >= 2: `grep -n "replicas:" <deployment_manifest>` returns a value >= 2 — single-replica orchestrators fail this check; `kubectl get deployment <name> -o jsonpath='{.spec.replicas}'` returns >= 2
-- [ ] All workflow steps are idempotent: `grep -rn "idempotent\|idempotency.key\|dedup" <workflow_code>` returns at least 1 match per step that calls an external API — steps without idempotency keys fail
-- [ ] Retry policies specify max attempts and delay strategy: `grep -rn "maxAttempts\|max_retries\|retryable\|backoff" <workflow_config>` returns at least 1 match per step — open-ended retries without limits fail this check
-- [ ] Workflow state persisted: `grep -rn "persist\|checkpoint\|saveState\|store" <orchestrator_code>` returns at least 1 match — in-memory-only state fails; process restart test exits 0 and workflow resumes from last checkpoint
+      grep -rnE "idempotent|idempotency.key|dedup"
+      grep -rnE "maxAttempts|max_retries|retryable|backoff"
+      grep -rnE "persist|checkpoint|saveState|store"
 
 This task is complete when:
+
 1. The workflow executes successfully end-to-end in a test environment with all happy-path steps passing
 2. Failure injection testing confirms compensation logic runs correctly when any single step fails
 3. The workflow is observable: each step emits start/complete/error events that appear in the monitoring dashboard
@@ -318,22 +320,26 @@ This task is complete when:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Saga compensation step fails, leaving distributed system in inconsistent state | Compensation function throws an uncaught error; partial rollback leaves inventory released but payment not refunded | Wrap every compensation step in its own retry with exponential backoff; log compensation failures to a dead-letter queue for manual resolution |
-| Workflow state corrupted by concurrent update from two orchestrator instances | Two orchestrator pods process the same workflow event simultaneously; no optimistic locking on state updates | Use optimistic locking (version field) or distributed lock (Redis SETNX) on workflow state updates; configure Temporal/equivalent for exclusive execution |
-| Dead-letter queue overflows because poison-pill message never acknowledged | One malformed message loops through retry indefinitely; DLQ fills; real failures stop alerting | Set a max-retry limit per message type; add a DLQ size alert at 80% capacity; auto-quarantine messages that exceed retry budget |
-| Orchestrator is single point of failure; worker nodes healthy but idle | Orchestrator deployed as a single replica with no health check; workers wait for tasks that never arrive | Run orchestrator with ≥2 replicas behind a load balancer; add a liveness probe that fails if the task queue depth grows beyond threshold |
-| Step retry without idempotency key causes duplicate side effects | Step issues an external API call without an idempotency key; retry sends the call twice; payment charged twice | Every step that mutates external state must include an idempotency key derived from the workflow ID and step name; verify by inspecting API call logs |
+| Failure                                                                        | Cause                                                                                                               | Recovery                                                                                                                                                  |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Saga compensation step fails, leaving distributed system in inconsistent state | Compensation function throws an uncaught error; partial rollback leaves inventory released but payment not refunded | Wrap every compensation step in its own retry with exponential backoff; log compensation failures to a dead-letter queue for manual resolution            |
+| Workflow state corrupted by concurrent update from two orchestrator instances  | Two orchestrator pods process the same workflow event simultaneously; no optimistic locking on state updates        | Use optimistic locking (version field) or distributed lock (Redis SETNX) on workflow state updates; configure Temporal/equivalent for exclusive execution |
+| Dead-letter queue overflows because poison-pill message never acknowledged     | One malformed message loops through retry indefinitely; DLQ fills; real failures stop alerting                      | Set a max-retry limit per message type; add a DLQ size alert at 80% capacity; auto-quarantine messages that exceed retry budget                           |
+| Orchestrator is single point of failure; worker nodes healthy but idle         | Orchestrator deployed as a single replica with no health check; workers wait for tasks that never arrive            | Run orchestrator with ≥2 replicas behind a load balancer; add a liveness probe that fails if the task queue depth grows beyond threshold                  |
+| Step retry without idempotency key causes duplicate side effects               | Step issues an external API call without an idempotency key; retry sends the call twice; payment charged twice      | Every step that mutates external state must include an idempotency key derived from the workflow ID and step name; verify by inspecting API call logs     |
 
 ## Self-Verification Checklist
 
-- [ ] All saga steps have compensation registered: `grep -rn "compensat\|rollback\|undo" <workflow_code>` returns >= number of steps that mutate external state — steps with mutation but no compensation are a blocking failure
-- [ ] Dead-letter queue alert configured and tested: DLQ size metric alert exists in monitoring config; `grep -rn "DLQ\|dead.letter\|deadLetter" <monitoring_config>` returns at least 1 match with a numeric threshold
-- [ ] Orchestrator replica count >= 2: `grep -n "replicas:" <deployment_manifest>` returns a value >= 2 — single-replica orchestrators fail this check; `kubectl get deployment <name> -o jsonpath='{.spec.replicas}'` returns >= 2
-- [ ] All workflow steps are idempotent: `grep -rn "idempotent\|idempotency.key\|dedup" <workflow_code>` returns at least 1 match per step that calls an external API — steps without idempotency keys fail
-- [ ] Retry policies specify max attempts and delay strategy: `grep -rn "maxAttempts\|max_retries\|retryable\|backoff" <workflow_config>` returns at least 1 match per step — open-ended retries without limits fail this check
-- [ ] Workflow state persisted: `grep -rn "persist\|checkpoint\|saveState\|store" <orchestrator_code>` returns at least 1 match — in-memory-only state fails; process restart test exits 0 and workflow resumes from last checkpoint
+- [ ] Compensation logic exists for every step with side effects: `grep -rnE "compensat|rollback|undo" src/orchestrator/` returns >= 1 match per step definition
+- [ ] Dead-letter queue configured: `grep -rnE "DLQ|dead.letter|deadLetter" src/orchestrator/` returns >= 1 match
+- [ ] Orchestrator replica count >= 2: `grep -n "replicas:" <deployment_manifest>` returns a value >= 2
+- [ ] Idempotency keys present on mutating steps: `grep -rnE "idempotent|idempotency.key|dedup" src/orchestrator/` returns >= 1 match
+- [ ] Retry bounds defined: `grep -rnE "maxAttempts|max_retries|retryable|backoff" src/orchestrator/` returns >= 1 match
+- [ ] State persisted between steps: `grep -rnE "persist|checkpoint|saveState|store" src/orchestrator/` returns >= 1 match
+
+## Success Criteria
+
+This skill is complete when: 1) The workflow orchestration is implemented with compensation logic, retry policies, and idempotency for every mutating step. 2) Dead-letter queue and alerting are configured for all workflows. 3) Orchestrator runs with >= 2 replicas and a liveness probe. 4) The Self-Verification Checklist passes. 5) The Handoff block has been emitted with `next_skill` pointing to the next workflow chain step and `status: completed`.
 
 ## Tips
 

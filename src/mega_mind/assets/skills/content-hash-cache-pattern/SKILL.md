@@ -1,6 +1,6 @@
 ---
 name: content-hash-cache-pattern
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: SHA-256 content hash caching for file processing. Use when processing files (extraction, transformation) to avoid redundant work and reduce LLM costs.
 triggers:
   - "content-hash"
@@ -17,7 +17,7 @@ triggers:
 
 You are a performance and efficiency specialist. You know that file paths are unstable but content is truth. You implement O(1) file-based caching using SHA-256 content hashes, ensuring that file moves/renames never cause a cache miss and content changes never cause a stale hit.
 
-## When to Activate
+## When to Use
 
 - Designing file processing pipelines (PDF/text extraction, image processing)
 - Implementing caching for expensive LLM operations (summarization, analysis)
@@ -169,13 +169,14 @@ def process_with_cache(
 
 ## Self-Verification Checklist
 
-- [ ] SHA-256 is used: `grep -rn "sha256\|createHash.*sha256\|hashlib.sha256" <cache_implementation>` returns at least 1 match — MD5 or SHA-1 usage returns 0 matches in the same files
-- [ ] Atomic write via temp file + rename: `grep -rn "tmp\|tempfile\|rename\|os.replace\|mv " <cache_write_code>` returns at least 1 match per cache write path — direct writes to the final path return 0 matches
-- [ ] Cache miss falls back gracefully: `grep -rn "cache_miss\|fallback\|except\|catch" <cache_implementation>` returns at least 1 match; running the pipeline with an empty cache exits 0
-- [ ] Corrupted cache entries handled as miss: `grep -rn "json.JSONDecodeError\|SyntaxError\|corrupt\|invalid.*cache\|except.*parse" <cache_implementation>` returns at least 1 match — unhandled parse errors fail this check
-- [ ] Source file path stored in cache entry: `grep -rn "\"source\"\|\"file_path\"\|\"path\"" <cache_entry_schema>` returns at least 1 match; sample cache entries contain a non-empty path value
+grep -rnE "sha256|createHash.*sha256|hashlib.sha256"
+grep -rnE "tmp|tempfile|rename|os.replace|mv "
+grep -rnE "cache_miss|fallback|except|catch"
+grep -rnE "json.JSONDecodeError|SyntaxError|corrupt|invalid.*cache|except.\*parse"
+
+- [ ] Source file path stored in cache entry: `grep -rnE '"source"|"file_path"|"path"' <cache_entry_schema>` returns at least 1 match; sample cache entries contain a non-empty path value
 - [ ] `.cache/` in `.gitignore`: `grep -c "\.cache" .gitignore` returns >= 1 — missing entry means cache files can be accidentally committed
-- [ ] `--force` bypass implemented: `grep -rn "\-\-force\|force_rebuild\|skip_cache\|bypass" <pipeline_entrypoint>` returns at least 1 match — no bypass mechanism fails this check
+      grep -rnE "\-\-force|force_rebuild|skip_cache|bypass"
 
 ## Success Criteria
 
@@ -183,13 +184,13 @@ This skill is complete when: 1) every file processing call checks the SHA-256 co
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Cache hit returned for file whose content changed but mtime did not update | File on network share or copied with preserved mtime; only mtime checked, not content hash | Always hash file content (SHA-256); never rely on mtime alone as a cache key |
-| Hash collision causes wrong cached result served | Two different inputs produce identical hash (extremely rare but non-zero with weak hashes) | Use SHA-256 or stronger; add content-length to cache key as secondary discriminator |
-| Cache directory grows unbounded, consuming disk | No eviction policy; every unique input accumulates a cache entry | Implement LRU eviction or TTL expiry; add cache size monitoring alert |
-| Cache written without atomic rename, leaving corrupt partial file | Process killed mid-write; partial file accepted as valid on next read | Write to a `.tmp` file, then `fs.rename` atomically; on read, validate file is complete (checksum header) |
-| Cached result from different config served to incompatible consumer | Config hash not included in cache key; cache shared across environments | Include all config-affecting variables in the cache key; scope cache directories per environment |
+| Failure                                                                    | Cause                                                                                      | Recovery                                                                                                  |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Cache hit returned for file whose content changed but mtime did not update | File on network share or copied with preserved mtime; only mtime checked, not content hash | Always hash file content (SHA-256); never rely on mtime alone as a cache key                              |
+| Hash collision causes wrong cached result served                           | Two different inputs produce identical hash (extremely rare but non-zero with weak hashes) | Use SHA-256 or stronger; add content-length to cache key as secondary discriminator                       |
+| Cache directory grows unbounded, consuming disk                            | No eviction policy; every unique input accumulates a cache entry                           | Implement LRU eviction or TTL expiry; add cache size monitoring alert                                     |
+| Cache written without atomic rename, leaving corrupt partial file          | Process killed mid-write; partial file accepted as valid on next read                      | Write to a `.tmp` file, then `fs.rename` atomically; on read, validate file is complete (checksum header) |
+| Cached result from different config served to incompatible consumer        | Config hash not included in cache key; cache shared across environments                    | Include all config-affecting variables in the cache key; scope cache directories per environment          |
 
 ## Anti-Patterns
 

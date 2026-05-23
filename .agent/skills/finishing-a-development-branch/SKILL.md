@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Clean branch wrap-up with workflow options. Use when a feature branch is complete and ready to merge.
 triggers:
   - "merge this branch"
@@ -273,13 +273,13 @@ $ git push origin --delete feature/user-preferences
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Branch merged without CI passing because merge done manually | Branch protection not enforced; developer bypasses merge queue | Enable required status checks on the base branch; make CI a required check before merge is possible |
-| PR merged with unresolved review comments | Author dismissed comments without addressing them; reviewer not re-requested | Require all comments to be resolved before merge; use GitHub's "require conversation resolution" setting |
-| Release notes omitted, leaving next developer unable to understand changes | Release notes treated as optional; skipped under time pressure | Add release notes to the PR template as a required field; block merge if the section is empty |
-| Branch not deleted after merge, accumulating stale branch noise | No automatic branch deletion configured; developer forgets | Enable "automatically delete head branches" in repo settings; add branch cleanup to the merge checklist |
-| Squash-merge loses individual commit history needed for bisect debugging | Squash-merge used by default; team relies on git bisect for debugging | Use merge commit or rebase-merge when individual commits carry diagnostic value; document the merge strategy in CONTRIBUTING.md |
+| Failure                                                                    | Cause                                                                        | Recovery                                                                                                                        |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Branch merged without CI passing because merge done manually               | Branch protection not enforced; developer bypasses merge queue               | Enable required status checks on the base branch; make CI a required check before merge is possible                             |
+| PR merged with unresolved review comments                                  | Author dismissed comments without addressing them; reviewer not re-requested | Require all comments to be resolved before merge; use GitHub's "require conversation resolution" setting                        |
+| Release notes omitted, leaving next developer unable to understand changes | Release notes treated as optional; skipped under time pressure               | Add release notes to the PR template as a required field; block merge if the section is empty                                   |
+| Branch not deleted after merge, accumulating stale branch noise            | No automatic branch deletion configured; developer forgets                   | Enable "automatically delete head branches" in repo settings; add branch cleanup to the merge checklist                         |
+| Squash-merge loses individual commit history needed for bisect debugging   | Squash-merge used by default; team relies on git bisect for debugging        | Use merge commit or rebase-merge when individual commits carry diagnostic value; document the merge strategy in CONTRIBUTING.md |
 
 ## Anti-Patterns
 
@@ -295,7 +295,7 @@ $ git push origin --delete feature/user-preferences
 - [ ] All tests pass on the branch: `bun test` or `npm test` exits 0 with 0 failing tests
 - [ ] PR description includes what changed, why, and how to test it
 - [ ] Branch is rebased on latest main: `git log --oneline main..HEAD` count matches expected commits only
-- [ ] No debug code remaining: `grep -rn "console\.log\|debugger\|TODO\|FIXME\|print(" src/` returns = 0 matches
+      grep -rnE "console\.log|debugger|TODO|FIXME|print("
 - [ ] At least one reviewer has approved (not self-merged except emergencies)
 - [ ] Branch will be deleted after merge: `git branch -d <branch>` exits 0 post-merge
 - [ ] `continuous-learning-v2` has been queued: `grep -c "continuous-learning" docs/plans/task.md` returns > 0

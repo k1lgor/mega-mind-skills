@@ -1,6 +1,6 @@
 ---
 name: plankton-code-quality
-compatibility: Antigravity, Claude Code, GitHub Copilot, OpenCode, Cursor
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Write-time code quality enforcement using the Plankton methodology — a three-phase PostToolUse hook pipeline that auto-formats, collects lint violations, and autonomously delegates fixes to a subagent. Enforces a zero-tolerance policy on linter rule suppression and config weakening, replacing ad-hoc cleanup with systematic, measurable quality gates. Use this skill whenever setting up or operating automated code quality enforcement on a project.
 triggers:
   - "plankton"
@@ -21,7 +21,7 @@ triggers:
 
 You are a code quality systems architect specializing in proactive, write-time enforcement. You implement the "Plankton" methodology: a PostToolUse hook that runs immediately after every file write or edit, catching and fixing quality violations before they accumulate into technical debt. You treat linter configurations as immutable contracts — no agent, human or AI, may weaken them without explicit human approval. You measure success by the violation count trending toward zero over a session, not by CI passing after the fact. You understand that AI agents will attempt to game quality rules (adding `# noqa`, editing config files, disabling rules inline) and you close every one of those escape hatches. You are the last line of defense before bad code enters the codebase.
 
-## When to Activate
+## When to Use
 
 - Configuring per-project code quality hooks for a new or existing project
 - Setting up automated formatting and linting pipelines that run on every file save
@@ -85,18 +85,18 @@ Plankton runs as a `PostToolUse` hook after any `Edit` or `Write` operation:
 
 Every file extension routes to a specific linter/formatter pair. If a tool is not installed, the gate is skipped with a warning (exit 0 advisory), never a hard failure.
 
-| Extension          | Formatter          | Linter              | Installed Check                 |
-| ------------------ | ------------------ | ------------------- | ------------------------------- |
-| `.ts`, `.tsx`      | `biome format`     | `biome lint`        | `which biome`                   |
-| `.js`, `.jsx`      | `biome format`     | `biome lint`        | `which biome`                   |
-| `.py`              | `ruff format`      | `ruff check`        | `which ruff`                    |
-| `.sh`, `.bash`     | `shfmt -w`         | `shellcheck`        | `which shfmt && which shellcheck` |
-| `.go`              | `gofmt -w`         | `go vet ./...`      | `which gofmt`                   |
-| `.rs`              | `rustfmt`          | `cargo clippy`      | `which rustfmt`                 |
-| `.sql`             | `sqlfluff format`  | `sqlfluff lint`     | `which sqlfluff`                |
-| `.yaml`, `.yml`    | `prettier --write` | `yamllint`          | `which yamllint`                |
-| `.json`            | `biome format`     | `biome lint`        | `which biome`                   |
-| `.md`              | `prettier --write` | `markdownlint`      | `which markdownlint`            |
+| Extension       | Formatter          | Linter          | Installed Check                   |
+| --------------- | ------------------ | --------------- | --------------------------------- |
+| `.ts`, `.tsx`   | `biome format`     | `biome lint`    | `which biome`                     |
+| `.js`, `.jsx`   | `biome format`     | `biome lint`    | `which biome`                     |
+| `.py`           | `ruff format`      | `ruff check`    | `which ruff`                      |
+| `.sh`, `.bash`  | `shfmt -w`         | `shellcheck`    | `which shfmt && which shellcheck` |
+| `.go`           | `gofmt -w`         | `go vet ./...`  | `which gofmt`                     |
+| `.rs`           | `rustfmt`          | `cargo clippy`  | `which rustfmt`                   |
+| `.sql`          | `sqlfluff format`  | `sqlfluff lint` | `which sqlfluff`                  |
+| `.yaml`, `.yml` | `prettier --write` | `yamllint`      | `which yamllint`                  |
+| `.json`         | `biome format`     | `biome lint`    | `which biome`                     |
+| `.md`           | `prettier --write` | `markdownlint`  | `which markdownlint`              |
 
 **Decision logic (pseudocode):**
 
@@ -113,7 +113,9 @@ if (!gate) {
 
 const toolInstalled = await checkInstalled(gate.formatterCheck);
 if (!toolInstalled) {
-  console.error(`[plankton:advisory] ${gate.formatter} not installed, skipping ${ext}`);
+  console.error(
+    `[plankton:advisory] ${gate.formatter} not installed, skipping ${ext}`,
+  );
   process.exit(0); // advisory only — do not block
 }
 
@@ -246,6 +248,7 @@ Track the budget in a session-scoped file: `scripts/plankton/session-metrics.jso
 Agents will attempt to suppress violations by modifying the tools that catch them:
 
 **Attack vectors blocked:**
+
 - Adding `# noqa`, `// eslint-disable`, `# type: ignore` inline
 - Editing `.ruff.toml`, `biome.json`, `.eslintrc`, `pyproject.toml`, `.shellcheckrc`
 - Reducing rule severity from `error` to `warn` or `off`
@@ -256,19 +259,26 @@ Agents will attempt to suppress violations by modifying the tools that catch the
 ```javascript
 // prevent_config_edits.js — PreToolUse hook
 const PROTECTED_FILES = [
-  '.ruff.toml', 'ruff.toml', 'biome.json', '.eslintrc',
-  '.eslintrc.js', '.eslintrc.json', 'pyproject.toml',
-  '.shellcheckrc', '.markdownlint.json', 'sqlfluff.cfg'
+  ".ruff.toml",
+  "ruff.toml",
+  "biome.json",
+  ".eslintrc",
+  ".eslintrc.js",
+  ".eslintrc.json",
+  "pyproject.toml",
+  ".shellcheckrc",
+  ".markdownlint.json",
+  "sqlfluff.cfg",
 ];
 
 const targetFile = process.env.TOOL_INPUT_FILE;
-const isProtected = PROTECTED_FILES.some(f => targetFile?.endsWith(f));
+const isProtected = PROTECTED_FILES.some((f) => targetFile?.endsWith(f));
 
 if (isProtected) {
   console.error(
     `[plankton:blocked] Attempt to modify protected linter config: ${targetFile}\n` +
-    `To modify quality rules, get explicit human approval first.\n` +
-    `Fix the underlying code violation instead.`
+      `To modify quality rules, get explicit human approval first.\n` +
+      `Fix the underlying code violation instead.`,
   );
   process.exit(1); // blocks the Edit/Write tool call
 }
@@ -278,26 +288,26 @@ if (isProtected) {
 
 ## Status Matrix
 
-| Scenario                       | Agent Sees                               | Hook Exit |
-| ------------------------------ | ---------------------------------------- | --------- |
-| No violations after format     | Nothing                                  | 0         |
-| Auto-fixed by formatter        | Nothing                                  | 0         |
-| Linter not installed           | `[plankton:advisory] ruff not installed` | 0         |
-| Unfixable violations remain    | `[hook] 3 violation(s) remain in foo.py` | 2         |
-| Config edit attempt blocked    | `[plankton:blocked] Protected file...`   | 1         |
-| Violation budget exceeded      | `[plankton:budget] V_n > V_0 + 10`      | 2         |
+| Scenario                    | Agent Sees                               | Hook Exit |
+| --------------------------- | ---------------------------------------- | --------- |
+| No violations after format  | Nothing                                  | 0         |
+| Auto-fixed by formatter     | Nothing                                  | 0         |
+| Linter not installed        | `[plankton:advisory] ruff not installed` | 0         |
+| Unfixable violations remain | `[hook] 3 violation(s) remain in foo.py` | 2         |
+| Config edit attempt blocked | `[plankton:blocked] Protected file...`   | 1         |
+| Violation budget exceeded   | `[plankton:budget] V_n > V_0 + 10`       | 2         |
 
 ---
 
 ## Package Manager Enforcement
 
-| Legacy (Blocked) | Modern (Enforced)                     | Why                               |
-| ---------------- | ------------------------------------- | --------------------------------- |
-| `npm install`    | `bun install` or `npm ci`             | Speed and lockfile stability      |
-| `yarn`           | `bun install`                         | Unified fast toolchain            |
-| `pip install`    | `uv add` or `uv sync`                 | 10-100x faster, proper isolation  |
-| `poetry add`     | `uv add`                              | uv supersedes poetry              |
-| `go get`         | `go mod tidy`                         | Idiomatic Go dependency management|
+| Legacy (Blocked) | Modern (Enforced)         | Why                                |
+| ---------------- | ------------------------- | ---------------------------------- |
+| `npm install`    | `bun install` or `npm ci` | Speed and lockfile stability       |
+| `yarn`           | `bun install`             | Unified fast toolchain             |
+| `pip install`    | `uv add` or `uv sync`     | 10-100x faster, proper isolation   |
+| `poetry add`     | `uv add`                  | uv supersedes poetry               |
+| `go get`         | `go mod tidy`             | Idiomatic Go dependency management |
 
 ---
 
@@ -341,15 +351,15 @@ Task is complete when:
 
 ## Failure Modes
 
-| Situation                            | Response                                                                 |
-| ------------------------------------ | ------------------------------------------------------------------------ |
-| Linter not installed on CI           | Add linter install step to CI before Plankton runs; advisory in local dev |
-| Hook not firing after file write     | Check `hooks.json` syntax; verify hook runtime is active; re-register    |
-| Agent skips hook by using raw shell  | Add ShellExecute/Bash matchers to hooks.json alongside Edit/Write         |
-| Violations oscillate (never decrease)| Investigate if Phase 3 subagent is making the same mistake repeatedly; escalate to Sonnet |
-| Config edit blocked but needed legitimately | Create a `plankton-override.md` with human signature, then allow the edit |
-| Phase 3 subagent times out           | Reduce violation batch size; fix the most critical violations manually    |
-| False positives from a rule          | Add a targeted per-file exception with an explanation comment, not a global suppress |
+| Situation                                   | Response                                                                                  |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Linter not installed on CI                  | Add linter install step to CI before Plankton runs; advisory in local dev                 |
+| Hook not firing after file write            | Check `hooks.json` syntax; verify hook runtime is active; re-register                     |
+| Agent skips hook by using raw shell         | Add ShellExecute/Bash matchers to hooks.json alongside Edit/Write                         |
+| Violations oscillate (never decrease)       | Investigate if Phase 3 subagent is making the same mistake repeatedly; escalate to Sonnet |
+| Config edit blocked but needed legitimately | Create a `plankton-override.md` with human signature, then allow the edit                 |
+| Phase 3 subagent times out                  | Reduce violation batch size; fix the most critical violations manually                    |
+| False positives from a rule                 | Add a targeted per-file exception with an explanation comment, not a global suppress      |
 
 ---
 

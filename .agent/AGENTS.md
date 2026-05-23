@@ -54,7 +54,7 @@ Specialized expertise for complex development tasks:
 - **Product:** `product-manager`, `workflow-orchestrator`
 - **Meta:** `skill-generator`
 
-### Meta & Learning Skills (12 skills) ✨ NEW
+### Meta & Learning Skills (12 skills) ✨ UPDATED
 
 Advanced patterns for efficiency and continuous improvement:
 
@@ -169,12 +169,24 @@ Eval definition format (save to `.agent/evals/<feature-name>.eval.md`):
 
 Invoke specialized agents via `.agent/agents/<name>.md`:
 
+### Development
 - **`tech-lead`** - Senior technical lead; focus on modularity and patterns. _(Also a skill)_
-- **`planner`** - Technical task architect; uses Z-Pattern decomposition. _(Agent persona — `.agent/agents/planner.md`)_
-- **`architect`** - System design specialist; produces ADRs. _(Agent persona — `.agent/agents/architect.md`)_
+- **`planner`** - Technical task architect; uses Z-Pattern decomposition.
+- **`architect`** - System design specialist; produces ADRs.
+
+### Quality & Testing
 - **`code-reviewer`** - Quality gate specialist; focus on readability and standards.
-- **`security-reviewer`** - Vulnerability hunter; focus on OWASP Top 10.
 - **`qa-engineer`** - Testing specialist; focus on edge cases and coverage.
+- **`accessibility-auditor`** - WCAG compliance, screen reader, and inclusive design.
+- **`adversarial-tester`** - Chaos engineering, fuzz testing, and failure mode validation.
+
+### Security & Compliance
+- **`security-reviewer`** - Vulnerability hunter; focus on OWASP Top 10.
+- **`data-privacy-officer`** - GDPR/CCPA/SOC2 compliance, PII discovery, consent, data retention.
+
+### Operations & Releases
+- **`incident-commander`** - Production incident response, severity classification, postmortem.
+- **`release-manager`** - Versioning, changelog, rollout strategy, release coordination.
 
 ---
 
@@ -192,6 +204,22 @@ Invoke specialized agents via `.agent/agents/<name>.md`:
 
 `writing-plans` ➔ `autonomous-loops` ➔ `[Loop Execution]` ➔ `verification-loop` ➔ `continuous-learning-v2`
 
+### Incident Response Chain
+
+`incident-commander` ➔ `[Mitigation]` ➔ `debugging` ➔ `test-driven-development` ➔ `verification-loop` ➔ `finishing-a-development-branch`
+
+### Release Chain
+
+`release-manager` ➔ `verification-loop` ➔ `finishing-a-development-branch` ➔ `observability-specialist` ➔ `continuous-learning-v2`
+
+### Accessibility Audit Chain
+
+`accessibility-auditor` ➔ `[Fixes]` ➔ `verification-loop` ➔ `requesting-code-review` ➔ `finishing-a-development-branch`
+
+### Adversarial Test Chain
+
+`adversarial-tester` ➔ `[Chaos/Fuzz]` ➔ `debugging` ➔ `executing-plans` ➔ `verification-loop` ➔ `finishing-a-development-branch`
+
 ---
 
 ## RTK MANDATORY USAGE RULE
@@ -207,10 +235,10 @@ Check status via `rtk gain`.
 ```
 .agent/
 ├── AGENTS.md                    # Master contract
-├── agents/                      # Specialized personas (.md)
+├── agents/                      # 11 Specialized personas (.md)
 ├── skills/                      # 53 Active skills
 │   └── debugging/               # Merged debugging + bug-hunter skill
-├── workflows/                   # Pre-defined executable chains
+├── workflows/                   # 9 Pre-defined executable chains
 ├── evals/                       # Eval definitions (EVAL-DRIVEN DEVELOPMENT)
 └── instincts/                   # Learned patterns & observations
     ├── personal/                # Active instinct files (YAML)

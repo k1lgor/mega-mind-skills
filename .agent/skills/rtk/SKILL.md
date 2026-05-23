@@ -1,6 +1,6 @@
 ---
 name: rtk
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   RTK (Rust Token Killer) is a CLI proxy that reduces LLM token consumption by 60-90%
   on common development commands. Use this skill to optimize CLI operations and track
@@ -258,12 +258,12 @@ When RTK is installed, translate commands automatically:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Token savings not achieved because context was already small | RTK applied to a command that outputs fewer than 200 tokens; compression overhead exceeds benefit | Skip RTK for small-output commands; use `rtk gain` to identify which command types are actually saving tokens in this project |
-| RTK not installed in environment, command fails silently | `rtk` binary not on PATH; CI or remote environment missing the install step | Check `rtk --version` exits 0 before wrapping any command; fall back to raw command if check fails; add RTK install to CI setup step |
+| Failure                                                        | Cause                                                                                                  | Recovery                                                                                                                                  |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Token savings not achieved because context was already small   | RTK applied to a command that outputs fewer than 200 tokens; compression overhead exceeds benefit      | Skip RTK for small-output commands; use `rtk gain` to identify which command types are actually saving tokens in this project             |
+| RTK not installed in environment, command fails silently       | `rtk` binary not on PATH; CI or remote environment missing the install step                            | Check `rtk --version` exits 0 before wrapping any command; fall back to raw command if check fails; add RTK install to CI setup step      |
 | Command output truncated unexpectedly, leaving partial context | RTK's output filter aggressively drops lines that match a suppression rule; needed information removed | Re-run the raw command without RTK to see full output; file an issue or adjust RTK filter config; for debugging sessions use raw commands |
-| RTK applied to wrong file, compressing irrelevant content | `rtk read <file>` called on a binary or auto-generated file; output is noise | Verify the target file path with `ls` before reading; only use `rtk read` on human-readable source or config files |
+| RTK applied to wrong file, compressing irrelevant content      | `rtk read <file>` called on a binary or auto-generated file; output is noise                           | Verify the target file path with `ls` before reading; only use `rtk read` on human-readable source or config files                        |
 
 ### When to Suggest RTK
 

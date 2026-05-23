@@ -1,6 +1,6 @@
 ---
 name: mega-mind
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Master orchestrator for the Mega-Mind skill system. This is the primary entry point that analyzes requests,
   coordinates multiple skills, and manages complex workflows. Use /mega-mind to invoke the orchestrator.
@@ -65,16 +65,42 @@ Commands:
 ## Orchestration Engine
 
 ### Coordination & Handoff Protocol
-- Standardize inter-skill handoffs to ensure smooth chaining.
-- After completing a skill, output a small, structured payload containing:
-  - next_skill: the name of the next skill in the chain (or null if end)
-  - payload: any data needed by the next skill
-  - status: "completed" or "errored"
-- The orchestrator uses next_skill to route automatically; if next_skill is null, chain ends.
-- Each skill should log a concise update to task.md describing the handoff and any decisions.
-- Timeouts and escalation: if a skill does not produce a valid next_skill within a defined window, escalate to an appropriate reviewer.
-- Conflict handling: if two candidate next_skills are suggested, Mega-Mind will choose the most appropriate based on context and chain history.
-- Reference patterns: leverage established coordination references such as the Conclave Multi-Agent Deliberation and other multi-agent orchestration patterns documented in external sources.
+
+Every skill in the chain MUST produce a structured handoff block at the end of its completion output.
+This block is the machine-readable interface between skills — without it, the orchestrator cannot
+reliably chain to the next step.
+
+#### Handoff Block Template
+
+When a skill completes, end the session output with:
+
+```
+---
+## Handoff
+
+**next_skill**: `<skill-name>` or `null` (null = chain ends)
+**status**: `completed` | `errored`
+**payload**:
+  - `context_key`: value (any data the next skill needs)
+  - `warnings`: [list of any cautions for the next skill]
+**task.md update**: `docs/plans/task.md` updated with current step marked complete
+---
+```
+
+#### Rules
+
+- Every skill's `## Success Criteria` section MUST state: "This skill is complete when its Handoff
+  block has been emitted with status: completed."
+- The orchestrator reads `next_skill` to determine the next chain step. If `next_skill` is `null`,
+  the chain is done.
+- If status is `errored`, the orchestrator stops the chain and reports the error with the payload.
+- Each skill MUST update `docs/plans/task.md` before or immediately after emitting the handoff.
+- Timeouts: if a skill does not emit a Handoff block within 3 turns of its assigned work,
+  the orchestrator escalates to the human.
+- Conflict handling: if two candidate next_skills are suggested, Mega-Mind chooses based on the
+  active workflow chain definition for the session.
+- Reference patterns: leverage established coordination references such as the Conclave
+  Multi-Agent Deliberation and other multi-agent orchestration patterns documented in external sources.
 
 ### Request Analysis
 
@@ -85,14 +111,23 @@ When a request comes in, analyze it:
    - What is the user asking for?
    - What type of task is this?
    - Are there specific constraints?
+   - Preliminary category: feature / bug / infra / data / ML / doc / security / perf / other
 
-2. APPLY INSTINCTS (NEW)
+2. SEARCH FIRST (before classifying skill chain)
+   - Run `search-first` to check: does a library, MCP server, or existing skill already solve this?
+   - If a solution is found: route directly to adoption/integration, skip chain building
+   - If no solution is found: proceed to instinct application and classification
+   - Rationale: committing to a skill chain before knowing what already exists wastes cycles;
+     search-first may short-circuit the entire chain or change which skills are needed.
+
+3. APPLY INSTINCTS
    - Check .agent/instincts/personal/ for relevant domain instincts
    - Apply high-confidence (0.7+) instincts automatically
    - Mention medium-confidence (0.5-0.7) instincts as options to the user
 
-3. CLASSIFY the request
-   - New feature? → search-first → tech-lead → brainstorming → writing-plans
+4. CLASSIFY the request (informed by search-first results)
+   - New feature? → tech-lead → brainstorming → writing-plans
+   - Existing library found? → adopt-integrate skill instead
    - Bug fix? → debugging
    - Code quality? → code-polisher
    - Security? → security-reviewer
@@ -108,18 +143,18 @@ When a request comes in, analyze it:
    - End of session? → continuous-learning-v2 (extract instincts)
    - Skill review? → skill-stocktake
 
-4. SELECT MODEL based on complexity
+5. SELECT MODEL based on complexity
    - Research/simple extraction: Haiku (3-4x cheaper)
    - Standard feature work: Sonnet (default)
    - Deep architectural reasoning: Opus (use sparingly)
 
-5. DETERMINE workflow
+6. DETERMINE workflow
    - Simple task → Single skill
    - Complex task → Skill chain
    - Multi-phase → Full workflow
    - Autonomous/no-intervention needed → autonomous-loops pattern
 
-6. EXECUTE with tracking
+7. EXECUTE with tracking
    - Create and update task in `<project-root>/docs/plans/task.md`
    - Route to first skill
    - Track progress continuously
@@ -128,6 +163,8 @@ When a request comes in, analyze it:
 ```
 
 ### Skill Routing Matrix
+
+> **Agent vs Skill**: Agents (`.agent/agents/`) are deep-dive personas for complex analysis — invoke them explicitly when a task warrants dedicated focus. Skills (`.agent/skills/`) are lighter, step-by-step instructions for routine tasks. When both exist for the same domain, start with the skill; escalate to the agent if the task is unusually complex or requires an Architecture Decision Record.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -142,16 +179,21 @@ When a request comes in, analyze it:
 │  ├── "design backend"             → backend-architect               │
 │  ├── "design infrastructure"      → infra-architect                 │
 │  ├── "plan comprehensive"         → multi-plan (+ planner agent)    │
-│  └── "design mobile app"          → mobile-architect                │
+│  ├── "design mobile app"          → mobile-architect                │
+│  ├── "create architecture decisions" → architect agent (→ ADR)        │
+│  └── "break down complex task"    → planner agent                   │
 │                                                                     │
 │  DEVELOPMENT                                                        │
-│  ├── "implement feature"          → search-first → brainstorming    │
+│  ├── "implement feature"          → executing-plans                 │
 │  ├── "refactor code"              → code-polisher                   │
 │  ├── "upgrade dependencies"       → migration-upgrader              │
 │  ├── "work with legacy"           → legacy-archaeologist            │
+│  ├── "work with git"              → using-git-worktrees             │
 │  ├── "create skill"               → skill-generator                 │
+│  ├── "python code"                → python-patterns                 │
 │  ├── "multi-agent planning"       → multi-plan                      │
 │  ├── "multi-agent execution"      → multi-execute                   │
+│  ├── "handle review feedback"     → receiving-code-review           │
 │  └── "autonomous pipeline"        → autonomous-loops                │
 │                                                                     │
 │  TESTING & QUALITY                                                  │
@@ -159,6 +201,9 @@ When a request comes in, analyze it:
 │  ├── "unit tests"                 → test-genius                     │
 │  ├── "e2e tests"                  → e2e-test-specialist             │
 │  ├── "code review"                → requesting-code-review          │
+│  ├── "review my code"             → code-reviewer agent             │
+│  ├── "quality assurance"          → qa-engineer agent               │
+│  ├── "run verification"           → verification-loop               │
 │  ├── "security audit"             → security-reviewer               │
 │  └── "capability eval"            → eval-harness                    │
 │                                                                     │
@@ -187,6 +232,7 @@ When a request comes in, analyze it:
 │  ├── "write docs"                 → doc-writer                      │
 │  ├── "improve UX"                 → ux-designer                     │
 │  ├── "plan feature"               → product-manager                 │
+│  ├── "orchestrate workflow"       → workflow-orchestrator           │
 │  └── "design API endpoint"        → backend-architect               │
 │                                                                     │
 │  META & LEARNING                                                    │
@@ -201,6 +247,13 @@ When a request comes in, analyze it:
 │  ├── "plankton"                   → plankton-code-quality           │
 │  ├── "improve skills"             → autoresearch-loop               │
 │  └── "Karpathy autoresearch"      → autoresearch-loop               │
+│                                                                     │
+│  COMPLIANCE & PRIVACY                                               │
+│  ├── "privacy audit"              → data-privacy-officer agent      │
+│  ├── "GDPR check"                  → data-privacy-officer agent      │
+│  ├── "PII scan"                   → data-privacy-officer agent      │
+│  ├── "data retention"             → data-privacy-officer agent      │
+│  └── "consent audit"              → data-privacy-officer agent      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -230,6 +283,49 @@ When a request comes in, analyze it:
 3. verification-loop                → Verify fix works
 4. finishing-a-development-branch   → Ship the fix
 5. continuous-learning-v2           → Extract what was learned
+```
+
+### Incident Response Chain
+
+```
+1. incident-commander               → Classify, triage, mitigate (SEV1-SEV4)
+2. [Mitigation: rollback or feature-flag disable]
+3. debugging                        → Root cause analysis (if unknown)
+4. test-driven-development          → Regression test for the fix
+5. verification-loop                → Verify fix
+6. finishing-a-development-branch   → Deploy the fix
+7. continuous-learning-v2           → Extract incident patterns
+```
+
+### Release Chain
+
+```
+1. release-manager                  → Version, changelog, rollout strategy
+2. verification-loop                → Build verification on release tag
+3. finishing-a-development-branch   → Deploy per rollout strategy
+4. observability-specialist         → Post-release monitoring window
+5. continuous-learning-v2           → Extract release patterns
+```
+
+### Accessibility Audit Chain
+
+```
+1. accessibility-auditor            → WCAG audit, screen reader, contrast, keyboard
+2. [Fixes applied per findings]
+3. verification-loop                → Verify fixes don't break existing behavior
+4. requesting-code-review           → Submit accessibility fixes for review
+5. finishing-a-development-branch   → Ship
+```
+
+### Adversarial Test Chain
+
+```
+1. adversarial-tester               → Map attack surface, design experiments
+2. [Chaos: kill dependency] or [Fuzz: send adversarial input]
+3. debugging                        → Investigate failures
+4. executing-plans                  → Fix resilience gaps
+5. verification-loop                → Re-verify under adversarial conditions
+6. finishing-a-development-branch   → Ship resilience improvements
 ```
 
 ### New Project Chain
@@ -277,6 +373,28 @@ When a request comes in, analyze it:
 ```
 
 ### Autonomous Development Chain
+
+---
+
+## Decomposition Patterns (Alternative to Z-Pattern)
+
+The Feature Development Chain above uses the **Z-Pattern** (Data → API → UI → Integration).
+This is the default for full-stack CRUD features. For other project types, use the matching
+pattern instead — the orchestrator selects based on the request's dominant concern:
+
+| Project Type                        | Decomposition Pattern       | First Step                          | Last Step                                     |
+| ----------------------------------- | --------------------------- | ----------------------------------- | --------------------------------------------- |
+| Full-stack CRUD                     | **Z-Pattern**               | Data models, services               | UI components, integration tests              |
+| **Backend-only** (API/microservice) | **API-First**               | OpenAPI spec, types, DTOs           | Route handlers, middleware, integration tests |
+| **ML/AI pipeline**                  | **Train-Eval-Deploy**       | Data prep, feature pipeline         | Model serving, monitoring, drift detection    |
+| **Infrastructure-as-Code**          | **Declare-Provision-Test**  | State definition (Terraform/Pulumi) | Integration test (kitchen/terratest)          |
+| **Library/Package**                 | **API-Surface-Internal**    | Public API signature, types         | Internal implementation, docs, packaging      |
+| **Data pipeline**                   | **Ingest-Transform-Load**   | Schema, source connectors           | Sink, quality checks, observability           |
+| **Migration**                       | **Assess-Migrate-Validate** | Current state audit, schema diff    | Validation queries, rollback test             |
+
+**Rule**: When routing a request through `tech-lead` or `writing-plans`, identify the project type
+first and select the decomposition pattern before splitting into steps. Document the chosen
+pattern in the plan header.
 
 ## Session State Management
 
@@ -471,12 +589,13 @@ User: "Users are randomly getting logged out"
 
 ## Self-Verification Checklist
 
-- [ ] Request classified before routing: session log contains a classification step — `grep -n "classify\|route\|intent\|analyzed" <session_log>` returns at least 1 match before the first skill invocation
-- [ ] Skill chain is appropriately scoped: skill count in chain <= 5 for simple requests, <= 10 for complex — `grep -c "skill\|→" <routing_decision>` within expected bounds; over-engineered chains require justification
+grep -nE "classify|route|intent|analyzed"
+grep -cE "skill|→"
+
 - [ ] `task.md` created or updated before any code is written: `git log --diff-filter=A -- "docs/plans/task.md"` or `git log --diff-filter=M -- "docs/plans/task.md"` shows a commit timestamped before any `.ts`/`.js`/`.py` file change in the same session
-- [ ] No `git add` or `git commit` executed during orchestration: `git log --oneline --since="<session_start>"` shows 0 commits until `finishing-a-development-branch` is explicitly invoked — `grep -c "git add\|git commit" <session_transcript>` returns 0 outside the finishing phase
-- [ ] All quality gates included in chain: `grep -c "verification\|de-sloppify\|security-reviewer" <routing_decision>` returns >= 1 — chains without a verification step require documented justification
-- [ ] Context managed proactively: if session context > 75% consumed, `context-optimizer` is invoked — `grep -n "context-optimizer\|compact" <session_log>` returns at least 1 match when context threshold is exceeded
+      grep -cE "git add|git commit"
+      grep -cE "verification|de-sloppify|security-reviewer"
+      grep -nE "context-optimizer|compact"
 
 ## Success Criteria
 

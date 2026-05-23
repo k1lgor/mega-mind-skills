@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: UI/UX flows and design systems. Use for user experience design tasks.
 triggers:
   - "UX design"
@@ -223,26 +223,27 @@ You are a UX design specialist focused on creating intuitive user experiences an
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Design system token used inconsistently, causing visual regression on mobile | Developer hardcodes a hex colour instead of using the token variable; token update doesn't propagate | Audit computed styles with browser DevTools on mobile viewport (320px); replace all hardcoded values with design tokens before shipping |
-| Accessibility review skipped, component ships with 0 ARIA labels | Deadline pressure causes the accessibility checklist to be deferred; no automated check in CI | Run axe-core (or equivalent) in CI as a blocking step; any component with 0 ARIA roles on interactive elements must not merge |
-| User flow designed without edge case (empty state, error state) coverage | Happy-path flow designed first and only; edge states added as afterthoughts or not at all | For every flow, explicitly design the empty state, error state, and loading state before the flow is considered complete |
-| Font loaded synchronously blocking render, causing FOUT | Font `<link>` added in `<head>` without `rel="preload"` or `font-display: swap`; blocks paint until font loads | Add `font-display: swap` to the `@font-face` declaration; use `rel="preload"` for critical fonts; verify with Lighthouse |
-| Interactive affordance missing on mobile touch target (<44px) | Component designed at desktop scale; touch target too small to tap reliably on mobile | Measure all interactive elements at 320px viewport width; any target smaller than 44×44px must be expanded before shipping |
+| Failure                                                                      | Cause                                                                                                          | Recovery                                                                                                                                |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Design system token used inconsistently, causing visual regression on mobile | Developer hardcodes a hex colour instead of using the token variable; token update doesn't propagate           | Audit computed styles with browser DevTools on mobile viewport (320px); replace all hardcoded values with design tokens before shipping |
+| Accessibility review skipped, component ships with 0 ARIA labels             | Deadline pressure causes the accessibility checklist to be deferred; no automated check in CI                  | Run axe-core (or equivalent) in CI as a blocking step; any component with 0 ARIA roles on interactive elements must not merge           |
+| User flow designed without edge case (empty state, error state) coverage     | Happy-path flow designed first and only; edge states added as afterthoughts or not at all                      | For every flow, explicitly design the empty state, error state, and loading state before the flow is considered complete                |
+| Font loaded synchronously blocking render, causing FOUT                      | Font `<link>` added in `<head>` without `rel="preload"` or `font-display: swap`; blocks paint until font loads | Add `font-display: swap` to the `@font-face` declaration; use `rel="preload"` for critical fonts; verify with Lighthouse                |
+| Interactive affordance missing on mobile touch target (<44px)                | Component designed at desktop scale; touch target too small to tap reliably on mobile                          | Measure all interactive elements at 320px viewport width; any target smaller than 44×44px must be expanded before shipping              |
 
 ## Self-Verification Checklist
 
 - [ ] 0 critical accessibility violations: axe-core scan exits 0 — critical violation count = 0
 - [ ] All interactive elements have touch target >= 44x44px — verified at 320px viewport width
-- [ ] Design reviewed on mobile viewport (320px): `grep -c "320px\|mobile\|responsive" design_review.md` returns > 0
-- [ ] User personas defined: `grep -c "persona\|Persona" ux_doc.md` returns >= 1
-- [ ] All interactive states covered: `grep -c "hover\|focus\|active\|disabled\|loading\|error\|empty" src/components/` returns > 0
+      grep -cE "320px|mobile|responsive"
+      grep -cE "persona|Persona"
+      grep -cE "hover|focus|active|disabled|loading|error|empty"
 - [ ] Color contrast ratio meets WCAG 2.1 AA: normal text contrast >= 4.5:1, large text >= 3:1 — verified with a contrast checker
 
 ## Success Criteria
 
 This task is complete when:
+
 1. User flows are fully documented from entry point to completion, including all branching paths and error states
 2. WCAG 2.1 AA compliance is confirmed for all color combinations and interactive elements
 3. The design system components used are documented with their variants, states, and usage guidelines

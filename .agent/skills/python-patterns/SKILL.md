@@ -1,6 +1,6 @@
 ---
 name: python-patterns
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Production-grade Python design patterns, modern tooling, and idiomatic code standards for Python 3.10+. Covers dataclasses, context managers, decorators, async/await, exception hierarchies, Pydantic validation, pytest patterns, and packaging with pyproject.toml/uv. Use for any Python-specific development where quality, type safety, and performance matter.
 triggers:
   - "python patterns"
@@ -26,7 +26,7 @@ triggers:
 
 You are a senior Python engineer with deep expertise in modern Python (3.10+) idioms, type safety, and production-grade patterns. You write code that is explicit, testable, and maintainable — not clever or magical. You enforce strict tooling discipline: ruff for linting/formatting, pyright for type checking, uv for package management, and pytest for testing. You know when to reach for dataclasses vs Pydantic, when async is appropriate vs threads vs processes, and how to design exception hierarchies that communicate intent clearly. You treat the Python type system as a first-class design tool, not an afterthought.
 
-## When to Activate
+## When to Use
 
 - Writing new Python services, libraries, utilities, or CLI tools
 - Refactoring legacy Python 2.x or early 3.x code to modern standards
@@ -140,13 +140,13 @@ class Counter:
 
 ### Dataclass vs Pydantic vs TypedDict Decision Matrix
 
-| Use Case | Tool | Why |
-| --- | --- | --- |
-| Internal data containers | `@dataclass(frozen=True)` | Zero overhead, no validation |
-| API request/response bodies | Pydantic `BaseModel` | Runtime validation + JSON schema |
-| External config (env, YAML) | Pydantic `BaseSettings` | Type coercion + env var support |
-| Dict-shaped typed data | `TypedDict` | Structural typing without class |
-| Simple immutable tuples | `NamedTuple` | Tuple semantics with names |
+| Use Case                    | Tool                      | Why                              |
+| --------------------------- | ------------------------- | -------------------------------- |
+| Internal data containers    | `@dataclass(frozen=True)` | Zero overhead, no validation     |
+| API request/response bodies | Pydantic `BaseModel`      | Runtime validation + JSON schema |
+| External config (env, YAML) | Pydantic `BaseSettings`   | Type coercion + env var support  |
+| Dict-shaped typed data      | `TypedDict`               | Structural typing without class  |
+| Simple immutable tuples     | `NamedTuple`              | Tuple semantics with names       |
 
 ---
 
@@ -695,13 +695,13 @@ uvx mypy .
 
 ## Tooling Integration Summary
 
-| Tool | Purpose | Command |
-| --- | --- | --- |
-| `ruff check` | Linting (replaces flake8, isort, pylint) | `uv run ruff check .` |
-| `ruff format` | Formatting (replaces black) | `uv run ruff format .` |
-| `pyright` | Type checking (strict mode) | `uv run pyright` |
-| `pytest` | Testing | `uv run pytest --cov=src` |
-| `uv` | Package management (replaces pip, venv) | `uv sync`, `uv add` |
+| Tool          | Purpose                                  | Command                   |
+| ------------- | ---------------------------------------- | ------------------------- |
+| `ruff check`  | Linting (replaces flake8, isort, pylint) | `uv run ruff check .`     |
+| `ruff format` | Formatting (replaces black)              | `uv run ruff format .`    |
+| `pyright`     | Type checking (strict mode)              | `uv run pyright`          |
+| `pytest`      | Testing                                  | `uv run pytest --cov=src` |
+| `uv`          | Package management (replaces pip, venv)  | `uv sync`, `uv add`       |
 
 ---
 
@@ -714,9 +714,9 @@ Before declaring a Python task complete, verify:
 - [ ] `uv run pyright` exits 0 — 0 errors in strict mode (or the agreed mode for this project)
 - [ ] All new functions have complete type annotations on parameters and return types
 - [ ] No `pip install` was used: `grep -rn "pip install" Makefile scripts/ *.sh` returns = 0 matches
-- [ ] Exception handling catches specific types: `grep -rn "except Exception\|except BaseException" src/` returns = 0 matches
+      grep -rnE "except Exception|except BaseException"
 - [ ] No `os.path` usage: `grep -rn "os\.path\." src/` returns = 0 matches (replaced by `pathlib.Path`)
-- [ ] Mutable default arguments not present: `grep -rn "def .*=\s*\[\|def .*=\s*{" src/` returns = 0 matches
+      grep -rnE "def ._=[[:space:]]_\[|def ._=[[:space:]]_{"
 - [ ] `uv run pytest` exits 0 with coverage >= existing baseline %
 
 ---
@@ -746,16 +746,16 @@ A task using this skill is complete when:
 
 ## Failure Modes
 
-| Situation | Response |
-| --- | --- |
-| pyright reports errors after refactor | Fix the root type error — do not add `# type: ignore`. Narrow the type or add a proper guard. |
-| `ruff check` reports import order issues | Run `uv run ruff check --fix .` to auto-fix; review the changes. |
-| Async code deadlocks | Audit for `time.sleep()`, blocking DB drivers, or sync code called directly from coroutines. Run in executor. |
-| Memory leak in long-running service | Audit for circular references, un-closed file handles, and large objects stored in module globals. Use `tracemalloc`. |
-| Test is flaky due to timing | Replace `time.sleep()` assertions with proper async awaits or `pytest-anyio` time controls. |
-| uv.lock conflicts in merge | Run `uv sync` after resolving `pyproject.toml` conflict. Commit the regenerated `uv.lock`. |
-| Package version conflict | Use `uv add "package>=X,<Y"` to bound the range. Check `uv tree` to see the full dependency graph. |
-| Pydantic validation error in production | Add a `try/except ValidationError` at the API boundary and return a structured 422 response with `e.errors()`. |
+| Situation                                | Response                                                                                                              |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| pyright reports errors after refactor    | Fix the root type error — do not add `# type: ignore`. Narrow the type or add a proper guard.                         |
+| `ruff check` reports import order issues | Run `uv run ruff check --fix .` to auto-fix; review the changes.                                                      |
+| Async code deadlocks                     | Audit for `time.sleep()`, blocking DB drivers, or sync code called directly from coroutines. Run in executor.         |
+| Memory leak in long-running service      | Audit for circular references, un-closed file handles, and large objects stored in module globals. Use `tracemalloc`. |
+| Test is flaky due to timing              | Replace `time.sleep()` assertions with proper async awaits or `pytest-anyio` time controls.                           |
+| uv.lock conflicts in merge               | Run `uv sync` after resolving `pyproject.toml` conflict. Commit the regenerated `uv.lock`.                            |
+| Package version conflict                 | Use `uv add "package>=X,<Y"` to bound the range. Check `uv tree` to see the full dependency graph.                    |
+| Pydantic validation error in production  | Add a `try/except ValidationError` at the API boundary and return a structured 422 response with `e.errors()`.        |
 
 ---
 
@@ -769,6 +769,7 @@ A task using this skill is complete when:
 - `migration-upgrader` when upgrading Python version or migrating from Python 2
 
 Hand off to:
+
 - `eval-harness` after writing new logic, to define pass/fail criteria
 - `security-reviewer` after implementing auth, crypto, or external API integrations
 - `performance-profiler` when async patterns or data processing need benchmarking

@@ -1,6 +1,6 @@
 ---
 name: cost-aware-llm-pipeline
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: LLM cost optimization patterns for model routing, budget tracking, and prompt caching. Use when building AI pipelines where cost matters or when routing tasks to the right model tier.
 triggers:
   - "cost optimization"
@@ -19,7 +19,7 @@ triggers:
 
 You are an LLM cost optimization specialist. Your job is to ensure AI pipelines stay within budget while maximizing output quality — by routing tasks to the cheapest model that can handle them, tracking costs immutably, retrying only on transient errors, and caching long prompts.
 
-## When to Activate
+## When to Use
 
 - Building multi-step AI pipelines where cost matters
 - Choosing which model to use for a task
@@ -332,23 +332,24 @@ Before running any LLM pipeline:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Expensive model used for a task that a cheap model handles correctly | No routing logic; all requests sent to the most capable model by default | Add a task complexity classifier at the pipeline entry point; route simple extraction/classification tasks to the cheapest model that passes the quality bar |
-| Token budget exhausted mid-pipeline, truncating output | Input context not estimated before sending; pipeline has no budget gate | Add a pre-flight token count check before every model call; if estimated tokens exceed budget, apply context compression or split the task |
-| Cost spike caused by prompt that triggers verbose model output | Prompt uses open-ended instructions ("explain in detail") on a high-token-price model | Use constrained output prompts ("respond in under 100 words") on expensive models; validate output length against budget before accepting |
-| Model downgrade silently degrades output quality below acceptable threshold | Cheaper model selected for cost reasons but quality not re-validated after switch | Define a minimum quality bar for each task type; run quality eval after every model routing change before promoting to production |
-| Retry storm multiplies cost by 3–10x during a model API outage | Exponential backoff not implemented; naive retry on every 5xx response | Implement exponential backoff with jitter; cap total retries at 3; log cost-per-retry; fail fast after budget threshold exceeded |
-| Cost attribution lost across pipeline stages | No cost tracking per stage; total bill visible but individual stage cost invisible | Instrument every model call with a cost tag (stage name, model, input/output tokens); aggregate by stage for per-stage cost visibility |
+| Failure                                                                     | Cause                                                                                 | Recovery                                                                                                                                                     |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Expensive model used for a task that a cheap model handles correctly        | No routing logic; all requests sent to the most capable model by default              | Add a task complexity classifier at the pipeline entry point; route simple extraction/classification tasks to the cheapest model that passes the quality bar |
+| Token budget exhausted mid-pipeline, truncating output                      | Input context not estimated before sending; pipeline has no budget gate               | Add a pre-flight token count check before every model call; if estimated tokens exceed budget, apply context compression or split the task                   |
+| Cost spike caused by prompt that triggers verbose model output              | Prompt uses open-ended instructions ("explain in detail") on a high-token-price model | Use constrained output prompts ("respond in under 100 words") on expensive models; validate output length against budget before accepting                    |
+| Model downgrade silently degrades output quality below acceptable threshold | Cheaper model selected for cost reasons but quality not re-validated after switch     | Define a minimum quality bar for each task type; run quality eval after every model routing change before promoting to production                            |
+| Retry storm multiplies cost by 3–10x during a model API outage              | Exponential backoff not implemented; naive retry on every 5xx response                | Implement exponential backoff with jitter; cap total retries at 3; log cost-per-retry; fail fast after budget threshold exceeded                             |
+| Cost attribution lost across pipeline stages                                | No cost tracking per stage; total bill visible but individual stage cost invisible    | Instrument every model call with a cost tag (stage name, model, input/output tokens); aggregate by stage for per-stage cost visibility                       |
 
 ## Self-Verification Checklist
 
-- [ ] A per-task budget limit is defined before pipeline execution begins: `grep -c "budget\|max_cost\|cost_limit" pipeline_config.*` returns > 0
+grep -cE "budget|max_cost|cost_limit"
+
 - [ ] The cheapest viable model is selected for each task type (Haiku for extraction/formatting, Sonnet for standard reasoning, Opus only for architectural tasks)
-- [ ] Prompt caching applied to repeated system prompts >= 1,024 tokens: `grep -c "cache_control\|ephemeral" pipeline.*` returns > 0 where applicable
-- [ ] Retry logic is narrowed to transient errors only: `grep -c "429\|503\|RetryError" pipeline.*` returns > 0 and `grep -c "400\|401\|4[0-9][02-9]" retry_handler.*` returns = 0
-- [ ] Cost is logged immutably per API call: `grep -c "input_tokens\|output_tokens\|cost" logs/` returns > 0
-- [ ] A budget gate stops pipeline at 80% consumption: `grep -c "0\.8\|80%" pipeline.*` returns > 0
+      grep -cE "cache_control|ephemeral"
+      grep -cE "429|503|RetryError"
+      grep -cE "input_tokens|output_tokens|cost"
+      grep -cE "0\.8|80%"
 - [ ] Cost-per-step is visible: pipeline output includes a cost summary table with >= 1 row per stage
 
 ## Success Criteria

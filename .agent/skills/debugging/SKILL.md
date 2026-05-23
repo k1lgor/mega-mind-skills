@@ -1,6 +1,6 @@
 ---
 name: debugging
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Unified debugging skill with two modes — Rapid Fix for pattern-matching known bug types, and Systematic for hypothesis-driven root cause analysis. Use for any debugging task.
 triggers:
   - "find the bug"
@@ -40,19 +40,19 @@ You are a debugging specialist who traces root causes and fixes bugs efficiently
 
 ## Mode Selection
 
-| Signal | Use Mode |
-|---|---|
-| Clear stack trace, known error pattern (null access, race, off-by-one, async mistake) | **Rapid Fix** |
-| Common bug type you've seen before | **Rapid Fix** |
-| Unknown root cause, intermittent failure | **Systematic** |
-| Multi-system issue, environment-dependent bug | **Systematic** |
-| 2+ failed fix attempts | **Systematic** |
+| Signal                                                                                | Use Mode       |
+| ------------------------------------------------------------------------------------- | -------------- |
+| Clear stack trace, known error pattern (null access, race, off-by-one, async mistake) | **Rapid Fix**  |
+| Common bug type you've seen before                                                    | **Rapid Fix**  |
+| Unknown root cause, intermittent failure                                              | **Systematic** |
+| Multi-system issue, environment-dependent bug                                         | **Systematic** |
+| 2+ failed fix attempts                                                                | **Systematic** |
 
 ---
 
 ## Mode 1: Rapid Fix
 
-*Pattern-match known bug types and fix efficiently.*
+_Pattern-match known bug types and fix efficiently._
 
 ### Step 1: Reproduce
 
@@ -77,7 +77,7 @@ rtk git log --oneline --since="2 days ago"
 ## Stack Trace Analysis
 
 TypeError: Cannot read property 'id' of undefined
-  at UserController.getUser (src/controllers/user.js:45:23)
+at UserController.getUser (src/controllers/user.js:45:23)
 
 - Error type: TypeError
 - Location: src/controllers/user.js line 45
@@ -124,6 +124,7 @@ it("should return 404 when user not found", async () => {
 ### Common Bug Patterns
 
 **1. Null/Undefined Access**
+
 ```javascript
 // Bug: user.profile.name
 // Fix:
@@ -131,6 +132,7 @@ const name = user?.profile?.name ?? "Unknown";
 ```
 
 **2. Race Conditions**
+
 ```javascript
 // Bug: console.log(value) before await init()
 // Fix:
@@ -139,6 +141,7 @@ console.log(value); // correct value
 ```
 
 **3. Off-by-One Errors**
+
 ```javascript
 // Bug: i <= items.length → undefined on last iteration
 // Fix:
@@ -146,11 +149,14 @@ for (let i = 0; i < items.length; i++) { ... }
 ```
 
 **4. Async/Await Mistakes**
+
 ```javascript
 // Bug: items.forEach(async (item) => { await process(item); })
 // "done" prints before processing completes
 // Fix:
-for (const item of items) { await process(item); }
+for (const item of items) {
+  await process(item);
+}
 ```
 
 ### Bug Report Template
@@ -171,12 +177,13 @@ for (const item of items) { await process(item); }
 
 ## Mode 2: Systematic Investigation
 
-*Hypothesis-driven investigation for unknown or complex bugs.*
+_Hypothesis-driven investigation for unknown or complex bugs._
 
 ### Step 1: Reproduce with Documentation
 
 ```markdown
 **Steps to Reproduce:**
+
 1. Open the application
 2. Navigate to /dashboard
 3. Click "Export" → Select "PDF"
@@ -209,6 +216,7 @@ State it as: `IF [condition] THEN [bug would occur]`
 **Test:** Generate a 1-page PDF vs 100-page PDF — does error still occur?
 
 **Result:**
+
 - Small PDF: works ✓
 - Large PDF: same error ✓
 
@@ -227,6 +235,7 @@ Make **one change per experiment**. Record all observations.
 ### Debugging Techniques
 
 **Log Analysis**
+
 ```bash
 rtk grep "ERROR\|Exception\|Failed" logs/
 rtk git log --oneline --since="2 days ago"
@@ -234,6 +243,7 @@ rtk grep "request-id-123" logs/app.log
 ```
 
 **Interactive Debugging**
+
 ```javascript
 console.log("[DEBUG] State:", variable);
 debugger; // pauses in dev tools
@@ -290,15 +300,15 @@ rtk read <file>
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Root cause misidentified; first plausible explanation accepted | Stops at first matching symptom | Apply 5 Whys: ask "why did this happen?" at least 5 levels deep |
-| Fix applied to symptom, not cause; bug recurs | Patches surface error without tracing origin | Confirm fix eliminates root cause; write regression test that would have caught original bug |
-| Reproduction not isolated before fix | Fix attempted on live code without minimal repro | Create minimal reproduction first; confirm it passes before applying fix |
-| Fix introduces regression in adjacent path | Change made without checking callers/dependents | Run full test suite; check import graph for affected consumers |
-| Shotgun debugging: random changes made hoping something works | No hypothesis formed before changes | Halt; write hypothesis; make exactly one change per test |
-| Fix confirmed in dev, fails in production | Environmental differences not reproduced | Identify all env differences between dev and prod; reproduce relevant ones |
-| Debugging expands scope into a refactor | Related issues addressed inline | Fix only the bug under investigation; log related issues as separate todos |
+| Failure                                                        | Cause                                            | Recovery                                                                                     |
+| -------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Root cause misidentified; first plausible explanation accepted | Stops at first matching symptom                  | Apply 5 Whys: ask "why did this happen?" at least 5 levels deep                              |
+| Fix applied to symptom, not cause; bug recurs                  | Patches surface error without tracing origin     | Confirm fix eliminates root cause; write regression test that would have caught original bug |
+| Reproduction not isolated before fix                           | Fix attempted on live code without minimal repro | Create minimal reproduction first; confirm it passes before applying fix                     |
+| Fix introduces regression in adjacent path                     | Change made without checking callers/dependents  | Run full test suite; check import graph for affected consumers                               |
+| Shotgun debugging: random changes made hoping something works  | No hypothesis formed before changes              | Halt; write hypothesis; make exactly one change per test                                     |
+| Fix confirmed in dev, fails in production                      | Environmental differences not reproduced         | Identify all env differences between dev and prod; reproduce relevant ones                   |
+| Debugging expands scope into a refactor                        | Related issues addressed inline                  | Fix only the bug under investigation; log related issues as separate todos                   |
 
 ---
 
@@ -318,6 +328,7 @@ rtk read <file>
 ## Success Criteria
 
 This task is complete when:
+
 1. The bug no longer reproduces under the originally documented steps
 2. A regression test exists that fails on the old code and passes on the fixed code
 3. All previously passing tests continue to pass after the fix

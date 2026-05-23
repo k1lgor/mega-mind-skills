@@ -1,6 +1,6 @@
 ---
 name: infra-architect
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: IaC (Terraform, CloudFormation) and Cloud setup. Use for infrastructure design and management.
 triggers:
   - "infrastructure"
@@ -232,13 +232,13 @@ resource "aws_cloudfront_distribution" "website" {
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| IAM role over-provisioned with admin wildcard, violating least-privilege | Role created with `"Action": "*"` or `"Resource": "*"` as a quick workaround during development and never tightened | Run `tfsec` or `checkov` to flag wildcard IAM policies; replace with the minimum required actions and specific resource ARNs |
-| Terraform state stored locally, diverges between team members | No remote backend configured; each developer has a different `.tfstate` file on their machine | Migrate to remote state (S3 + DynamoDB lock or Terraform Cloud); run `terraform state pull` to reconcile, then enforce with CI |
-| Security group allows 0.0.0.0/0 ingress on port 22 | SSH port opened to the world for convenience during initial setup; never restricted | Remove the `0.0.0.0/0` ingress rule; restrict SSH to a bastion host CIDR or use AWS Systems Manager Session Manager instead |
-| No automated backup policy on stateful resource | RDS `backup_retention_period` left at 0 or ElastiCache/S3 versioning not enabled | Set `backup_retention_period >= 7` on RDS; enable S3 versioning and object lock; verify with `terraform plan` that changes apply |
-| DNS propagation delay causes downtime during blue-green cutover | TTL on DNS record is too high (e.g., 3600s) and old record cached during cutover | Set DNS TTL to 60s at least 1 hour before cutover; after cutover confirm new endpoint is live before removing old stack |
+| Failure                                                                  | Cause                                                                                                               | Recovery                                                                                                                         |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| IAM role over-provisioned with admin wildcard, violating least-privilege | Role created with `"Action": "*"` or `"Resource": "*"` as a quick workaround during development and never tightened | Run `tfsec` or `checkov` to flag wildcard IAM policies; replace with the minimum required actions and specific resource ARNs     |
+| Terraform state stored locally, diverges between team members            | No remote backend configured; each developer has a different `.tfstate` file on their machine                       | Migrate to remote state (S3 + DynamoDB lock or Terraform Cloud); run `terraform state pull` to reconcile, then enforce with CI   |
+| Security group allows 0.0.0.0/0 ingress on port 22                       | SSH port opened to the world for convenience during initial setup; never restricted                                 | Remove the `0.0.0.0/0` ingress rule; restrict SSH to a bastion host CIDR or use AWS Systems Manager Session Manager instead      |
+| No automated backup policy on stateful resource                          | RDS `backup_retention_period` left at 0 or ElastiCache/S3 versioning not enabled                                    | Set `backup_retention_period >= 7` on RDS; enable S3 versioning and object lock; verify with `terraform plan` that changes apply |
+| DNS propagation delay causes downtime during blue-green cutover          | TTL on DNS record is too high (e.g., 3600s) and old record cached during cutover                                    | Set DNS TTL to 60s at least 1 hour before cutover; after cutover confirm new endpoint is live before removing old stack          |
 
 ## Anti-Patterns
 
@@ -263,6 +263,7 @@ resource "aws_cloudfront_distribution" "website" {
 ## Success Criteria
 
 This task is complete when:
+
 1. `terraform plan` shows zero errors and the planned changes match the intended architecture
 2. All resources are defined in reusable modules with documented variables and outputs
 3. The infrastructure has been applied to a non-production environment and verified to function correctly

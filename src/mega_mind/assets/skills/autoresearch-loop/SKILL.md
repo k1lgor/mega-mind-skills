@@ -1,6 +1,6 @@
 ---
 name: autoresearch-loop
-compatibility: Antigravity, Claude Code, GitHub Copilot, OpenCode, Cursor
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Karpathy-style automated self-improvement loop for the .agent/ skill system. Measures skill
   quality, identifies weaknesses through structured evals, generates targeted improvements, and
@@ -30,7 +30,7 @@ session failure as a training signal, and every user correction as a gradient.
 You operate in tight, measurable cycles. No "let's improve things" vague passes — only scored,
 evidence-backed changes with before/after measurements.
 
-## When to Activate
+## When to Use
 
 - After multiple sessions where skill routing produced suboptimal results
 - When a skill is being triggered for the wrong tasks (false positive routing)
@@ -83,22 +83,26 @@ Before running the loop, establish what "better" means:
 ## Quality Signal Definition
 
 ### Routing Accuracy
+
 - Signal: skill is triggered for the right tasks (no false positives, no false negatives)
 - Measure: count of mis-routed tasks in test corpus / total tasks
 - Target: < 5% mis-routing rate
 
 ### Instruction Completeness
+
 - Signal: skill contains all required sections (When NOT to Use, Anti-Patterns, Self-Verification,
   Success Criteria, Failure Modes)
 - Measure: section presence score (0-5 per skill, 5 = all sections present)
 - Target: average >= 4.5 across all skills
 
 ### Actionability Score
+
 - Signal: skill instructions are specific enough to produce consistent outputs
 - Measure: LLM-as-judge grader evaluates each skill on 1-5 specificity scale
 - Target: average >= 4.0
 
 ### Coverage Score
+
 - Signal: all known task types in the project have a corresponding skill
 - Measure: count of task types without a matching skill
 - Target: 0 uncovered task types
@@ -116,13 +120,13 @@ cat .agent/evals/skill-completeness.md # Check section completeness
 
 Score each skill against the rubric:
 
-| Dimension | Score (1-5) | Notes |
-|---|---|---|
-| Specificity | 1=generic, 5=concrete with examples | |
-| Failure handling | 1=none, 5=tiered escalation | |
-| Routing precision | 1=ambiguous triggers, 5=clear boundaries | |
-| Self-verification | 1=absent, 5=explicit checklist | |
-| Anti-patterns | 1=none, 5=5+ explicit constraints | |
+| Dimension         | Score (1-5)                              | Notes |
+| ----------------- | ---------------------------------------- | ----- |
+| Specificity       | 1=generic, 5=concrete with examples      |       |
+| Failure handling  | 1=none, 5=tiered escalation              |       |
+| Routing precision | 1=ambiguous triggers, 5=clear boundaries |       |
+| Self-verification | 1=absent, 5=explicit checklist           |       |
+| Anti-patterns     | 1=none, 5=5+ explicit constraints        |       |
 
 **Record the baseline score for every skill in `.agent/evals/scores/baseline.md`.**
 
@@ -139,6 +143,7 @@ Document in `.agent/evals/weaknesses.md`:
 
 ```markdown
 ## Skill: ml-engineer
+
 - Symptom: Triggered for any Python code question
 - Root Cause: Triggers include "AI model" which matches too broadly
 - Hypothesis: Narrow triggers to "ML training", "model evaluation", "feature pipeline"
@@ -155,14 +160,14 @@ For each identified weakness, generate a targeted fix:
 
 Common improvement patterns:
 
-| Weakness | Fix Pattern |
-|---|---|
-| Triggers too broad | Narrow trigger phrases, add "when NOT to use" |
-| Identity too vague | Rewrite identity with specific expertise domain and decision style |
-| No examples | Add 2-3 concrete I/O examples |
-| Missing failure modes | Add failure table with specific situations |
-| No self-verification | Add checklist with measurable criteria |
-| Generic anti-patterns | Replace with domain-specific "never do X because Y" statements |
+| Weakness              | Fix Pattern                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| Triggers too broad    | Narrow trigger phrases, add "when NOT to use"                      |
+| Identity too vague    | Rewrite identity with specific expertise domain and decision style |
+| No examples           | Add 2-3 concrete I/O examples                                      |
+| Missing failure modes | Add failure table with specific situations                         |
+| No self-verification  | Add checklist with measurable criteria                             |
+| Generic anti-patterns | Replace with domain-specific "never do X because Y" statements     |
 
 ### Phase 4: Score Improvements
 
@@ -225,16 +230,16 @@ Each `.agent/evals/per-skill/<skill-name>.md` contains:
 ## Routing Tests
 
 ### Should Trigger
+
 - Input: "I need to train a classification model on customer churn data"
   Expected: ml-engineer triggered
-  
 - Input: "Build a feature pipeline for our recommendation system"  
   Expected: ml-engineer triggered
 
 ### Should NOT Trigger
+
 - Input: "Add type hints to this Python function"
   Expected: python-patterns triggered, NOT ml-engineer
-  
 - Input: "Set up MLflow tracking in our existing Jupyter notebooks"
   Expected: ml-engineer triggered (borderline — should capture MLOps)
 
@@ -263,12 +268,13 @@ Before declaring the autoresearch run complete:
 - [ ] Changes log exists and contains at least 1 entry per run: `wc -l .agent/evals/changes.md` returns >= 1 line; each entry includes a timestamp
 - [ ] After-scores are numerically compared to baseline: `diff .agent/evals/scores/baseline.md .agent/evals/scores/after.md` output contains at least 1 changed numeric value — identical files fail this check
 - [ ] Regression check passed: count of failing evals after run is <= count before run — `grep -c "FAIL" .agent/evals/scores/after.md` <= `grep -c "FAIL" .agent/evals/scores/baseline.md`
-- [ ] Termination condition reached: final run log contains either "success threshold met" or "diminishing returns" string — `grep -c "success threshold\|diminishing returns" .agent/evals/run.log` returns >= 1
+      grep -cE "success threshold|diminishing returns"
 - [ ] Summary written with counts: `grep -E "[0-9]+ skill(s)? improved" .agent/evals/summary.md` returns at least 1 match — vague summaries without numeric counts fail this check
 
 ## Success Criteria
 
 The autoresearch run is complete when:
+
 1. All skills with baseline score < 3.5 have been addressed (improved or documented as blocked)
 2. Average skill score across the library has increased vs. baseline
 3. No regressions introduced in previously-passing skills
@@ -287,24 +293,26 @@ The autoresearch run is complete when:
 
 ## Failure Modes
 
-| Situation | Response |
-|---|---|
-| No baseline scores exist | Start with Phase 1 only — establish baseline before attempting improvements |
-| Eval corpus is empty | Bootstrap with 3 routing tests per skill before running the loop |
-| All skills score poorly | Don't try to fix everything at once — prioritize top 5 by impact (most-used skills first) |
-| Improvements plateau quickly | The quality signal may be too easy — raise the threshold or add new dimensions |
-| Model disagrees with human evaluation | Use human judgment as ground truth; update the LLM grader calibration |
-| Change improves eval but user reports worse behavior | Eval is incomplete — add the user's case to the corpus, revert the change |
-| Loop terminates but system still feels wrong | Gather more data; the quality signal may not capture the actual failure mode |
+| Situation                                            | Response                                                                                  |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| No baseline scores exist                             | Start with Phase 1 only — establish baseline before attempting improvements               |
+| Eval corpus is empty                                 | Bootstrap with 3 routing tests per skill before running the loop                          |
+| All skills score poorly                              | Don't try to fix everything at once — prioritize top 5 by impact (most-used skills first) |
+| Improvements plateau quickly                         | The quality signal may be too easy — raise the threshold or add new dimensions            |
+| Model disagrees with human evaluation                | Use human judgment as ground truth; update the LLM grader calibration                     |
+| Change improves eval but user reports worse behavior | Eval is incomplete — add the user's case to the corpus, revert the change                 |
+| Loop terminates but system still feels wrong         | Gather more data; the quality signal may not capture the actual failure mode              |
 
 ## Integration with Mega-Mind
 
 `autoresearch-loop` is invoked:
+
 - Explicitly by the user ("run autoresearch", "improve the skill system")
 - Automatically after `skill-stocktake` identifies widespread quality issues
 - Quarterly as part of the Skill Evolution Chain
 
 Chain position:
+
 ```
 continuous-learning-v2 → autoresearch-loop → skill-generator → skill-stocktake
 ```

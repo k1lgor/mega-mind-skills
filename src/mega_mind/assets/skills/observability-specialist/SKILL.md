@@ -1,6 +1,6 @@
 ---
 name: observability-specialist
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Logging, tracing, and monitoring setup. Use for observability and monitoring tasks.
 triggers:
   - "observability"
@@ -297,13 +297,13 @@ groups:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Alert fires but runbook link is stale, on-call engineer can't find remediation steps | Runbook URL changed after alert was created, never updated | Audit all alert annotations for runbook URLs; validate each link before going on-call |
-| High-cardinality label added to metric, causing Prometheus memory OOM | Developer added user ID or request ID as a label without understanding cardinality implications | Remove the high-cardinality label immediately; replace with a lower-cardinality bucketed label; restart Prometheus with `-storage.tsdb.retention.time` to reclaim memory |
-| Trace sampling rate set to 100% under load, overwhelming collector | Sampling rate left at 100% from development; not adjusted for production traffic volume | Reduce sampling to 1-10% via head-based sampling config; use tail-based sampling for error traces only |
-| Log line contains PII (email, token) shipped to centralized logging system | Logging middleware serializes request body or headers without a PII scrubber | Add a scrubbing transform in the logging pipeline; rotate any leaked tokens immediately; audit retention store for PII exposure |
-| Dashboard shows metric but no alert threshold defined, masking SLO breach | Dashboard built for visibility without pairing alerts to SLO targets | For each SLO metric on the dashboard, add a corresponding alert rule with a `for: 5m` guard; link the alert to the dashboard panel |
+| Failure                                                                              | Cause                                                                                           | Recovery                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Alert fires but runbook link is stale, on-call engineer can't find remediation steps | Runbook URL changed after alert was created, never updated                                      | Audit all alert annotations for runbook URLs; validate each link before going on-call                                                                                    |
+| High-cardinality label added to metric, causing Prometheus memory OOM                | Developer added user ID or request ID as a label without understanding cardinality implications | Remove the high-cardinality label immediately; replace with a lower-cardinality bucketed label; restart Prometheus with `-storage.tsdb.retention.time` to reclaim memory |
+| Trace sampling rate set to 100% under load, overwhelming collector                   | Sampling rate left at 100% from development; not adjusted for production traffic volume         | Reduce sampling to 1-10% via head-based sampling config; use tail-based sampling for error traces only                                                                   |
+| Log line contains PII (email, token) shipped to centralized logging system           | Logging middleware serializes request body or headers without a PII scrubber                    | Add a scrubbing transform in the logging pipeline; rotate any leaked tokens immediately; audit retention store for PII exposure                                          |
+| Dashboard shows metric but no alert threshold defined, masking SLO breach            | Dashboard built for visibility without pairing alerts to SLO targets                            | For each SLO metric on the dashboard, add a corresponding alert rule with a `for: 5m` guard; link the alert to the dashboard panel                                       |
 
 ## Self-Verification Checklist
 

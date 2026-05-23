@@ -1,6 +1,6 @@
 ---
 name: iterative-retrieval
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Progressive context refinement pattern for subagents and RAG pipelines. Use when spawning subagents that need codebase context they cannot predict upfront, or when "send everything" exceeds context limits.
 triggers:
   - "subagent context"
@@ -19,7 +19,7 @@ triggers:
 
 You are a context orchestration specialist. When a subagent needs codebase context it cannot predict upfront, you don't guess — you run a 4-phase DISPATCH → EVALUATE → REFINE → LOOP cycle that progressively narrows to exactly the right files, using at most 3 cycles.
 
-## When to Activate
+## When to Use
 
 - Spawning subagents that need codebase context they cannot predict upfront
 - Building multi-agent workflows where context is progressively refined
@@ -250,13 +250,13 @@ ORCHESTRATOR:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Retrieval loop terminates early on partial match | Stop condition triggers on surface-level similarity before the needed information is fully retrieved | Tighten stop condition: require semantic completeness check, not just presence of related chunks |
-| Context window fills with retrieved chunks, leaving no room for generation | Retrieval budget not capped; agent keeps retrieving until context is full | Set a hard retrieval budget (e.g. 30% of context window); prioritise highest-relevance chunks and discard the rest |
-| Same chunk retrieved multiple times | Deduplication not implemented; relevance score is recalculated identically on each iteration | Track retrieved chunk IDs; exclude already-retrieved chunks from subsequent retrieval rounds |
-| Retrieval quality degrades silently after embedding model update | Embeddings re-indexed with new model but cache not invalidated; old embeddings compared against new query embeddings | Version the embedding model in the index metadata; invalidate and re-index when model changes |
-| Semantically similar but factually incorrect chunks returned with high confidence | Embedding similarity does not capture factual correctness; hallucinated or outdated chunks score highly | Add a re-ranking step with a cross-encoder; spot-check high-confidence retrievals against ground truth |
+| Failure                                                                           | Cause                                                                                                                | Recovery                                                                                                           |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Retrieval loop terminates early on partial match                                  | Stop condition triggers on surface-level similarity before the needed information is fully retrieved                 | Tighten stop condition: require semantic completeness check, not just presence of related chunks                   |
+| Context window fills with retrieved chunks, leaving no room for generation        | Retrieval budget not capped; agent keeps retrieving until context is full                                            | Set a hard retrieval budget (e.g. 30% of context window); prioritise highest-relevance chunks and discard the rest |
+| Same chunk retrieved multiple times                                               | Deduplication not implemented; relevance score is recalculated identically on each iteration                         | Track retrieved chunk IDs; exclude already-retrieved chunks from subsequent retrieval rounds                       |
+| Retrieval quality degrades silently after embedding model update                  | Embeddings re-indexed with new model but cache not invalidated; old embeddings compared against new query embeddings | Version the embedding model in the index metadata; invalidate and re-index when model changes                      |
+| Semantically similar but factually incorrect chunks returned with high confidence | Embedding similarity does not capture factual correctness; hallucinated or outdated chunks score highly              | Add a re-ranking step with a cross-encoder; spot-check high-confidence retrievals against ground truth             |
 
 ---
 
@@ -274,9 +274,9 @@ ORCHESTRATOR:
 - [ ] Maximum 3 retrieval cycles enforced: cycle count = 0 overruns (never exceeds 3 even if results are ambiguous)
 - [ ] Early exit triggered when >= 3 high-relevance files found with no context gaps remaining
 - [ ] Terminology from cycle 1 reused: `grep -c "<project-term>" queries_cycle2.log` returns > 0 where applicable
-- [ ] Context summary explicitly names retrieved files: `grep -c "Retrieved:\|Selected:" subagent_prompt.md` returns > 0
+      grep -cE "Retrieved:|Selected:"
 - [ ] Subagent prompt does NOT include full codebase: total file count in prompt = 0 full-repo dumps
-- [ ] Broad-then-narrow strategy applied: `grep -c "cycle_1\|initial_query" retrieval.log` returns >= 1
+      grep -cE "cycle_1|initial_query"
 
 ## Success Criteria
 

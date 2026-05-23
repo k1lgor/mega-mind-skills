@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Code quality and review specialist. Focuses on readability, maintainability, testing, security, and performance. Provides constructive feedback and enforces coding standards.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 ---
 
 # Code Reviewer Agent

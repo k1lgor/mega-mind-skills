@@ -1,6 +1,6 @@
 ---
 name: mobile-architect
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: iOS/Android and Flutter/React Native dev. Use for mobile application development.
 triggers:
   - "mobile app"
@@ -271,13 +271,13 @@ Widget build(BuildContext context) {
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| App crashes on low-memory device due to large bitmap loaded into memory | Full-resolution image loaded directly into an `ImageView` or `Image` widget without downsampling or cache eviction | Use `resizeMode="cover"` with explicit dimensions (RN) or `cached_network_image` with `memCacheSize` limit (Flutter); verify with Android Profiler / Instruments that peak memory stays below device limit |
-| Deep link fails on cold start because navigation stack not initialized | Deep link URL arrives before the navigation container is mounted, so the route is dropped silently | Handle deep links in the `NavigationContainer` `linking` config (RN) or `GoRouter` `redirect` (Flutter); add a cold-start test that opens the app via deep link and confirms the correct screen is shown |
-| Background task killed by OS battery optimizer, silently dropping work | Long-running background task not registered as a foreground service (Android) or Background App Refresh disabled (iOS) | Use `react-native-background-fetch` or WorkManager (Android) / BGTaskScheduler (iOS) for deferrable work; confirm task completion in device logs under battery saver mode |
-| Offline sync conflict not resolved, corrupting local data store | Two writes to the same record (one offline, one from server) applied with last-write-wins and no conflict resolution strategy | Implement vector-clock or timestamp-based conflict resolution; add an integration test that writes offline, syncs, and asserts the correct merged state |
-| Push notification delivery fails on iOS because APNs cert expired | APNs production certificate has a 1-year expiry and was not renewed; notifications silently drop | Rotate the APNs certificate or switch to APNs token-based authentication (no expiry); add a calendar reminder or automated alert 30 days before cert expiry |
+| Failure                                                                 | Cause                                                                                                                         | Recovery                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App crashes on low-memory device due to large bitmap loaded into memory | Full-resolution image loaded directly into an `ImageView` or `Image` widget without downsampling or cache eviction            | Use `resizeMode="cover"` with explicit dimensions (RN) or `cached_network_image` with `memCacheSize` limit (Flutter); verify with Android Profiler / Instruments that peak memory stays below device limit |
+| Deep link fails on cold start because navigation stack not initialized  | Deep link URL arrives before the navigation container is mounted, so the route is dropped silently                            | Handle deep links in the `NavigationContainer` `linking` config (RN) or `GoRouter` `redirect` (Flutter); add a cold-start test that opens the app via deep link and confirms the correct screen is shown   |
+| Background task killed by OS battery optimizer, silently dropping work  | Long-running background task not registered as a foreground service (Android) or Background App Refresh disabled (iOS)        | Use `react-native-background-fetch` or WorkManager (Android) / BGTaskScheduler (iOS) for deferrable work; confirm task completion in device logs under battery saver mode                                  |
+| Offline sync conflict not resolved, corrupting local data store         | Two writes to the same record (one offline, one from server) applied with last-write-wins and no conflict resolution strategy | Implement vector-clock or timestamp-based conflict resolution; add an integration test that writes offline, syncs, and asserts the correct merged state                                                    |
+| Push notification delivery fails on iOS because APNs cert expired       | APNs production certificate has a 1-year expiry and was not renewed; notifications silently drop                              | Rotate the APNs certificate or switch to APNs token-based authentication (no expiry); add a calendar reminder or automated alert 30 days before cert expiry                                                |
 
 ## Self-Verification Checklist
 
@@ -286,12 +286,13 @@ Widget build(BuildContext context) {
 - [ ] 0 critical memory warnings: Android Profiler or Xcode Instruments shows 0 OOM events during a representative user flow
 - [ ] Navigation is type-safe: `tsc --noEmit` exits 0 with 0 errors on route param types in `RootStackParamList` or Flutter config
 - [ ] All list views use virtualization: `grep -rn "\.map(" src/screens/` returns = 0 matches for potentially large arrays
-- [ ] Platform-specific UI differences handled: `grep -c "Platform\.OS\|defaultProps\|safe-area" src/` returns > 0
-- [ ] Offline behavior defined: `grep -c "offline\|cached\|NetworkError\|no.network" src/` returns > 0
+      grep -cE "Platform\.OS|defaultProps|safe-area"
+      grep -cE "offline|cached|NetworkError|no.network"
 
 ## Success Criteria
 
 This task is complete when:
+
 1. The app architecture follows the documented folder structure with clear separation of navigation, screens, services, and state
 2. The app builds and runs without errors on both iOS simulator and Android emulator (or the target platform)
 3. All critical user flows work correctly on a physical device with network throttling enabled

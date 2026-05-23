@@ -1,6 +1,6 @@
 ---
 name: skill-stocktake
-compatibility: Antigravity, Claude Code, GitHub Copilot
+compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: Audit all skills for quality, relevance, and overlap. Use quarterly or when the skill library feels bloated or stale to produce a Keep/Improve/Update/Retire/Merge verdict for every skill.
 triggers:
   - "audit skills"
@@ -105,11 +105,11 @@ Produce a verdict JSON for each skill:
 ### Phase 3 — Summary Table
 
 ```markdown
-| Skill          | Verdict                      | Reason                                                                     |
-| -------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| brainstorming  | Keep                         | Strong approach generation, unique approval gate pattern                   |
-| some-old-skill | Retire                       | Tool referenced (X) deprecated in 2025; skill-generator covers same ground |
-| backend-architect | Keep                         | Strong API design patterns, no redundancy                                      |
+| Skill             | Verdict | Reason                                                                     |
+| ----------------- | ------- | -------------------------------------------------------------------------- |
+| brainstorming     | Keep    | Strong approach generation, unique approval gate pattern                   |
+| some-old-skill    | Retire  | Tool referenced (X) deprecated in 2025; skill-generator covers same ground |
+| backend-architect | Keep    | Strong API design patterns, no redundancy                                  |
 ```
 
 ### Phase 4 — Action List
@@ -218,13 +218,13 @@ The `reason` field must be **self-contained and decision-enabling**:
 
 ## Failure Modes
 
-| Failure | Cause | Recovery |
-|---|---|---|
-| Stocktake counts skills but misses skills in subdirectories | Script only scans the top-level `.agent/skills/` directory without recursion | Use `find .agent/skills -name SKILL.md` (or equivalent recursive glob) to count all files including subdirectory skills |
-| Scoring rubric applied inconsistently across runs, scores not comparable | Reviewer applies different standards on different days; rubric criteria are vague | Anchor each rubric dimension with a concrete pass/fail example; re-score 3 randomly selected skills from the previous run to calibrate consistency |
-| Weak skills identified but no remediation plan created | Stocktake produces verdicts but Phase 4 Action List is skipped under time pressure | For every non-Keep verdict, a concrete action item must be created before the stocktake is considered complete |
-| Stocktake run on stale file cache, missing recently added skills | IDE or agent has a cached file listing; new SKILL.md files added after cache was built are invisible | Force a fresh directory listing with `git status` or `ls -R` before Phase 1 Inventory; count files before and after to detect mismatches |
-| Score inflation from lenient rubric, masking actual weaknesses | Reviewer marks every skill "Keep" to avoid the work of improving them | Apply the Keep standard strictly: a skill scores Keep only if trigger phrases are unambiguous, examples are runnable, and content is current |
+| Failure                                                                  | Cause                                                                                                | Recovery                                                                                                                                           |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stocktake counts skills but misses skills in subdirectories              | Script only scans the top-level `.agent/skills/` directory without recursion                         | Use `find .agent/skills -name SKILL.md` (or equivalent recursive glob) to count all files including subdirectory skills                            |
+| Scoring rubric applied inconsistently across runs, scores not comparable | Reviewer applies different standards on different days; rubric criteria are vague                    | Anchor each rubric dimension with a concrete pass/fail example; re-score 3 randomly selected skills from the previous run to calibrate consistency |
+| Weak skills identified but no remediation plan created                   | Stocktake produces verdicts but Phase 4 Action List is skipped under time pressure                   | For every non-Keep verdict, a concrete action item must be created before the stocktake is considered complete                                     |
+| Stocktake run on stale file cache, missing recently added skills         | IDE or agent has a cached file listing; new SKILL.md files added after cache was built are invisible | Force a fresh directory listing with `git status` or `ls -R` before Phase 1 Inventory; count files before and after to detect mismatches           |
+| Score inflation from lenient rubric, masking actual weaknesses           | Reviewer marks every skill "Keep" to avoid the work of improving them                                | Apply the Keep standard strictly: a skill scores Keep only if trigger phrases are unambiguous, examples are runnable, and content is current       |
 
 ## Self-Verification Checklist
 

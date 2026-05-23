@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] — 2026-05-23
+
+### 🏗️ Full Lifecycle Coverage
+
+- **5 new agent personas**: `incident-commander` (production incidents), `release-manager` (versioning/rollouts), `accessibility-auditor` (WCAG compliance), `adversarial-tester` (chaos/fuzz testing), `data-privacy-officer` (GDPR/CCPA/SOC2)
+- **2 new workflows**: `incident-response` (full incident lifecycle), `release` (version→changelog→rollout→monitor)
+- **5 new workflow chains**: Incident Response, Release, Accessibility Audit, Adversarial Test, Compliance Review — all registered in the mega-mind routing matrix
+- Agent personas expanded from 6 → 11, workflows from 7 → 9
+
+### 🔧 Structural Fixes (14 items)
+
+| #   | Issue                             | Resolution                                                             |
+| --- | --------------------------------- | ---------------------------------------------------------------------- |
+| 1   | `task.md` single-point-of-failure | Backup script + stub + workflow reference                              |
+| 2   | Routing matrix drift              | Validator enforces coverage; all 53 skills + 11 agents covered         |
+| 3   | Skill count inconsistency         | Reconciled to 53 across AGENTS.md, disk, routing matrix                |
+| 4   | Cross-skill vocabulary drift      | 18 headings normalized; verification phases unified                    |
+| 5   | Z-Pattern rigidity                | 7 decomposition patterns added (API-First, ML, IaC, etc.)              |
+| 6   | Grep-fragile checklists           | 115 patterns fixed across 34 skills (`-E` flag, POSIX-compliant)       |
+| 7   | Agent/skill boundary blurred      | Routing note + code-reviewer/qa-engineer added to matrix               |
+| 8   | No formal handoff interface       | Handoff block template + 3 key skills updated                          |
+| 9   | Instinct decay mechanism          | `last_validated`/`review_by` fields + decay table + conflict detection |
+| 10  | `search-first` after routing      | Moved to step 2 in Request Analysis                                    |
+| 11  | RTK hard dependency               | Fallback protocol with detection + bare commands                       |
+| 12  | No skill regression tests         | Validator script + chain integrity eval                                |
+| 13  | Flat verification depth           | Tiered verification (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep)   |
+| 14  | Claude-specific idioms            | Runtime-agnostic terms + compatibility section in multi-execute        |
+
+### 🌐 Universal Compatibility
+
+- Unified `compatibility:` frontmatter across all 53 skills, 11 agents, and 9 workflows to:
+  `Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)`
+- Updated AGENTS.md, README.md, USAGE.md, and pyproject.toml descriptions to reflect universal compatibility
+
+### 📦 Distribution
+
+- Synced all `.agent/` changes to `src/mega_mind/assets/` for correct package distribution
+- Created `scripts/validate-skill-system.py` — automated validator (skill count, routing, headings, required sections, grep portability)
+- Created `scripts/backup-task-state.sh` — timestamped task.md backups
+- Created `scripts/sync-assets.py` — one-command sync from `.agent/` to `src/mega_mind/assets/`
+- Fixed Unicode encoding error in CLI (`✅`/`❌` → `[OK]`/`[ERROR]`) for Windows console compatibility
+
 ## [0.7.0] — 2026-04-30
 
 ### 🔧 Orchestration Fixes
