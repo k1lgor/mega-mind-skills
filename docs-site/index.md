@@ -3,33 +3,13 @@
 A unified skill system for any AI coding assistant — covering the full software
 development lifecycle from planning through production operations and compliance.
 
-<div class="grid cards" markdown>
+- **53 Skills** - Core workflow, domain expert, meta/learning, and token optimization skills — each with triggers, anti-patterns, and self-verification.
 
--   :material-brain:{ .lg .middle } **53 Skills**
+- **11 Agent Personas** - Deep-dive personas for architecture, QA, security, accessibility, adversarial testing, privacy, incidents, and releases.
 
-    ---
+- **9 Workflow Chains** - Executable sequences covering the full lifecycle: brainstorm → plan → build → verify → ship → release → operate → learn.
 
-    Core workflow, domain expert, meta/learning, and token optimization skills — each with triggers, anti-patterns, and self-verification.
-
--   :material-account-group:{ .lg .middle } **11 Agent Personas**
-
-    ---
-
-    Deep-dive personas for architecture, QA, security, accessibility, adversarial testing, privacy, incidents, and releases.
-
--   :material-graph:{ .lg .middle } **9 Workflow Chains**
-
-    ---
-
-    Executable sequences covering the full lifecycle: brainstorm &rarr; plan &rarr; build &rarr; verify &rarr; ship &rarr; release &rarr; operate &rarr; learn.
-
--   :material-cloud:{ .lg .middle } **6 Platforms**
-
-    ---
-
-    Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
-
-</div>
+- **Multi Platforms** - Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
 
 ## Quick Start
 
