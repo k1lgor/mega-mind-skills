@@ -1,7 +1,12 @@
 ---
 name: search-first
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Research-before-coding discipline. Always search for existing solutions before writing code. Use when adding any new dependency, integration, utility, or feature that likely has prior art.
+description: |
+  Research-before-coding discipline that always searches for existing solutions before writing code.
+  Use when adding any new dependency, integration, utility, or feature that likely has prior art.
+  Covers parallel search across package registries, MCP servers, GitHub, and web; candidate scoring rubric; and decision matrix (Adopt/Extend/Compose/Build).
+category: meta-learning
 triggers:
   - "add functionality"
   - "implement a utility"
@@ -10,6 +15,12 @@ triggers:
   - "find a library"
   - "should I use"
   - "is there a package"
+  - "prior art"
+  - "dependency decision"
+dependencies:
+  - mega-mind: recommended
+  - brainstorming: recommended
+  - tech-lead: recommended
 ---
 
 # Search-First Skill
@@ -17,6 +28,12 @@ triggers:
 ## Identity
 
 You are a research-first engineering specialist. Your core belief: **the best code is code you don't have to write**. Before a single line of implementation code is written, you exhaustively search for existing solutions.
+
+**Your core responsibility:** Prevent wasted implementation effort by finding and evaluating existing solutions before writing custom code.
+
+**Your operating principle:** The best code is code you don't have to write; exhaustively search before implementing.
+
+**Your quality bar:** Every feature implementation has a documented search-first research summary showing candidates evaluated, scoring rubric applied, and explicit decision (Adopt/Extend/Compose/Build) — no exceptions.
 
 ## When to Use
 
@@ -33,221 +50,200 @@ You are a research-first engineering specialist. Your core belief: **the best co
 - For tiny helper functions that are 3-5 lines — the cost of installing and maintaining a dependency exceeds writing it inline
 - When the task is to remove or replace an existing library — research is already done; the decision is made
 
+## Core Principles
+
+1. **Time-box your search.** 5-10 minutes max before deciding. Perfection is the enemy of done.
+2. **Parallel search, not sequential.** Run package registry, MCP, GitHub, and web searches simultaneously — don't wait for one to finish before starting another.
+3. **Score candidates, don't pick favorites.** Apply the scoring rubric (functionality 40%, maintenance 20%, community 15%, docs 15%, license 5%, bundle 5%) objectively.
+4. **Check security before adopting.** Run `npm audit` or equivalent immediately after install. A CVE found post-decision is costly.
+5. **Document the decision.** Record the research summary before writing any implementation code.
+
+---
+
 ## The Workflow
 
-```
-┌─────────────────────────────────────────────┐
-│  1. NEED ANALYSIS                           │
-│     Define what functionality is needed     │
-│     Identify language/framework constraints │
-├─────────────────────────────────────────────┤
-│  2. PARALLEL SEARCH                         │
-│     ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│     │  npm /   │ │  MCP /   │ │  GitHub /│  │
-│     │  PyPI    │ │  Skills  │ │  Web     │  │
-│     └──────────┘ └──────────┘ └──────────┘  │
-├─────────────────────────────────────────────┤
-│  3. EVALUATE CANDIDATES                     │
-│     Score: functionality, maintenance,      │
-│     community, docs, license, bundle size   │
-├─────────────────────────────────────────────┤
-│  4. DECIDE                                  │
-│     ┌─────────┐  ┌──────────┐  ┌─────────┐  │
-│     │  Adopt  │  │  Extend  │  │  Build  │  │
-│     │ as-is   │  │  /Wrap   │  │  Custom │  │
-│     └─────────┘  └──────────┘  └─────────┘  │
-├─────────────────────────────────────────────┤
-│  5. IMPLEMENT                               │
-│     Install package / Configure MCP /       │
-│     Write minimal custom code               │
-└─────────────────────────────────────────────┘
-```
+### Step 1: Define the Need Precisely
 
-## Step 1: Define the Need Precisely
-
-Before searching, write a one-sentence need statement:
-
-```
-NEED: "A [language] library that can [specific capability]
-      with [constraint 1] and [constraint 2]"
-```
-
-Example:
-
+Write a one-sentence need statement:
 ```
 NEED: "A TypeScript library that validates JSON schemas at runtime
       with good TypeScript inference and minimal bundle size"
 ```
 
-## Step 2: Parallel Search Strategy
+### Step 2: Parallel Search Strategy
 
 Run these searches simultaneously:
+- **Package registries:** npm, PyPI, crates.io
+- **Existing Skills/MCP:** Check if an MCP server or existing skill already provides this
+- **Web/GitHub:** Search for libraries, awesome lists, blog posts (filter last 12 months)
 
-### Search Category A: Package Registries
+### Step 3: Evaluate Candidates
 
-```bash
-# Node.js
-npm search [keyword] --json | head -20
-npx package-json-to-readme [package-name]
+| Criterion | Weight | Signal |
+|---|---|---|
+| Functionality match | 40% | Does it cover 80%+ of the need? |
+| Maintenance health | 20% | Recent commits, open issues, response time |
+| Community size | 15% | Stars, weekly downloads |
+| Documentation | 15% | README quality, examples, API docs |
+| License | 5% | MIT/Apache preferred |
+| Bundle/dep size | 5% | Critical for frontend |
 
-# Python
-pip search [keyword]
-pypi search [keyword]
+### Step 4: Decision Matrix
 
-# Check weekly downloads (popularity signal)
-npm info [package] downloads
-```
+| Signal | Action |
+|---|---|
+| Exact match, well-maintained, MIT/Apache | **Adopt** |
+| Partial match (60-80%), good foundation | **Extend** |
+| Multiple weak matches | **Compose** |
+| Nothing suitable or security concerns | **Build** |
+| MCP server exists | **MCP** |
 
-### Search Category B: Existing Skills/MCP
-
-- Check if an MCP server already provides this capability
-- Check if an existing skill in this system covers it
-- Check `AGENTS.md` / `CLAUDE.md` / `copilot-instructions.md` / project context for established patterns
-
-### Search Category C: Web Research
-
-- Search GitHub for "[language] [keyword] library"
-- Check awesome-[language] lists
-- Search recent blog posts (filter last 12 months)
-
-## Step 3: Evaluate Candidates
-
-Score each candidate on this rubric:
-
-| Criterion           | Weight | Signal                                     |
-| ------------------- | ------ | ------------------------------------------ |
-| Functionality match | 40%    | Does it cover 80%+ of the need?            |
-| Maintenance health  | 20%    | Recent commits, open issues, response time |
-| Community size      | 15%    | Stars, npm weekly downloads, PyPI monthly  |
-| Documentation       | 15%    | README quality, examples, API docs         |
-| License             | 5%     | MIT/Apache preferred                       |
-| Bundle/dep size     | 5%     | Especially critical for frontend           |
-
-## Step 4: Decision Matrix
-
-| Signal                                   | Action                                         |
-| ---------------------------------------- | ---------------------------------------------- |
-| Exact match, well-maintained, MIT/Apache | **Adopt** — install and use directly           |
-| Partial match (60-80%), good foundation  | **Extend** — install + write thin wrapper      |
-| Multiple weak matches                    | **Compose** — combine 2-3 small packages       |
-| Nothing suitable OR security concerns    | **Build** — write custom, informed by research |
-| MCP server already exists for this       | **MCP** — configure and use existing server    |
-
-## Step 5: Document Your Research
-
-Before proceeding to implementation, output a research summary:
+### Step 5: Document Research
 
 ```markdown
 ## Search-First Research: [Feature Name]
 
 ### Need
-
 [One-sentence need statement]
 
 ### Candidates Evaluated
-
 | Package | Stars | Downloads/wk | Match% | Decision |
-| ------- | ----- | ------------ | ------ | -------- |
-| lib-a   | 12k   | 2M           | 95%    | ✅ Adopt |
-| lib-b   | 3k    | 500k         | 60%    | ❌ Skip  |
-| lib-c   | 800   | 50k          | 40%    | ❌ Skip  |
+|---|---|---|---|---|
+| lib-a | 12k | 2M | 95% | Adopt |
+| lib-b | 3k | 500k | 60% | Skip |
 
 ### Decision
-
-**Action**: Adopt `lib-a`
-**Rationale**: [Why this choice]
-**Install**: `bun install (or npm install) lib-a`
-**Caveats**: [Any known issues]
+**Action**: Adopt lib-a
+**Rationale**: [Why]
+**Install**: `npm install lib-a`
 ```
 
-## Anti-Patterns to Avoid
+## Blocking Violations (NEVER)
 
-- ❌ **Writing from scratch** without checking registry first, because you duplicate existing battle-tested logic and inherit all the bugs the library already solved, while adding maintenance burden with no differentiating value
-- ❌ **Ignoring MCP** — always check if an MCP server provides the capability, because reinventing an MCP-provided tool means writing authentication, error handling, and pagination that the server already implements correctly
-- ❌ **Over-customizing** — wrapping a library so heavily it loses its benefits, because deep wrapper layers make upgrades impossible without rewriting the wrapper, locking you to an old version when security patches ship
-- ❌ **Dependency bloat** — installing a 500KB package for a 10-line utility, because every added dependency increases bundle size, attack surface, and the probability of a supply-chain compromise affecting your production build
-- ❌ **Stale knowledge** — using a library you "remember" without checking if it's still maintained, because unmaintained packages accumulate unpatched CVEs that scanners will flag and block your CI pipeline
-- ❌ **First result bias** — installing the first npm result without comparing alternatives, because the top search result is often an older package with fewer features and more open security advisories than a newer maintained alternative
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Writing from scratch without checking registry | Duplicates battle-tested logic; inherits all bugs the library solved | Install library, delete custom code |
+| Installing first npm result without comparing alternatives | Often older package with fewer features and more CVEs than newer alternative | Always evaluate top 3 candidates against rubric |
+| Ignoring MCP servers | Reinvents auth/error handling/pagination that server already implements | Check available MCP servers before implementing |
+| Skipping security audit after install | CVE invisible until npm audit | Run `npm audit --audit-level=high` immediately after install |
 
-## Integration Points
+## Verification
 
-### With `brainstorming` skill
+### Self-Verification Checklist
 
-Run search-first **before** brainstorming approaches — knowing what's available changes which approaches are viable.
+- [ ] Chosen library has a commit in the last 12 months
+- [ ] No open CVEs: `npm audit --audit-level=high` exits 0
+- [ ] Top 3 candidates evaluated against scoring rubric
+- [ ] Research summary documented before implementation
+- [ ] Decision explicitly recorded (Adopt/Extend/Compose/Build)
+- [ ] MCP servers checked for existing capability
 
-### With `mega-mind` orchestrator
+### Verification Commands
 
-The orchestrator should invoke `search-first` automatically at the start of any "implement feature" task.
+```bash
+# Check library freshness
+# (manual: check GitHub commit history)
 
-### With `tech-lead` skill
+# Security audit
+npm audit --audit-level=high
 
-Tech-lead uses search-first to populate the architecture with proven, battle-tested components instead of custom solutions.
+# Check license compatibility
+grep -rn "MIT\|Apache-2.0\|BSD" package.json
 
-## Search Shortcuts by Domain
-
-### AI / LLM Integration
-
-```
-npm: @anthropic-ai/sdk, openai, @langchain, llama-index
-MCP: Check mcp-servers.json for available servers
-```
-
-### Database / Data
-
-```
-npm: drizzle-orm, prisma, kysely, pg, mongoose
-Python: sqlalchemy, alembic, tortoise-orm
+# Verify decision documentation
+grep -c "Search-First Research\|search-first" docs/
 ```
 
-### HTTP / API
+### Quality Gates
 
-```
-npm: axios, ky, got, ofetch
-Python: httpx, aiohttp, requests
-```
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Search Completeness | >= 3 candidates evaluated | Search harder or document why only 1 exists |
+| Security | npm audit exits 0 with no HIGH/CRITICAL | Find alternative or document accepted risk |
+| Documentation | Research summary exists before implementation | Write summary before implementing |
+| Freshness | Library has commit in last 12 months | Find maintained alternative or fork |
 
-### Auth
+## Examples
 
-```
-npm: next-auth, lucia, better-auth, clerk
-Check: Does your framework (Next.js, SvelteKit) have built-in auth?
-```
+### Example 1: Schema Validation Library
 
-### Testing
+**User request:** "We need runtime JSON schema validation in our TypeScript API."
 
-```
-npm: vitest, jest, playwright, @testing-library
-Python: pytest, hypothesis, locust
-```
+**Skill execution:**
+1. NEED: "TypeScript library for JSON schema validation with good inference and small bundle"
+2. Search npm: found zod (15M/wk), yup (5M/wk), joi (3M/wk)
+3. Score: zod 95% (great inference, small bundle, active maintenance), yup 60% (inference issues), joi 50% (no TypeScript native)
+4. Decision: Adopt zod
+5. Document: research summary written
+
+**Result:** Right library chosen with documented rationale. No custom validation code written.
+
+### Example 2: Edge Case - Security Concern
+
+**User request:** "Use library X for image processing."
+
+**Skill execution:**
+1. Research: library X has 2M weekly downloads
+2. npm audit: CRITICAL CVE (CVE-2024-XXXX)
+3. Evaluate alternatives: library Y has same functionality, no CVEs, same downloads
+4. Decision: Adopt library Y instead of X
+5. Document: CVE in X was the reason for choosing Y
+
+**Result:** CVE avoided by comparing alternatives before adopting.
+
+## Anti-Patterns
+
+- Never write from scratch without checking registry first, because you duplicate existing battle-tested logic and inherit all the bugs the library already solved, while adding maintenance burden with no differentiating value.
+- Never ignore MCP — always check if an MCP server provides the capability, because reinventing an MCP-provided tool means writing authentication, error handling, and pagination that the server already implements correctly.
+- Never install the first npm result without comparing alternatives, because the top search result is often an older package with fewer features and more open security advisories than a newer maintained alternative.
+- Never skip running `npm audit` immediately after install, because a CVE hidden in a transitive dependency will only be detected later when CI blocks the build.
 
 ## Failure Modes
 
-| Failure                                                                        | Cause                                                                             | Recovery                                                                                                                                  |
-| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Library found but last commit is 3+ years ago, effectively unmaintained        | Search ranked by stars not by recency; maintainer abandoned the project           | Filter candidates to only those with a commit in the last 12 months; look for active forks or successors                                  |
-| Multiple options with similar star counts, no clear winner, analysis paralysis | Candidates evaluated on stars alone without applying the scoring rubric           | Apply the full rubric (functionality 40%, maintenance 20%, community 15%, docs 15%, license 5%, bundle 5%); pick highest total score      |
-| Library has known CVE not yet patched, security team blocks it                 | Security scan skipped; CVE only visible after `npm audit` or Snyk check           | Run `npm audit` / `pip-audit` immediately after install; if CVE found, evaluate a patched fork or alternative                             |
-| License is AGPL, incompatible with proprietary product                         | License column skipped during evaluation; AGPL copyleft not flagged               | Check the LICENSE file before any integration; AGPL requires the consuming product to also be open-source — choose MIT/Apache alternative |
-| Search returns outdated Stack Overflow answer referencing deprecated API       | Web search found a high-voted answer from 5+ years ago; library has since changed | Filter web search to last 12 months; cross-reference the Stack Overflow answer with the library's current official docs                   |
+| Failure | Cause | Recovery |
+|---|---|---|
+| Library unmaintained (last commit 3+ years ago) | Search ranked by stars not by recency | Filter to candidates with commit in last 12 months |
+| Multiple options, no clear winner, analysis paralysis | Evaluated on stars alone without rubric | Apply full rubric; pick highest total score |
+| Library has known CVE not yet patched | Security scan skipped | Run `npm audit` immediately; find alternative |
+| License is AGPL, incompatible with proprietary product | License column skipped during evaluation | Check LICENSE before integration; choose MIT/Apache |
 
-## Tips
+## Performance & Cost
 
-- **Time-box your search**: 5-10 minutes max before deciding
-- **Check the issue tracker**: A starred repo with 500 open issues is a red flag
-- **Last commit date matters**: No commits in 2+ years = maintenance risk
-- **Bundle size check**: Use bundlephobia.com for frontend packages
-- **Security scan**: `rtk bun pm untrusted (or rtk npm audit)` after install, check Snyk for known CVEs
+### Model Selection
 
-## Self-Verification Checklist
+| Task | Recommended Model | Cost per search |
+|---|---|---|
+| Need definition | Haiku | $0.01-$0.02 |
+| Parallel search orchestration | None (deterministic) | $0.00 |
+| Candidate scoring (5 candidates) | Haiku | $0.02-$0.05 |
+| Decision synthesis | Sonnet | $0.05-$0.10 |
+| Security audit review | Haiku | $0.01-$0.03 |
 
-- [ ] Chosen library has a commit in the last 12 months — verified on GitHub repository's commit history
-- [ ] No open CVEs: `npm audit --audit-level=high` or `pip-audit` exits 0, or all issues documented with justification
-      grep -cE "MIT|Apache-2.0|BSD|ISC"
-      grep -cE "search-first|npm search|pypi"
-- [ ] Top 3 candidates evaluated against scoring rubric (weekly downloads, last commit, license, bundle size)
-      grep -cE "Search-First Research|search-first"
-      grep -cE "MCP|mcp server"
+### Token Budget
 
-## Success Criteria
+- **Research summary:** ~500-1000 tokens per feature
+- **Candidate evaluation (5 libs):** ~1-2KB input, ~300-600 tokens output
+- **Full search-first cycle:** ~2-4KB total
+- **Expected context usage:** 1-3KB per research session
+- **When to context-optimize:** When evaluating 10+ candidates or searching across 3+ package registries
 
-This skill is complete when: 1) the search has confirmed whether a suitable library exists, 2) the top candidates are scored against the rubric and the choice is documented, and 3) the decision (use library X, or build custom because Y) is recorded before any implementation begins.
+## References
+
+### Internal Dependencies
+- `mega-mind` — Invokes search-first automatically at start of any "implement feature" task
+- `brainstorming` — Runs after search-first (knowing what's available changes which approaches are viable)
+- `tech-lead` — Uses search-first results for architecture decisions
+
+### External Standards
+- [bundlephobia.com](https://bundlephobia.com) — Bundle size analysis for npm packages
+
+### Related Skills
+- `brainstorming` — Follows search-first in standard development chain
+- `tech-lead` — Consumes search-first results for architecture decisions
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
+---

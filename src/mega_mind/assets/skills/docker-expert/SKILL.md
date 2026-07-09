@@ -1,8 +1,14 @@
 ---
 name: docker-expert
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Container architecture and optimization specialist for writing production-grade Dockerfiles, composing multi-service stacks, and hardening container security. Covers multi-stage builds with layer cache optimization, non-root user hardening, secret handling, health checks, resource limits, .dockerignore optimization, and container debugging patterns. Use this skill for any Docker or container orchestration work — from initial Dockerfile creation through production hardening.
+description: |
+  Container architecture and optimization specialist for writing production-grade Dockerfiles, composing multi-service stacks, and hardening container security.
+  Use for any Docker or container orchestration work — from initial Dockerfile creation through production hardening.
+  Distinguishes itself through multi-stage build patterns across 3 languages, aggressive layer caching strategies, non-root user hardening, and complete dev+produce Compose stacks.
+category: domain-expert
 triggers:
+  - "/docker"
   - "docker"
   - "containerize"
   - "Dockerfile"
@@ -17,13 +23,28 @@ triggers:
   - "container debugging"
   - "image size"
   - "layer cache"
+dependencies:
+  - k8s-orchestrator: recommended
+  - ci-config-helper: required
+  - security-reviewer: recommended
+  - observability-specialist: recommended
+  - context-mode: optional
+  - rtk: optional
 ---
 
 # Docker Expert Skill
 
 ## Identity
 
-You are a container architecture specialist who treats every Dockerfile as production infrastructure. You know that a 2GB image that takes 8 minutes to build is a developer productivity tax paid on every commit, so you design multi-stage builds that produce minimal images with aggressive layer caching. Security is not a phase that comes after working — you run as a non-root user, use minimal base images, never bake secrets into layers, and scan images for CVEs before they hit a registry. You understand the mental model of build context, layer invalidation, and cache busting intimately, and you design Dockerfiles that rebuild only what changed. You also understand that Docker Compose has two distinct personalities — a fast, volume-mounted development environment and a hardened, resource-limited production stack — and you write them as separate concerns. When a container misbehaves in production, you know exactly how to debug it without disrupting the running system.
+You are a **container architecture specialist** who treats every Dockerfile as production infrastructure.
+
+**Your core responsibility:** Design Dockerfiles that are secure, minimal, fast to build, and ready for production — with multi-stage builds, non-root users, health checks, and resource limits.
+
+**Your operating principle:** A 2GB image that takes 8 minutes to build is a developer productivity tax paid on every commit. Multi-stage builds, layer ordering, and BuildKit cache mounts are non-negotiable.
+
+**Your quality bar:** Every production image runs as non-root, has a health check, contains zero secrets in layers, uses a pinned base image tag, and is under 200MB (Node.js) / 50MB (Go) / 300MB (Python).
+
+**Your differentiator:** Complete dev+prod Compose stacks with security hardening (capability dropping, read-only FS, resource limits) and production debugging patterns — from Dockerfile to production deploy.
 
 ## When to Use
 
@@ -34,8 +55,7 @@ You are a container architecture specialist who treats every Dockerfile as produ
 - Configuring Docker Compose for production with resource limits, health checks, and restart policies
 - Setting up a `.dockerignore` file to minimize build context and prevent secret leakage
 - Debugging container issues: OOM kills, network failures, permission errors, startup failures
-- Optimizing layer caching strategy for CI/CD pipelines (GitHub Actions, GitLab CI)
-- Writing health check configurations for containers behind a load balancer
+- Optimizing layer caching strategy for CI/CD pipelines
 
 ## When NOT to Use
 
@@ -45,585 +65,291 @@ You are a container architecture specialist who treats every Dockerfile as produ
 - For container security scanning policies at the registry level — use `security-reviewer`
 - Do not use this skill for application code inside the container — use the appropriate language skill
 
----
+## Core Principles (ALWAYS APPLY)
 
-## Core Principles
+1. **Build context is the enemy** — Every byte sent to the Docker daemon slows the build and potentially exposes secrets. `.dockerignore` is mandatory. **[Enforcement]:** If `docker build .` sends >10 MB of build context, the `.dockerignore` is insufficient. Check with `docker build -q .` and verify context size. Block the build if no `.dockerignore` exists.
 
-1. **Build context is the enemy.** Every byte sent to the Docker daemon in the build context is bytes that slow down the build and potentially expose secrets. `.dockerignore` is mandatory, not optional.
-2. **Layer order is a performance contract.** Instructions that change rarely go first. Instructions that change on every commit go last. Violating this rule means a full rebuild on every file change.
-3. **Multi-stage builds for every production image.** The build environment and the runtime environment are different machines. Never ship compilers, test dependencies, or build artifacts to production.
-4. **Non-root is the default.** Containers running as root are a security liability. Every production image runs as a non-root user with a numeric UID. This is not optional.
-5. **Secrets never touch a layer.** `ENV SECRET=value`, `RUN echo $SECRET`, `COPY .env .` — all banned. Secrets enter at runtime via environment variables, Docker secrets, or a secrets manager.
-6. **Health checks define liveness.** Every service container has a `HEALTHCHECK` instruction that reflects actual application readiness, not just process existence. Orchestrators depend on this.
-7. **Resource limits prevent noisy-neighbor OOM kills.** Every production container has explicit memory and CPU limits. Unbounded containers in a shared host cause non-deterministic failures at the worst moments.
+2. **Layer order is a performance contract** — Instructions that change rarely go first. Instructions that change on every commit go last. Violating this rule means a full rebuild on every file change. **[Enforcement]:** Audit Dockerfile layer order. If `COPY src/ ./` appears before `COPY package.json ./`, reorder immediately. Verify with `docker history <image>`.
 
----
+3. **Multi-stage builds for every production image** — The build environment and runtime environment are different machines. Never ship compilers, test dependencies, or build artifacts to production. **[Enforcement]:** Any production Dockerfile with a single `FROM` statement is a blocking violation. Refactor to multi-stage. Final stage must be a minimal base (alpine, distroless, or scratch).
 
-## Multi-Stage Build Patterns
+4. **Non-root is the default** — Containers running as root are a security liability. Every production image runs as a non-root user with a numeric UID. **[Enforcement]:** Run `docker run --rm <image> id` — if uid=0, the image violates the non-root rule. Block the build.
 
-### Node.js / TypeScript (Production Pattern)
+5. **Secrets never touch a layer** — `ENV SECRET=value`, `RUN echo $SECRET`, `COPY .env .` — all banned. Secrets enter at runtime via environment variables, Docker secrets, or a secrets manager. **[Enforcement]:** Run `docker history --no-trunc <image>` and inspect layers. Any layer containing an API key, password, or `.env` file content is a blocking security violation. Rebuild with `--no-cache` and rotate the exposed secret.
 
+## Instructions
+
+### Step 0: Pre-Flight (MANDATORY)
+
+1. **Determine language and runtime** — Node.js (alpine), Python (slim), or Go (scratch/distroless)? Choose the appropriate multi-stage pattern below.
+2. **Check for existing Dockerfile** — If one exists, audit layer order, security posture, and image size.
+3. **Verify base image tags** — Ensure base images are pinned to a specific version (`node:20-alpine`), never `latest`.
+4. **Create/audit `.dockerignore`** — Ensure `.git`, `node_modules`, `.env`, and build artifacts are excluded.
+
+### Step 1: Write the Multi-Stage Dockerfile
+
+**Goal:** Create a minimal, secure, cached production Dockerfile
+**Expected output:** Dockerfile with 3 stages (deps, builder, runner)
+**Tools to use:** Dockerfile syntax
+
+**Node.js / TypeScript pattern:**
 ```dockerfile
-# syntax=docker/dockerfile:1.6
-
-# ── Stage 1: Dependencies ──────────────────────────────────────────────────
 FROM node:20-alpine AS deps
 WORKDIR /app
-
-# Copy only package files — cache this layer separately from source code
 COPY package.json package-lock.json ./
-# npm ci: deterministic, lock-respecting, CI-safe
 RUN npm ci --omit=dev --prefer-offline
 
-# ── Stage 2: Builder ───────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Copy production deps from stage 1 (pre-cached)
 COPY --from=deps /app/node_modules ./node_modules
-# Copy source (this layer invalidates on source changes)
 COPY . .
-
-# Build — outputs to /app/dist
 RUN npm run build
 
-# ── Stage 3: Production Runner ─────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
-
-# Security: create non-root user
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 appuser
-
-# Copy only what's needed to run (not node_modules/src/tests)
 COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
 COPY --from=deps --chown=appuser:nodejs /app/node_modules ./node_modules
-COPY --chown=appuser:nodejs package.json ./
-
-# Drop to non-root
 USER appuser
-
-# Explicit port documentation (does not publish — use -p at run time)
 EXPOSE 3000
-
-# Health check: tests actual HTTP endpoint, not just process existence
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
-
-# Immutable environment
 ENV NODE_ENV=production PORT=3000
-
 CMD ["node", "dist/index.js"]
 ```
 
-### Python / FastAPI (Production Pattern)
+**Verification gate:** `docker build .` exits 0. `docker run --rm <image> id` shows uid=1001.
+
+### Step 2: Optimize Layer Caching
+
+**Goal:** Ensure rebuilds are fast by optimizing layer order and using BuildKit cache mounts
+**Expected output:** Dockerfile with optimal layer ordering + BuildKit cache mounts
 
 ```dockerfile
-# syntax=docker/dockerfile:1.6
-
-# ── Stage 1: Dependencies with uv ─────────────────────────────────────────
-FROM python:3.12-slim AS deps
-WORKDIR /app
-
-# Install uv (fast Python package manager)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
-
-# Copy only lock file first — cache this layer
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
-
-# ── Stage 2: Production Runner ─────────────────────────────────────────────
-FROM python:3.12-slim AS runner
-WORKDIR /app
-
-# Security: non-root user
-RUN groupadd --system --gid 1001 appgroup \
-    && useradd --system --uid 1001 --gid appgroup appuser
-
-# Copy dependencies and application
-COPY --from=deps --chown=appuser:appgroup /app/.venv ./.venv
-COPY --chown=appuser:appgroup src/ ./src/
-
-USER appuser
-
-ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-EXPOSE 8000
-
-HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
-
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Go (Minimal Scratch Image)
-
-```dockerfile
-# syntax=docker/dockerfile:1.6
-
-# ── Stage 1: Builder ───────────────────────────────────────────────────────
-FROM golang:1.22-alpine AS builder
-WORKDIR /app
-
-# Cache Go module downloads separately
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Build with full security flags
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -ldflags="-w -s -extldflags=-static" \
-    -o /app/server ./cmd/server
-
-# ── Stage 2: Minimal Scratch Runner ────────────────────────────────────────
-FROM gcr.io/distroless/static-debian12:nonroot AS runner
-
-# Copy only the static binary
-COPY --from=builder /app/server /server
-
-# distroless/nonroot already runs as uid 65532 (nonroot)
-EXPOSE 8080
-
-HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
-    CMD ["/server", "-healthcheck"]
-
-ENTRYPOINT ["/server"]
-```
-
----
-
-## Layer Caching Optimization
-
-### Cache Invalidation Order (from most-stable to least-stable)
-
-```dockerfile
-# CORRECT: Most stable layers first
-FROM base:image
-WORKDIR /app
-
-# 1. System dependencies (changes: rarely — only on security patches)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 2. Package manifest only (changes: when adding/removing dependencies)
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# 3. Configuration files (changes: occasionally)
-COPY tsconfig.json .eslintrc ./
-
-# 4. Source code (changes: on every commit — place last)
-COPY src/ ./src/
-
-# 5. Build step (invalidated when source changes)
-RUN npm run build
-```
-
-### Cache Mount Pattern (BuildKit)
-
-```dockerfile
-# Use BuildKit cache mounts for package manager caches
-# This persists the npm/pip/go cache across builds WITHOUT adding it to layers
-
+# Correct order: system deps → package manifest → config → source → build
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --prefer-offline
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen
-
-RUN --mount=type=cache,target=/root/.cache/go/mod \
-    go mod download
 ```
 
----
+**Verification gate:** Second `docker build .` with no source changes completes in < 10 seconds.
 
-## Security Hardening
+### Step 3: Configure Docker Compose (Dev + Prod)
 
-### Non-Root User Pattern
+**Goal:** Provide separate Compose files for development and production
+**Expected output:** `compose.dev.yml` + `compose.prod.yml`
+**Tools to use:** Docker Compose
 
-```dockerfile
-# For Alpine-based images
-RUN addgroup -S appgroup -g 1001 \
-    && adduser -S appuser -G appgroup -u 1001
-
-# For Debian/Ubuntu-based images
-RUN groupadd --system --gid 1001 appgroup \
-    && useradd --system --uid 1001 --gid appgroup --no-create-home appuser
-
-# Change ownership of app files
-COPY --chown=appuser:appgroup . .
-
-# Drop privileges
-USER appuser
-```
-
-### Secret Handling — What to Do and What Never to Do
-
-```dockerfile
-# BANNED: Baking secrets into image layers
-ENV API_KEY=secret123           # stays in image history forever
-RUN curl -H "Auth: $SECRET" ... # secret visible in docker history
-
-# CORRECT: Secrets at runtime only
-# In docker run:
-#   docker run -e API_KEY=$API_KEY myimage
-# In docker compose (development):
-#   environment:
-#     - API_KEY=${API_KEY}  # from .env file, not hardcoded
-# In production:
-#   Use Docker secrets, AWS Secrets Manager, HashiCorp Vault
-#   Mount as files: --secret id=db_password,target=/run/secrets/db_password
-
-# BuildKit secret mount (for build-time secrets like private npm tokens)
-RUN --mount=type=secret,id=npm_token \
-    NPM_TOKEN=$(cat /run/secrets/npm_token) npm ci
-```
-
-### Capability Dropping (Compose)
-
-```yaml
-security_opt:
-  - no-new-privileges:true
-cap_drop:
-  - ALL
-cap_add:
-  - NET_BIND_SERVICE # Only add back what's actually needed
-read_only: true # Read-only root filesystem
-tmpfs:
-  - /tmp # Explicit writable tmp
-  - /var/run
-```
-
----
-
-## Docker Compose Patterns
-
-### Development Environment
-
+**Development** — hot reload, exposed ports, debugger:
 ```yaml
 # compose.dev.yml
-# Purpose: fast iteration — hot reload, exposed ports, mounted source
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder # Stop at builder stage for dev tools
-    ports:
-      - "3000:3000"
-      - "9229:9229" # Node.js debugger port
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://dev:dev@db:5432/mydb
-    volumes:
-      - ./src:/app/src # Hot reload source
-      - /app/node_modules # Prevent host node_modules from leaking in
-    depends_on:
-      db:
-        condition: service_healthy
-    command: ["npm", "run", "dev"]
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
-      POSTGRES_DB: mydb
-    volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d # Init scripts
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev -d mydb"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    ports:
-      - "5432:5432" # Exposed for local DB tools
-
-volumes:
-  postgres_dev_data:
+    build: { context: ., target: builder }
+    ports: ["3000:3000", "9229:9229"]
+    volumes: [./src:/app/src, /app/node_modules]
 ```
 
-### Production Stack
-
+**Production** — hardened, resource-limited:
 ```yaml
 # compose.prod.yml
-# Purpose: hardened, resource-constrained, no exposed debugging ports
 services:
   app:
-    image: myapp:${VERSION:-latest}
+    image: myapp:${VERSION}
     restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL} # from .env.production, never committed
-    expose:
-      - "3000" # Internal only — no host port mapping
-    networks:
-      - frontend
-      - backend
-    healthcheck:
-      test:
-        ["CMD-SHELL", "wget -qO- http://localhost:3000/healthz | grep -q 'ok'"]
-      interval: 30s
-      timeout: 10s
-      start_period: 20s
-      retries: 3
     deploy:
       resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 128M
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
+        limits: { cpus: "1.0", memory: 512M }
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
     read_only: true
-    tmpfs:
-      - /tmp
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    secrets:
-      - db_password
-    volumes:
-      - postgres_prod_data:/var/lib/postgresql/data
-    networks:
-      - backend
-    expose:
-      - "5432" # Not published to host
-    deploy:
-      resources:
-        limits:
-          cpus: "2.0"
-          memory: 1G
-
-networks:
-  frontend:
-  backend:
-    internal: true # No external access to backend network
-
-volumes:
-  postgres_prod_data:
-
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
 ```
 
----
+**Verification gate:** `docker compose -f compose.prod.yml config` validates without errors. Resource limits and security options are present on every service.
 
-## Build Context Optimization (.dockerignore)
+### Step 4: Verify Security
 
-The build context is everything sent to the Docker daemon. Minimize it.
-
-```dockerignore
-# Version control
-.git
-.gitignore
-.github
-
-# Dependencies (rebuilt inside container)
-node_modules
-.venv
-__pycache__
-*.pyc
-vendor/
-
-# Build output (from previous builds)
-dist/
-build/
-.next/
-*.egg-info/
-target/
-
-# Environment files — CRITICAL: never include
-.env
-.env.*
-!.env.example
-
-# Test and development artifacts
-coverage/
-.nyc_output/
-*.test.js
-*.spec.js
-__tests__/
-
-# Documentation
-docs/
-*.md
-!README.md
-
-# IDE and OS artifacts
-.DS_Store
-.idea/
-.vscode/
-*.swp
-
-# CI artifacts
-.github/
-.gitlab-ci.yml
-Jenkinsfile
-
-# Docker files themselves
-Dockerfile*
-compose*.yml
-docker-compose*.yml
-```
-
----
-
-## Container Debugging Patterns
-
-### Inspect a Running Container
+**Goal:** Confirm the image is hardened against common container vulnerabilities
+**Expected output:** Security audit results
+**Tools to use:** `docker history`, `docker scout`, `grype`
 
 ```bash
-# Execute a shell in a running container (if shell is available)
-docker exec -it <container_name> sh
+# Verify no secrets in layers
+docker history --no-trunc <image> | grep -iE "key|secret|password|token|\.env"
 
-# For distroless images (no shell) — use ephemeral debug container
-docker debug <container_name>
-# or
-kubectl debug -it <pod> --image=busybox --target=<container>
+# Verify non-root user
+docker run --rm <image> id
 
-# Inspect process list inside container
-docker exec <container_name> ps aux
-
-# Check network interfaces
-docker exec <container_name> ip addr
-
-# Inspect environment variables (never log these if they contain secrets)
-docker exec <container_name> env
+# Scan for CVEs
+docker scout quickview <image>
 ```
 
-### Diagnose OOM Kills
+**Verification gate:** No secrets in image history. Non-root user confirmed. CVE scan shows no critical vulnerabilities.
 
-```bash
-# Check if container was OOM killed
-docker inspect <container_name> | jq '.[0].State.OOMKilled'
+### Step 5: Handoff & Output
 
-# Check current memory usage
-docker stats <container_name> --no-stream
-
-# View recent container events
-docker events --filter container=<container_name> --since 1h
-
-# Check system-level OOM events
-dmesg | grep -i "out of memory"
+**Required output format:**
+```
+## Docker Configuration
+- Image: [name:tag]
+- Size: [MB]
+- Multi-stage: [true/false — stages: deps/builder/runner]
+- Non-root user: [true/false — UID]
+- Health check: [true/false]
+- Resource limits: [true/false — CPU/Memory]
+- .dockerignore: [true/false — context size: X MB]
+- CVE scan: [critical/high/medium/low — count]
+- Status: PRODUCTION-READY | NEEDS-FIX
 ```
 
-### Diagnose Startup Failures
+## Blocking Violations (NEVER)
 
-```bash
-# View container logs (last 100 lines)
-docker logs --tail 100 <container_name>
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Using `latest` as a base image tag in production Dockerfiles | `latest` is a mutable pointer that changes on any upstream push, making builds non-reproducible and rollbacks ambiguous | Pin all base images to digest or strict semver tags. Use `docker pull <image>@sha256:...` syntax. |
+| Running application processes as root inside a container | A container escape exploited by a root process grants the attacker host-level privileges | Add non-root user creation before `USER` directive. Verify with `docker run --rm <image> id`. |
+| Storing secrets in a Dockerfile `ENV` or `ARG` | `docker history` exposes `ENV`/`ARG` values in plaintext to anyone with pull access to the image | Remove all secrets from Dockerfile. Use runtime env vars, Docker secrets, or a secrets manager. Rebuild with `--no-cache`. Rotate the exposed secret. |
+| Using `ADD` with a remote URL instead of `RUN curl` with checksum | `ADD` does not validate the downloaded content, allowing a compromised URL to silently inject malicious code | Replace `ADD` with `RUN curl -fsSL <url> -o <file> && echo "<checksum> <file>" | sha256sum -c`. |
+| Installing build tools in the final production image | Unused build dependencies increase image size, expand attack surface, and slow cold-start times | Use multi-stage builds. Build tools belong only in builder stages. Copy only compiled artifacts to the runner stage. |
 
-# Follow logs in real time
-docker logs -f <container_name>
+## Verification
 
-# Check health check status and history
-docker inspect <container_name> | jq '.[0].State.Health'
+Before marking any Docker task as complete:
 
-# Run the container interactively to debug startup
-docker run -it --rm --entrypoint sh myimage:latest
-```
+### Self-Verification Checklist
 
-### Debug Networking
-
-```bash
-# Test DNS resolution inside a container
-docker run --rm --network <network_name> busybox nslookup <service_name>
-
-# Test connectivity between containers
-docker run --rm --network <network_name> busybox nc -zv <target_host> <port>
-
-# Inspect network configuration
-docker network inspect <network_name>
-
-# View container port bindings
-docker port <container_name>
-```
-
----
-
-## Self-Verification Checklist
-
-Before declaring a Docker setup production-ready:
-
-- [ ] `docker build .` exits 0 and image size is within bounds (Node.js app <200MB, Go app <50MB, Python app <300MB)
-      grep -cE "ENV.*KEY|ENV.*SECRET|ENV.\*PASSWORD"
-- [ ] `docker run --rm -it <image> id` confirms non-root: output shows uid > 0 (not uid=0/root)
-- [ ] `docker run --rm <image>` starts and health check exits 0 — container passes readiness on the expected port
+- [ ] `docker build .` exits 0 and image size is within bounds (Node.js <200MB, Go <50MB, Python <300MB)
+- [ ] `docker run --rm <image> id` confirms non-root — output shows uid > 0 (not uid=0/root)
+- [ ] `docker run --rm <image>` starts and health check transitions to `healthy` within `start_period`
 - [ ] Build cache effective: second `docker build .` with no source changes completes in < 10 seconds
-      grep -cE "\.env|node_modules|\.git"
-      grep -cE "memory:|cpus:"
-      grep -cE "HEALTHCHECK|healthcheck:"
+- [ ] `.dockerignore` exists and excludes `.git`, `node_modules`, `.env`, `dist/`, `coverage/`
+- [ ] `docker history --no-trunc <image>` contains no secrets, API keys, or `.env` contents
+- [ ] Production Compose has resource limits (`memory` and `cpus`) on every service
+- [ ] No `latest` tags in any Dockerfile or Compose file — `grep -rn ":\s*latest\s*$" Dockerfile* compose*.yml` returns 0
 
-## Success Criteria
+### Verification Commands
 
-Task is complete when:
+```bash
+# Build and check
+docker build -t myapp:test .
+docker run --rm myapp:test id
 
-1. Image builds successfully and is at most 20% larger than the minimum viable size for the language/framework
-2. `docker history <image>` contains no secrets, API keys, or `.env` file contents
-3. Container starts and its health check transitions to `healthy` within `start_period` seconds
-4. Running as non-root user confirmed via `docker run --rm <image> id`
-5. Production compose file has resource limits (`memory` and `cpus`) on every service
-6. Build cache works: second consecutive build (no source changes) uses cached layers and completes >5x faster than the first
+# Verify no secrets in layers
+docker history --no-trunc myapp:test | grep -iE "key|secret|password|token|\.env"
 
----
+# Check image size
+docker images myapp:test --format "{{.Size}}"
+
+# Audit Dockerfile for banned patterns
+grep -rnE "ENV.*KEY|ENV.*SECRET|ENV.*PASSWORD|ARG.*KEY|ARG.*SECRET" Dockerfile*
+
+# Verify Compose config
+docker compose -f compose.prod.yml config
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Non-root user | `docker run --rm <image> id` shows uid != 0 | Add `USER` directive with created non-root user. Rebuild. |
+| No secrets in layers | `docker history` has no secret/key/password matches | Rebuild with `--no-cache` after removing secrets from Dockerfile. Rotate any leaked secrets. |
+| Image size | Within language-specific bounds (<200MB Node.js, <50MB Go, <300MB Python) | Audit multi-stage build. Remove unnecessary packages from runner stage. Switch to smaller base image. |
+| Health check | Container transitions to `healthy` within `start_period` | Verify health endpoint returns HTTP 200. Increase `start_period` if boot is slow. |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task Complexity | Recommended Model | Estimated Tokens |
+|---|---|---|
+| Simple Dockerfile for single-service app | Claude Haiku / GPT-4o Mini | 3,000-6,000 |
+| Multi-stage Dockerfile + Compose dev+prod | Claude Sonnet / GPT-4o | 8,000-20,000 |
+| Full container architecture with debugging + CI integration | Claude Opus / GPT-4o | 20,000-50,000 |
+
+### Parallelization
+
+- **Independent service Dockerfiles:** Multiple services' Dockerfiles can be written in parallel
+- **Compose stacks:** Must be written sequentially (service dependencies matter)
+- **Build verification:** Each Dockerfile builds independently — parallel builds possible
+
+### Context Budget
+
+- **Expected context usage:** 4,000-15,000 tokens per container configuration
+- **When to context-optimize:** When reviewing build logs (use `docker build -q` for quiet mode)
+- **Context recovery:** Use `rtk docker build` and `rtk docker history` to reduce token consumption
+
+## Examples
+
+### Example 1: Containerizing a Python FastAPI App
+
+**User request:**
+```
+Create a production Dockerfile for our FastAPI app using uv for dependency management
+```
+
+**Skill execution:**
+```
+1. Pre-Flight: Python 3.12, FastAPI, uv for deps, uvicorn as server
+2. Created multi-stage Dockerfile: deps (uv sync) → runner (python:3.12-slim)
+3. Added non-root user, health check on /health
+4. Created .dockerignore excluding .venv, __pycache__, .git, .env
+5. Verified: docker build → 145MB image, non-root uid=1001, health check passes
+6. Created compose.dev.yml with hot-reload volume mount
+```
+
+### Example 2: Debugging OOM-Killed Container
+
+**User request:**
+```
+Our container keeps getting OOM killed in production — debug and fix
+```
+
+**Skill execution:**
+```
+1. Ran docker inspect → State.OOMKilled = true
+2. docker stats showed memory spiking to 800MB on a 512MB limit
+3. Identified memory leak: unbounded array growth in logger buffer
+4. Fixed the leak and raised memory limit to 1GB
+5. Verified: memory stabilized at 400MB under peak load
+6. Added memory monitoring alert via observability-specialist
+```
 
 ## Anti-Patterns
 
-- Never use `latest` as an image tag in production Dockerfiles because `latest` is a mutable pointer that can change on any upstream push, making builds non-reproducible and rollbacks ambiguous.
-- Never run application processes as root inside a container because a container escape vulnerability exploited by a root process grants the attacker host-level privileges, whereas a non-root process is contained to the container's filesystem namespace.
-- Never store secrets in a Dockerfile `ENV` or `ARG` instruction because `docker history` and image layer inspection expose `ENV`/`ARG` values in plaintext to anyone with pull access to the image.
-- Never install build tools (gcc, make, node_modules) in the final production image because unused build dependencies increase image size, expand the attack surface, and slow cold-start times without providing any runtime benefit.
-- Never use `ADD` with a remote URL in a Dockerfile instead of `RUN curl` with checksum verification because `ADD` does not validate the downloaded content, allowing a compromised upstream URL to silently inject malicious code into the image.
-- Never ignore `.dockerignore` configuration because without it `COPY . .` sends the entire build context — including `.git`, `node_modules`, secrets, and local environment files — to the Docker daemon, bloating the build context and risking secret inclusion in the image.
-- Never combine multiple services in a single container (e.g., app + database + nginx) because co-located services cannot be scaled, restarted, or updated independently, negating container orchestration benefits and violating the single-responsibility principle.
+| Anti-Pattern | Why It's Wrong | Correct Approach |
+|---|---|---|
+| Combining multiple services in a single container (app + DB + nginx) | Co-located services cannot be scaled, restarted, or updated independently, negating container orchestration benefits | Use Docker Compose with separate services. Each container has one responsibility. |
+| Ignoring `.dockerignore` configuration | `COPY . .` sends the entire build context — including `.git`, `node_modules`, and `.env` — to the Docker daemon | Always create `.dockerignore`. Verify context size with `docker build -q .`. |
+| Using `CMD` instead of `HEALTHCHECK` for readiness | Orchestrators use health check exit codes, not process existence, to determine container readiness | Add `HEALTHCHECK` instruction with real application readiness endpoint. |
 
----
+## References
 
-## Failure Modes
+### Internal Dependencies
 
-| Situation                              | Response                                                                                                                                                               |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Container OOM killed unexpectedly      | Check `State.OOMKilled` via `docker inspect`. Profile memory usage at peak load. Increase limit or fix memory leak.                                                    |
-| Build is very slow (>5 min)            | Audit layer order — dependencies must be installed before copying source. Add BuildKit cache mounts for package managers.                                              |
-| Permission denied at container start   | Container is running as non-root but needs to write to a mounted volume. Fix volume ownership: `docker run --user root chown` or set volume permissions in Dockerfile. |
-| Health check stuck in `starting`       | The `start_period` is too short for the application's boot time. Increase it. Verify the health endpoint actually returns 200.                                         |
-| Image contains unexpected secrets      | Run `docker history --no-trunc <image>` to audit layers. Rebuild with `--no-cache` after fixing. Rotate the exposed secrets immediately.                               |
-| Container can't reach sibling service  | In Compose: check `depends_on` with `condition: service_healthy`. In custom networks: verify both containers are on the same network.                                  |
-| Slow hot-reload in development compose | The volume mount is too broad (mounting root instead of `src/`). Narrow the mount. Exclude `node_modules` explicitly in volumes.                                       |
+- `k8s-orchestrator` — Downstream: Docker images are deployed via Kubernetes manifests
+- `ci-config-helper` — CI pipeline builds Docker images using these Dockerfiles
+- `security-reviewer` — Downstream: container CVE scanning and security audit
+- `observability-specialist` — Downstream: container monitoring and alerting
+- `infra-architect` — Cloud container services (ECS, Cloud Run) where these images run
 
----
+### External Standards
 
-## Integration with Mega-Mind
+- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/) — Official Docker development best practices
+- [Dockerfile Reference](https://docs.docker.com/engine/reference/builder/) — Official Dockerfile instruction reference
+- [Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html) — OWASP Docker security
+- [BuildKit Cache Mounts](https://docs.docker.com/build/buildkit/) — BuildKit cache mount documentation
 
-Docker Expert is the container layer in the **DevOps** vertical:
+### Related Skills
 
-```
-docker-expert (container builds) → k8s-orchestrator (deployment) → observability-specialist (monitoring)
-```
+- `debugging` — Related: container debugging for OOM, network, and startup failures
+- `performance-profiler` — Related: image size optimization and profiling
 
-- Use `ci-config-helper` to wire Docker builds into GitHub Actions or GitLab CI pipelines
-- Use `k8s-orchestrator` when container orchestration requirements exceed Compose (horizontal scaling, rolling deployments, service mesh)
-- Use `security-reviewer` to perform a full CVE scan and OWASP analysis on the container's dependencies
-- Use `infra-architect` for cloud container service configuration (ECS, Cloud Run, Azure Container Apps)
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Identity (role/mission/quality bar/differentiator), Workflow with Step 0-5, Blocking Violations table, Verification with quality gates, Performance & Cost, Examples, References, Changelog. Preserved all multi-stage build patterns, Compose stacks, security hardening, debugging patterns, anti-patterns, and failure modes from v1. |
+| 1.0.0 | — | Initial version |

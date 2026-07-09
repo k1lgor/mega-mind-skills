@@ -1,20 +1,24 @@
-# Mega-Mind Agent Skills System
+# Mega-Mind Agent Skills System v1.0
 
-> **A unified superpowers + virtual company skill set for AI coding assistants**
+> **The most powerful skill system for AI coding assistants — 53 gold-standard skills, 11 agents, 9 workflows.**
 
-This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company.
+This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company, upgraded to the Gold Standard v1.0 specification.
 
-**Compatible with:** Antigravity · Claude Code · GitHub Copilot · Cursor · OpenCode
+**Compatible with:** Any AI coding agent (Antigravity · Claude Code · GitHub Copilot (VS Code) · Cursor · OpenCode · Codex · pi · and all tools supporting the [Agent Skills open standard](https://agentskills.io))
+
+**Skill Quality Standard:** All skills conform to the [Gold Standard SKILL.md Template](./shared/GOLD-STANDARD-SKILL.md) — 12 required sections covering identity, principles, blocking violations, verification, performance, references, and changelog. Minimum score: 8.5/10 across all dimensions.
 
 ---
 
 ## Quick Start
 
 ```
-/mega-mind [command]    # Primary entry point for all operations
+/mega-mind [command]    # Primary entry point for all operations (v1.0)
 ```
 
-Commands: `status`, `skills`, `workflows`, `route <request>`, `execute <workflow>`, `help`
+Commands: `status`, `skills`, `workflows`, `route <request>`, `execute <workflow>`, `help`, `upgrade`
+
+> **New in v1.0:** All skills upgraded to Gold Standard. See `.agent/shared/GOLD-STANDARD-SKILL.md` for the specification. Use `/skill-stocktake` to audit skill quality against the standard.
 
 ## What's Included
 

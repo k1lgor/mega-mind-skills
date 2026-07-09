@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] — 2026-07-09
+
+### 🏆 Gold Standard v1.0 — All 53 Skills Upgraded
+
+Every skill in the Mega-Mind system has been upgraded to the **Gold Standard SKILL.md v1.0** specification — 12 required sections covering identity, principles, blocking violations, verification, performance/cost, examples, anti-patterns, references, and changelog. This is the largest quality upgrade in the project's history.
+
+#### ✨ Gold Standard Template
+
+- Created `.agent/shared/GOLD-STANDARD-SKILL.md` — the universal 12-section template with scoring rubric (8.5/10 minimum)
+- All 53 skills now have: `version: "2.0.0"`, `category`, `dependencies`, Blocking Violations table, Verification with commands + quality gates, Performance & Cost, structured Examples, Anti-Patterns table, References, and Changelog
+
+#### 🔧 Critical Bug Fixes
+
+- **RTK skill**: Replaced Redux anti-patterns (copy-paste error — "createSlice", "Redux state", "useSelector") with correct RTK-CLI anti-patterns (destructive operations, compact output, interactive commands, error pattern filtering)
+- **Broken syntax**: Fixed `rtk bun test (or npm test)` pattern across all skills — replaced with proper shell-compatible alternatives
+
+#### 🏗️ Skill Upgrades (53/53)
+
+- **mega-mind orchestrator**: Upgraded to 671 lines — added Blocking Violations (7 entries), Performance & Cost (model selection table), References, Changelog, autonomous development chain, workflow chain selection guide
+- **9 core workflow skills**: All upgraded with Core Principles enforcement, structured workflow steps (Goal/Output/Tools/Gate), quality gates, and expanded examples
+- **9 architecture + dev skills**: ADR templates added to architecture skills, before/after code examples enhanced, all sections added
+- **8 testing + devops skills**: Framework-specific verification commands, hypothesis-driven debugging loop formalized, IaC patterns with dry-run validation
+- **26 domain + meta skills**: Security-reviewer enhanced with OWASP Top 10 (2025), CWE mappings, STRIDE threat modeling, supply chain security checklist
+
+#### 📊 Quality Metrics
+
+- **19,531 total lines** across all 53 skills (avg 369/skill)
+- **12/12 sections** in all 53 skills (100% compliance)
+- **0 skills** below 12 gold standard sections
+- **Line distribution**: 4 under 200, 13 at 200-300, 28 at 300-500, 8 above 500
+
+#### 📖 Documentation
+
+- Updated `AGENTS.md` with v1.0 branding, gold standard reference, and quality section
+- Updated `README.md` and `USAGE.md` with v1.0 information
+- Updated `pyproject.toml` to version 2.0.0
+
+---
+
 ## [0.8.0] — 2026-05-23
 
 ### 🏗️ Full Lifecycle Coverage

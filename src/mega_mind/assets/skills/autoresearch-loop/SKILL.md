@@ -1,11 +1,12 @@
 ---
 name: autoresearch-loop
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
-  Karpathy-style automated self-improvement loop for the .agent/ skill system. Measures skill
-  quality, identifies weaknesses through structured evals, generates targeted improvements, and
-  verifies them — iterating until the system reaches a measurable quality threshold. The AI equivalent
-  of gradient descent applied to agent instructions.
+  Karpathy-style automated self-improvement loop for the .agent/ skill system.
+  Use to measure skill quality, identify weaknesses through structured evals, generate targeted improvements, and verify them.
+  The AI equivalent of gradient descent applied to agent instructions — works through Measure -> Find Weaknesses -> Generate Improvements -> Score -> Regression Check -> Iterate.
+category: meta-learning
 triggers:
   - "autoresearch"
   - "improve skills"
@@ -15,20 +16,24 @@ triggers:
   - "karpathy loop"
   - "eval and improve"
   - "skill regression"
+  - "improve the skill system"
+dependencies:
+  - continuous-learning-v2: recommended
+  - skill-stocktake: recommended
+  - skill-generator: recommended
 ---
 
 # Autoresearch Loop Skill
 
 ## Identity
 
-You are a meta-improvement specialist — the AI equivalent of an ML researcher running ablations on
-a training setup. You apply Andrej Karpathy's autoresearch methodology to the agent skill system:
-define a measurable quality signal, run experiments (skill variations), score them against the
-signal, keep improvements, and iterate. You treat every SKILL.md as an optimizable parameter, every
-session failure as a training signal, and every user correction as a gradient.
+You are a meta-improvement specialist — the AI equivalent of an ML researcher running ablations on a training setup. You apply Andrej Karpathy's autoresearch methodology to the agent skill system: define a measurable quality signal, run experiments (skill variations), score them against the signal, keep improvements, and iterate.
 
-You operate in tight, measurable cycles. No "let's improve things" vague passes — only scored,
-evidence-backed changes with before/after measurements.
+**Your core responsibility:** Systematically improve the skill library through measured, evidence-backed iterations.
+
+**Your operating principle:** Measure before changing; change one variable per iteration; keep only changes that improve the score.
+
+**Your quality bar:** Every run has a written baseline, an identified weakness per change, a before/after score comparison, a regression check on all previously-passing skills, and explicit termination condition — no exceptions.
 
 ## When to Use
 
@@ -37,9 +42,7 @@ evidence-backed changes with before/after measurements.
 - When a skill that should trigger is being missed (false negative routing)
 - Quarterly skill library audit (use alongside `skill-stocktake`)
 - After adding 5+ new skills (system coherence check needed)
-- When the user explicitly asks to improve the agent system's behavior
 - When `eval-harness` reports a regression in skill performance
-- After a major refactor of the skill system to verify no regressions
 
 ## When NOT to Use
 
@@ -50,272 +53,126 @@ evidence-backed changes with before/after measurements.
 
 ## Core Principles
 
-1. **Measure Before You Change**: Every improvement must have a before score and an after score.
-   Gut-feeling improvements are not improvements — they're guesses.
-
-2. **Atomic Changes**: Change one variable per iteration. Changing multiple things makes it
-   impossible to know which change caused which effect.
-
-3. **Falsifiable Criteria**: Each skill must have explicit pass/fail criteria that can be evaluated
-   without ambiguity. "The skill produces good output" is not a criterion.
-
-4. **Signal Over Noise**: A single session correction is noise. Three corrections in the same
-   direction are signal. Don't overfit to individual cases.
-
-5. **Regression Protection**: Every improvement must not degrade any currently passing eval.
-   Forward progress that creates regressions is net negative.
-
-6. **Evidence-Backed Evolution**: Changes to skills are filed with evidence: session IDs, specific
-   failure cases, before/after comparison. No evidence = no change.
-
-7. **Terminate Cleanly**: The loop terminates when (a) all failing evals pass or (b) diminishing
-   returns detected (3 iterations with <5% improvement). Do not loop forever.
+1. **Measure Before You Change.** Every improvement must have a before score and an after score. Gut-feeling improvements are guesses.
+2. **Atomic Changes.** Change one variable per iteration. Multiple changes make it impossible to know which caused the effect.
+3. **Falsifiable Criteria.** Each skill must have explicit pass/fail criteria that can be evaluated without ambiguity.
+4. **Signal Over Noise.** Three corrections in the same direction are signal. Don't overfit to individual cases.
+5. **Regression Protection.** Every improvement must not degrade any currently passing eval. Forward progress that creates regressions is net negative.
+6. **Terminate Cleanly.** Stop when (a) all failing evals pass or (b) diminishing returns (3 iterations with <5% improvement).
 
 ---
 
-## The Autoresearch Loop Protocol
+## The Protocol
 
-### Phase 0: Define the Quality Signal
+Phase 0: Define the Quality Signal (Routing Accuracy, Instruction Completeness, Actionability, Coverage)
+Phase 1: Measure (Score Current State)
+Phase 2: Find Weaknesses (Error Analysis)
+Phase 3: Generate Improvements (Single-variable changes)
+Phase 4: Score Improvements (Before/After comparison)
+Phase 5: Regression Check (Full suite)
+Phase 6: Iterate or Terminate
 
-Before running the loop, establish what "better" means:
+## Blocking Violations (NEVER)
 
-```markdown
-## Quality Signal Definition
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Starting research run without written baseline | Cannot distinguish improvement from random variation | Establish baseline before making changes |
+| Skipping weaknesses analysis between runs | Same interventions every run; diminishing returns; regresses strong skills | Analyze weaknesses before each iteration |
+| Inflating scores by applying lenient criteria not applied to baseline | False signal that loop has converged | Apply same criteria to baseline and current run |
+| Rewriting entire SKILL.md when targeted edits suffice | Destroys validated content; frequently introduces regressions | Make targeted edits, not wholesale replacements |
+| Running rescore immediately after edits without review pass | Biased toward rating own output highly | Separate review or rubric-anchored scoring |
 
-### Routing Accuracy
+## Verification
 
-- Signal: skill is triggered for the right tasks (no false positives, no false negatives)
-- Measure: count of mis-routed tasks in test corpus / total tasks
-- Target: < 5% mis-routing rate
+### Self-Verification Checklist
 
-### Instruction Completeness
+- [ ] Baseline scores file exists and non-empty
+- [ ] Weaknesses file contains >= 1 entry
+- [ ] Changes log contains >= 1 entry per run with timestamp
+- [ ] After-scores numerically compared to baseline
+- [ ] Regression check passed: failing evals after run <= before run
+- [ ] Termination condition documented
 
-- Signal: skill contains all required sections (When NOT to Use, Anti-Patterns, Self-Verification,
-  Success Criteria, Failure Modes)
-- Measure: section presence score (0-5 per skill, 5 = all sections present)
-- Target: average >= 4.5 across all skills
+### Quality Gates
 
-### Actionability Score
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Baseline | Written and scored before any change | Do not start without baseline |
+| Regression | No previously-passing skill degrades | Revert change that caused regression |
+| Improvement | Measurable positive delta from baseline | Revert changes with <= 0% improvement |
+| Termination | Diminishing returns detected or all evals pass | Stop iterating when threshold met |
 
-- Signal: skill instructions are specific enough to produce consistent outputs
-- Measure: LLM-as-judge grader evaluates each skill on 1-5 specificity scale
-- Target: average >= 4.0
+## Examples
 
-### Coverage Score
+### Example 1: Routing Accuracy Improvement
 
-- Signal: all known task types in the project have a corresponding skill
-- Measure: count of task types without a matching skill
-- Target: 0 uncovered task types
-```
+**User request:** "The mega-mind skill keeps routing authentication requests to the wrong skill."
 
-### Phase 1: Measure (Score Current State)
+**Skill execution:**
+1. Baseline: measure routing accuracy — 40% of auth requests go to correct skill
+2. Weakness analysis: trigger phrases for auth-related skills overlap
+3. Generate improvement: narrow "security-reviewer" trigger to security-specific terms
+4. Score improvement: routing accuracy rises to 85%
+5. Regression check: no other skill's routing accuracy drops below 90%
+6. Iterate: remaining 15% errors are false negatives — narrow once more
 
-Run the full eval suite against the current skill library:
+**Result:** 45 percentage point improvement after one iteration.
 
-```bash
-# Run skill quality evals
-cat .agent/evals/skill-routing.md      # Check routing test cases
-cat .agent/evals/skill-completeness.md # Check section completeness
-```
+### Example 2: Edge Case - Diminishing Returns
 
-Score each skill against the rubric:
+**User request:** "We've been iterating for 5 rounds and improvements are tiny."
 
-| Dimension         | Score (1-5)                              | Notes |
-| ----------------- | ---------------------------------------- | ----- |
-| Specificity       | 1=generic, 5=concrete with examples      |       |
-| Failure handling  | 1=none, 5=tiered escalation              |       |
-| Routing precision | 1=ambiguous triggers, 5=clear boundaries |       |
-| Self-verification | 1=absent, 5=explicit checklist           |       |
-| Anti-patterns     | 1=none, 5=5+ explicit constraints        |       |
+**Skill execution:**
+1. Check iteration 3 through 5: improvements were 8%, 3%, 1%
+2. Apply termination condition: 3 iterations with <5% improvement
+3. Document final state: 92% routing accuracy, 94% instruction completeness
+4. Stop iterating. File remaining gaps as future work.
 
-**Record the baseline score for every skill in `.agent/evals/scores/baseline.md`.**
-
-### Phase 2: Find Weaknesses (Error Analysis)
-
-For each skill scoring below threshold (< 3.5 average):
-
-1. **Symptom**: What behavior is wrong? (e.g., "triggered when it shouldn't be", "output is generic")
-2. **Root Cause**: Why is the behavior wrong? (e.g., "triggers are too broad", "identity is vague")
-3. **Hypothesis**: What change would fix it? (e.g., "add negative triggers", "rewrite identity section")
-4. **Expected Delta**: How much improvement do we expect? (e.g., "routing accuracy +15%")
-
-Document in `.agent/evals/weaknesses.md`:
-
-```markdown
-## Skill: ml-engineer
-
-- Symptom: Triggered for any Python code question
-- Root Cause: Triggers include "AI model" which matches too broadly
-- Hypothesis: Narrow triggers to "ML training", "model evaluation", "feature pipeline"
-- Expected Delta: False positive rate -40%
-```
-
-### Phase 3: Generate Improvements
-
-For each identified weakness, generate a targeted fix:
-
-1. **Single-variable change**: Only change one thing per iteration
-2. **Write the new version** to a temp path or directly to the file
-3. **Document the change** in `.agent/evals/changes.md`
-
-Common improvement patterns:
-
-| Weakness              | Fix Pattern                                                        |
-| --------------------- | ------------------------------------------------------------------ |
-| Triggers too broad    | Narrow trigger phrases, add "when NOT to use"                      |
-| Identity too vague    | Rewrite identity with specific expertise domain and decision style |
-| No examples           | Add 2-3 concrete I/O examples                                      |
-| Missing failure modes | Add failure table with specific situations                         |
-| No self-verification  | Add checklist with measurable criteria                             |
-| Generic anti-patterns | Replace with domain-specific "never do X because Y" statements     |
-
-### Phase 4: Score Improvements
-
-Re-run the eval suite against the modified skill:
-
-```
-Before: ml-engineer routing accuracy = 60%
-After:  ml-engineer routing accuracy = 82%
-Delta:  +22% — KEEP
-```
-
-If improvement > 5%: **keep the change**.
-If improvement <= 0%: **revert the change**.
-If improvement 1-5%: **log and decide** based on side effects.
-
-### Phase 5: Regression Check
-
-Run the full suite (not just the changed skill) to verify no regressions:
-
-- All previously passing evals still pass? → Continue
-- Any regression detected? → Revert the problematic change, investigate cause
-
-### Phase 6: Iterate or Terminate
-
-- If skills remain below threshold AND improvements are still being found: **go to Phase 2**
-- If 3 consecutive iterations show < 5% improvement: **terminate** (diminishing returns)
-- If all skills pass threshold: **terminate** (success)
-- If stuck on same weakness for 3 iterations: **escalate to human** with documented blocker
-
----
-
-## Eval Corpus Structure
-
-The eval corpus lives in `.agent/evals/`:
-
-```
-.agent/evals/
-├── README.md                    # How to add and run evals
-├── skill-routing.md             # Routing correctness test cases
-├── skill-completeness.md        # Section presence checks (automated)
-├── skill-actionability.md       # LLM-as-judge rubric
-├── scores/
-│   ├── baseline.md              # Initial scores before any changes
-│   └── YYYY-MM-DD.md            # Score snapshot per run
-├── weaknesses.md                # Current identified weaknesses
-├── changes.md                   # Log of all changes made
-└── per-skill/
-    ├── ml-engineer.md           # Test cases for ml-engineer skill
-    ├── debugging.md  # Test cases for debugging
-    └── ...                      # One file per skill
-```
-
-### Per-Skill Test Case Format
-
-Each `.agent/evals/per-skill/<skill-name>.md` contains:
-
-```markdown
-# Eval: <skill-name>
-
-## Routing Tests
-
-### Should Trigger
-
-- Input: "I need to train a classification model on customer churn data"
-  Expected: ml-engineer triggered
-- Input: "Build a feature pipeline for our recommendation system"  
-  Expected: ml-engineer triggered
-
-### Should NOT Trigger
-
-- Input: "Add type hints to this Python function"
-  Expected: python-patterns triggered, NOT ml-engineer
-- Input: "Set up MLflow tracking in our existing Jupyter notebooks"
-  Expected: ml-engineer triggered (borderline — should capture MLOps)
-
-## Quality Checks
-
-- [ ] Identity section: 3+ sentences describing specific expertise
-- [ ] When NOT to Use: present with 3+ items
-- [ ] Anti-Patterns: present with 5+ items
-- [ ] Self-Verification Checklist: present with 5+ checkboxes
-- [ ] Failure Modes table: 5+ rows
-
-## Success Criteria Verification
-
-The skill declares success when: [paste skill's success criteria here]
-Evaluator verdict: PASS / FAIL / PARTIAL
-```
-
----
-
-## Self-Verification Checklist
-
-Before declaring the autoresearch run complete:
-
-- [ ] Baseline scores file exists and is non-empty: `test -s .agent/evals/scores/baseline.md && echo EXISTS` exits 0 — file must exist before any changes are applied
-- [ ] Weaknesses file exists and contains at least 1 entry: `wc -l .agent/evals/weaknesses.md` returns >= 1 line
-- [ ] Changes log exists and contains at least 1 entry per run: `wc -l .agent/evals/changes.md` returns >= 1 line; each entry includes a timestamp
-- [ ] After-scores are numerically compared to baseline: `diff .agent/evals/scores/baseline.md .agent/evals/scores/after.md` output contains at least 1 changed numeric value — identical files fail this check
-- [ ] Regression check passed: count of failing evals after run is <= count before run — `grep -c "FAIL" .agent/evals/scores/after.md` <= `grep -c "FAIL" .agent/evals/scores/baseline.md`
-      grep -cE "success threshold|diminishing returns"
-- [ ] Summary written with counts: `grep -E "[0-9]+ skill(s)? improved" .agent/evals/summary.md` returns at least 1 match — vague summaries without numeric counts fail this check
-
-## Success Criteria
-
-The autoresearch run is complete when:
-
-1. All skills with baseline score < 3.5 have been addressed (improved or documented as blocked)
-2. Average skill score across the library has increased vs. baseline
-3. No regressions introduced in previously-passing skills
-4. Changes log is populated with evidence for every change made
-5. Termination condition is explicitly documented
+**Result:** Loop terminated cleanly according to documented termination criteria.
 
 ## Anti-Patterns
 
-- Never begin a research run without a written baseline because without a baseline you cannot distinguish improvement from random variation, and any claimed improvement is unverifiable.
-- Never skip the weaknesses analysis step between runs because applying the same interventions in every run without understanding current failure modes produces diminishing returns and can regress skills that were already strong.
-- Never inflate scores by applying lenient criteria to the current run that were not applied to the baseline because inflated scores mask real weaknesses, giving a false signal that the loop has converged when it has not.
-- Never rewrite entire SKILL.md files when targeted edits suffice because wholesale replacement destroys validated content and frequently introduces regressions in sections that were already strong.
-- Never run the rescore step immediately after edits without a review pass because the model scoring the content it just wrote is biased toward rating it highly; a separate review or rubric-anchored scoring session is more accurate.
-- Never mark a run as complete before verifying all targeted files because an unverified edit may have corrupted the file structure, removed a required section, or introduced a partial write that silently fails.
-- Never skip the regression check between runs because a run that improves weak skills while degrading strong ones reduces overall library quality even if the average appears to increase.
+- Never start a research run without a written baseline because without a before-score, you cannot distinguish genuine improvement from random variation, and every edit becomes guesswork rather than a measured intervention.
+- Never skip the weaknesses analysis step between runs because without error analysis, you apply the same interventions every cycle, producing diminishing returns and eventually regressing skills that were already working.
+- Never inflate scores by applying lenient criteria only to the current run and not the baseline because this produces a false convergence signal and masks whether the skill actually improved.
+- Never rewrite the entire SKILL.md when targeted edits suffice because wholesale rewrites destroy validated content and frequently introduce regressions in areas that were already working correctly.
 
-## Failure Modes
+## Performance & Cost
 
-| Situation                                            | Response                                                                                  |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| No baseline scores exist                             | Start with Phase 1 only — establish baseline before attempting improvements               |
-| Eval corpus is empty                                 | Bootstrap with 3 routing tests per skill before running the loop                          |
-| All skills score poorly                              | Don't try to fix everything at once — prioritize top 5 by impact (most-used skills first) |
-| Improvements plateau quickly                         | The quality signal may be too easy — raise the threshold or add new dimensions            |
-| Model disagrees with human evaluation                | Use human judgment as ground truth; update the LLM grader calibration                     |
-| Change improves eval but user reports worse behavior | Eval is incomplete — add the user's case to the corpus, revert the change                 |
-| Loop terminates but system still feels wrong         | Gather more data; the quality signal may not capture the actual failure mode              |
+### Model Selection
 
-## Integration with Mega-Mind
+| Task | Recommended Model | Cost per run |
+|---|---|---|
+| Define quality signal | Sonnet | $0.05-$0.10 |
+| Score skills (10 skills) | Sonnet | $0.10-$0.30 |
+| Generate improvements | Sonnet | $0.10-$0.25 |
+| Regression check (full suite) | Sonnet | $0.20-$0.50 |
 
-`autoresearch-loop` is invoked:
+### Token Budget
 
-- Explicitly by the user ("run autoresearch", "improve the skill system")
-- Automatically after `skill-stocktake` identifies widespread quality issues
-- Quarterly as part of the Skill Evolution Chain
+- **Scoring one skill:** ~500-800 tokens input, ~200 tokens output
+- **Full regression suite (50 skills):** ~25K tokens input, ~5K tokens output
+- **Expected context usage:** 3-6KB per iteration
+- **Use context-optimizer** when running the autoresearch loop to manage large scoring outputs
 
-Chain position:
+## References
 
-```
-continuous-learning-v2 → autoresearch-loop → skill-generator → skill-stocktake
-```
+### Internal Dependencies
+- `continuous-learning-v2` — Captures patterns discovered during autoresearch as instincts
+- `skill-stocktake` — Identifies skills needing improvement before autoresearch
+- `skill-generator` — Creates new skills from evolved patterns
 
-After completion, run `continuous-learning-v2` to capture any new patterns discovered during the
-loop as instincts.
+### External Standards
+- [Karpathy's Autoresearch Methodology](https://karpathy.github.io/2023/03/11/evals/) — Inspiration for eval-driven improvement loop
+
+### Related Skills
+- `continuous-learning-v2` — Follows autoresearch-loop to capture improvements
+- `skill-stocktake` — Precedes autoresearch-loop to identify skill quality issues
+- `skill-generator` — Creates new skills from evolved patterns
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with quality gates, References, Changelog. |
+---

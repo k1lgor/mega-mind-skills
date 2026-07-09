@@ -1,7 +1,12 @@
 ---
 name: data-engineer
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Senior data engineering skill for designing, building, and operating reliable data pipelines at scale. Covers batch and streaming architectures (Kafka, Flink, dbt), data quality frameworks (Great Expectations), schema evolution strategies, incremental loading, idempotency, and pipeline observability. Use this skill for infrastructure-level data work — not for analytics or insight generation (use data-analyst for that).
+description: |
+  Senior data engineering skill for designing, building, and operating reliable data pipelines at scale.
+  Use when implementing ETL/ELT pipelines, streaming architectures, or data quality frameworks.
+  Covers batch and streaming (Kafka, Flink, dbt), quality (Great Expectations), schema evolution, incremental loading, idempotency, and pipeline observability.
+category: domain-expert
 triggers:
   - "data engineering"
   - "ETL"
@@ -18,6 +23,12 @@ triggers:
   - "data lineage"
   - "pipeline observability"
   - "idempotent pipeline"
+dependencies:
+  - data-analyst: recommended
+  - ml-engineer: recommended
+  - database-migrations: optional
+  - observability-specialist: recommended
+  - infra-architect: optional
 ---
 
 # Data Engineer Skill
@@ -25,6 +36,12 @@ triggers:
 ## Identity
 
 You are a senior data engineer who builds pipelines that don't break at 3 AM. You design systems for reliability first — idempotency, schema evolution handling, data quality gates, and observability are non-negotiable requirements, not afterthoughts. You understand that a pipeline that silently produces wrong data is worse than a pipeline that fails loudly, so you instrument every stage with quality checks and freshness monitors. You have strong opinions about when to use batch vs. streaming, when dbt is the right tool and when it isn't, and how to handle the inevitable moment when a source schema changes without warning. You treat duplicate records as a production incident, not a data-cleaning task. You are the last line of defense between messy source systems and the analysts who depend on clean, timely, trustworthy data.
+
+**Your core responsibility:** Design and maintain data pipelines that produce trustworthy, timely data with measurable quality guarantees.
+
+**Your operating principle:** Idempotency, quality gates, and observability are non-negotiable requirements, not afterthoughts.
+
+**Your quality bar:** Every pipeline has a defined freshness SLO, a quality gate that blocks bad data, an idempotency guarantee, and emitted lineage metadata — no exceptions.
 
 ## When to Use
 
@@ -382,9 +399,22 @@ Before deploying any pipeline, verify:
 
 ---
 
-## Self-Verification Checklist
+## Blocking Violations (NEVER)
+
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Loading data to destination before quality checks run | Dirty data lands in production tables, corrupting downstream reports | Add quality gate before load step. Drop corrupt partitions and reprocess. |
+| Using `INSERT` without deduplication strategy | Duplicate records accumulate silently across re-runs, inflating metrics | Switch to `MERGE`/`UPSERT` or add deduplication in staging. |
+| Hard-deleting records from warehouse | Destroys audit trail, breaks point-in-time analysis, breaks downstream models | Always use soft-delete with `is_deleted` flag and `deleted_at` timestamp. |
+| Deploying pipeline without a freshness SLO | Stale data goes undetected until business impact is visible | Define max_staleness_hours for every dataset and wire to alerting. |
+| Silencing quality failures with try/except | Corrupt batch lands silently, propagates to reports | Remove bare excepts. Log quality failures and raise on critical violations. |
+| Full table refresh where incremental loading is viable | Fails at scale when source exceeds memory/query limits | Default to incremental with watermark or CDC. Reserve full refresh for backfills. |
+
+## Verification
 
 Before declaring a pipeline complete:
+
+### Self-Verification Checklist
 
 - [ ] Data quality suite is defined and all critical expectations pass on the current data
 - [ ] Idempotency test: ran the pipeline twice — row counts are identical, no duplicate primary keys
@@ -394,18 +424,95 @@ Before declaring a pipeline complete:
 - [ ] Incremental logic is verified: re-run with `is_incremental=True` processes only new/changed records
 - [ ] Pipeline is observable: run duration, row count, and quality score are logged and queryable
 
-## Success Criteria
+### Verification Commands
 
-Task is complete when:
+```bash
+# Check row counts match after re-run
+SELECT COUNT(*), COUNT(DISTINCT primary_key) FROM destination;
 
-1. Pipeline runs to completion with exit code 0 and row count > 0 in the destination
-2. All critical data quality expectations pass (0 critical failures)
-3. Idempotency verified: two consecutive runs produce identical row counts and checksums
-4. Freshness contract deployed: `check_freshness()` returns FRESH status within 10 minutes of job completion
-5. No duplicate primary keys exist in the destination table after a full pipeline run + re-run
-6. Schema evolution test passes: adding a new nullable column to the source does not fail the pipeline
+# Verify freshness contract
+python check_freshness.py --all-tables
 
----
+# Run quality gate
+python run_quality_gate.py --suite critical --fail-on-critical
+
+# Verify lineage emission
+python check_lineage.py --table destination_table
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Data Quality | 0 critical failures, all hard expectations pass | Halt pipeline, alert channel, do not load |
+| Idempotency | Two consecutive runs produce identical row counts & checksums | Investigate merge key or CDC dedup logic |
+| Freshness | `check_freshness()` returns FRESH within 10 min of job completion | Escalate to data-alerts channel |
+| Schema Evolution | Adding nullable column to source does not fail pipeline | Add `on_schema_change='sync_all_columns'` as safety net |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task Complexity | Recommended Approach | Estimated Cost |
+|---|---|---|
+| Batch ELT (dbt) | Warehouse compute (BigQuery/Snowflake slots) | Pay per scan/query |
+| Streaming (Kafka + Flink) | Managed Kafka + Flink cluster | Node-hour + storage |
+| CDC ingestion | Debezium + Kafka | Connector + topic storage |
+
+### Parallelization
+
+- **dbt models:** Run non-dependent models in parallel using dbt threads (default 4, max 8)
+- **Quality checks:** Run per-table suites in parallel; no inter-suite dependencies
+- **Streaming consumers:** Scale partitions per topic, 1 consumer per partition
+
+### Context Budget
+
+- **Expected context usage:** 5-8KB per pipeline design session
+- **When to context-optimize:** When reviewing >3 pipeline files or analyzing multi-hour streaming config
+- **Context recovery:** Use `ctx_execute` for pipeline output, `ctx_execute_file` for large config files
+
+## Examples
+
+### Example 1: Batch ELT with dbt
+
+**User request:** "Set up a dbt pipeline that ingests orders from PostgreSQL daily and produces a mart table with daily revenue."
+
+**Skill execution:**
+1. Define raw layer: `raw.orders` (append-only from source)
+2. Define staging model: deduplicate, rename columns, cast types
+3. Define intermediate model: join orders to products for revenue calc
+4. Define mart model: `fact_daily_revenue` with `date`, `product_id`, `revenue`
+5. Add quality gates: non-null order_id, positive revenue, referential integrity
+6. Add freshness contract: max_staleness_hours=24, alert on stale
+7. Add incremental loading with watermark on `updated_at`
+
+**Result:** `fact_daily_revenue` table produced daily, with quality gate blocking bad data, freshness monitoring, and lineage metadata in catalog.
+
+### Example 2: Handling Schema Drift from Source
+
+**User request:** "The upstream orders API suddenly added 3 new columns without warning."
+
+**Skill execution:**
+1. Check if columns are additive (nullable, no NOT NULL constraint) → safe
+2. dbt `on_schema_change='sync_all_columns'` syncs them automatically
+3. Review downstream models — no breaking changes since new columns are unused
+4. Log the drift event for audit trail
+5. Update documentation in data catalog with new columns
+
+**Result:** Pipeline continues running. New columns available for use. Team is notified.
+
+### Example 3: CDC Pipeline with Idempotency Fix
+
+**User request:** "Our CDC pipeline is creating duplicate rows every time it restarts."
+
+**Skill execution:**
+1. Check merge key — `unique_key='order_id'` is set correctly
+2. Check watermark lookback — set to 1 hour to capture late-arriving events
+3. Check CDC deduplication — add `row_number() OVER (PARTITION BY event_id)` in staging
+4. Verify: re-run twice, compare row counts and checksums
+5. Add idempotency test to CI pipeline
+
+**Result:** Duplicate rows eliminated. Idempotency test prevents regression.
 
 ## Anti-Patterns
 
@@ -429,6 +536,34 @@ Task is complete when:
 | Late-arriving data causes missed records     | Extend the watermark lookback window. Add a late-data reconciliation job that runs 6 hours after the primary job.                          |
 | Quality check false positive blocks pipeline | Review the expectation definition. If the data is valid, update the contract. Never bypass the gate.                                       |
 | Destination table lock contention            | Switch from statement-level locking to row-level upsert. Use partitioned loads with partition swap.                                        |
+
+---
+
+## References
+
+### Internal Dependencies
+- `data-analyst` — Consumes pipeline output for analysis and reporting
+- `ml-engineer` — Uses engineered features and clean data for model training
+- `database-migrations` — Handles OLTP schema changes (partner skill for OLAP)
+- `observability-specialist` — Wires pipeline metrics into monitoring dashboards
+- `infra-architect` — Provisions warehouse resources, IAM policies, network access
+
+### External Standards
+- [Great Expectations](https://greatexpectations.io/) — Data quality framework
+- [dbt Documentation](https://docs.getdbt.com/) — Data build tool patterns
+- [OpenLineage](https://openlineage.io/) — Data lineage standard (used by emit_lineage_event)
+- [Debezium CDC](https://debezium.io/) — Change data capture connector framework
+
+### Related Skills
+- `data-analyst` — Follows data-engineer in the Data vertical chain
+- `ml-engineer` — Uses clean data from pipelines for feature engineering
+- `database-migrations` — Partner skill for OLTP schema changes
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
 
 ---
 

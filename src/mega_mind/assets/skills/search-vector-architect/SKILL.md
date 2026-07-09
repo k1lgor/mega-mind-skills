@@ -1,7 +1,12 @@
 ---
 name: search-vector-architect
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Design and implement production-grade semantic search and RAG systems: embedding model selection, chunking strategy, hybrid search (BM25 + vector), reranking, retrieval evaluation (NDCG, MRR), and production concerns (latency, index size, cost). Use when building search infrastructure, RAG pipelines, or troubleshooting retrieval quality in LLM-powered applications.
+description: |
+  Design and implement production-grade semantic search and RAG systems.
+  Use when building search infrastructure, RAG pipelines, or troubleshooting retrieval quality in LLM-powered applications.
+  Covers embedding model selection, chunking strategy, hybrid search (BM25 + vector), reranking, retrieval evaluation (NDCG, MRR), and production concerns (latency, index size, cost).
+category: domain-expert
 triggers:
   - "vector search"
   - "RAG"
@@ -19,6 +24,13 @@ triggers:
   - "Pinecone"
   - "Weaviate"
   - "pgvector"
+dependencies:
+  - data-engineer: recommended
+  - ml-engineer: recommended
+  - iterative-retrieval: recommended
+  - cost-aware-llm-pipeline: recommended
+  - backend-architect: optional
+  - observability-specialist: optional
 ---
 
 # Search Vector Architect Skill
@@ -26,6 +38,12 @@ triggers:
 ## Identity
 
 You are a search and retrieval systems engineer who designs pipelines that LLMs can reason over accurately. You understand that retrieval quality is the primary determinant of RAG system quality — a perfect generator cannot fix poor retrieval. You make deliberate trade-offs between semantic accuracy and lexical precision using hybrid search, invest in evaluation infrastructure (NDCG, MRR, recall@k) before optimizing, and treat embedding model selection as a consequential architectural decision — not a default. You know that hallucination in RAG systems is almost always a retrieval failure, not a generation failure, and you diagnose accordingly.
+
+**Your core responsibility:** Design and operate retrieval systems that provide accurate, low-latency context for LLM-powered applications.
+
+**Your operating principle:** Measure retrieval quality before optimizing generation; fix retrieval to fix hallucination.
+
+**Your quality bar:** Every RAG system has a labeled eval set, measured recall@k >= 0.80, a documented latency budget, and a diagnosed hallucination path — no exceptions.
 
 ## When to Use
 
@@ -67,28 +85,28 @@ Query Input
     v
 [Query Preprocessing]  (normalize, expand abbreviations)
     |
-    +──────────────────────────────────────+
-    |                                      |
-    v                                      v
+    +----------------------------------------------+
+    |                                              |
+    v                                              v
 [BM25 / Keyword Search]          [Dense Vector Search]
   (Elasticsearch / BM25)           (Pinecone / pgvector)
-    |                                      |
-    +──────────────────────────────────────+
-                    |
-                    v
-         [Reciprocal Rank Fusion]  (hybrid merge)
-                    |
-                    v
-         [Cross-Encoder Reranker]  (optional, high-accuracy mode)
-                    |
-                    v
-         [Context Assembly]        (select top-k chunks + metadata)
-                    |
-                    v
-         [LLM Generation]          (grounded prompt + citations)
-                    |
-                    v
-         [Answer + Source Refs]
+    |                                              |
+    +----------------------------------------------+
+                        |
+                        v
+             [Reciprocal Rank Fusion]  (hybrid merge)
+                        |
+                        v
+             [Cross-Encoder Reranker]  (optional, high-accuracy mode)
+                        |
+                        v
+             [Context Assembly]        (select top-k chunks + metadata)
+                        |
+                        v
+             [LLM Generation]          (grounded prompt + citations)
+                        |
+                        v
+             [Answer + Source Refs]
 ```
 
 ---
@@ -99,11 +117,11 @@ Chunking is not a hyperparameter to grid-search — it must match the document s
 
 | Document Type              | Recommended Strategy                  | Chunk Size (tokens)       | Notes                               |
 | -------------------------- | ------------------------------------- | ------------------------- | ----------------------------------- |
-| Long-form articles / docs  | Recursive text splitter on paragraphs | 512–1024                  | Preserve paragraph boundaries       |
+| Long-form articles / docs  | Recursive text splitter on paragraphs | 512-1024                  | Preserve paragraph boundaries       |
 | Code files                 | Split by function/class boundaries    | Variable                  | Never split mid-function            |
-| Conversational transcripts | Split by speaker turn + time window   | 256–512                   | Include speaker label in chunk      |
-| Legal / financial docs     | Split by numbered sections or clauses | 512–1024                  | Preserve section header in metadata |
-| Short product descriptions | No chunking — embed full record       | Full                      | Semantic unit is the record         |
+| Conversational transcripts | Split by speaker turn + time window   | 256-512                   | Include speaker label in chunk      |
+| Legal / financial docs     | Split by numbered sections or clauses | 512-1024                  | Preserve section header in metadata |
+| Short product descriptions | No chunking - embed full record       | Full                      | Semantic unit is the record         |
 | Dense technical manuals    | Sentence-level splitting with overlap | 256 with 50-token overlap | Overlap prevents boundary loss      |
 
 **Critical rule:** Always include document title, section header, and page/URL as metadata on each chunk. Retrieval without metadata is a dead end for citations.
@@ -459,30 +477,120 @@ def evaluate_retrieval(eval_set: list[dict], retrieve_fn, k: int = 5) -> Retriev
 
 ---
 
-## Self-Verification Checklist
+## Blocking Violations (NEVER)
+
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Embedding documents with different model than index-time model | Embedding spaces incompatible; nearest-neighbor returns random results | Ensure same model for indexing and querying |
+| Skipping chunking strategy evaluation for long documents | Mid-thought splits lose semantic unit, degrading recall | Match chunk strategy to document structure |
+| Deploying vector index without recall@k evaluation | Misconfigured HNSW params produce fast but wrong results | Run evaluation before deploying |
+| Deleting production vector store for schema changes without parallel old index | Retrieval gap where all queries return empty | Maintain old index while building new one |
+| Using cosine similarity without normalizing embeddings | High-magnitude vectors dominate rankings | Always normalize embeddings before indexing |
+
+## Verification
 
 Before declaring the retrieval system ready for integration:
 
-- [ ] Retrieval eval set exists with >= 50 labeled query-document pairs: `wc -l eval/labeled_queries.jsonl` returns >= 50
-      grep -cE "recall_at_5|Recall@5"
-      grep -cE "ndcg|mrr"
-      grep -cE "chunk_size|overlap|chunking"
-      grep -cE "benchmark|domain"
-- [ ] Reranker enabled and within P95 SLA: reranker latency p95 <= defined SLA threshold
-      grep -cE "doc_id|source_title|section"
-      grep -cE "cite|source|refuse"
+### Self-Verification Checklist
 
-## Success Criteria
+- [ ] Retrieval eval set exists with >= 50 labeled query-document pairs
+- [ ] Recall@5 >= 0.80 on labeled eval set
+- [ ] P95 retrieval latency within agreed SLA
+- [ ] Reranker enabled and within P95 SLA
+- [ ] LLM grounding prompt includes source citations
+- [ ] Eval harness runs in CI and blocks deployment if recall drops >5%
+- [ ] Index and embedding pipeline are versioned
 
-A retrieval system is production-ready when:
+### Verification Commands
 
-1. Recall@5 >= 0.80 on the labeled eval set (no more than 20% of correct answers are missed in top-5 retrieval).
-2. P95 retrieval latency (embedding + search + rerank) is within the agreed SLA.
-3. The LLM grounding prompt includes source citations and produces measurably fewer hallucinations than zero-shot on an adversarial test set.
-4. The eval harness runs in CI and blocks deployment if recall drops more than 5% from baseline.
-5. Index and embedding pipeline are versioned; rollback to a previous index state is documented.
+```bash
+# Run retrieval evaluation
+python -m src.search.eval --eval-set data/eval/labeled_queries.jsonl
 
----
+# Check recall@5
+python -c "from src.search.eval import evaluate_retrieval; m = evaluate_retrieval(eval_set, retrieve_fn, k=5); print(f'Recall@5: {m.recall_at_k:.2f}')"
+
+# Profile latency per stage
+python -m src.search.profile --num-queries 100
+
+# Verify embedding model consistency
+python -c "from src.search.embeddings import EmbeddingGenerator; print(EmbeddingGenerator().dimension)"
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Recall@k | Recall@5 >= 0.80 on labeled eval set | Tune chunking, model, or reranker until threshold met |
+| Latency SLA | P95 retrieval latency within SLA | Profile each stage, optimize bottleneck |
+| Hallucination Rate | LLM cites correct sources in post-processing check | Add citation validation, improve retrieval quality |
+| Index Consistency | Same embedding model for index and query | Re-index with correct model, pin model version |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task Complexity | Recommended Model | Estimated Cost |
+|---|---|---|
+| Small corpus (<10K docs) | all-MiniLM-L6-v2 (local, free) | Zero (CPU) |
+| Medium corpus (10K-1M docs) | text-embedding-3-small | $0.02/1K docs |
+| Large corpus (>1M docs) | text-embedding-3-large or BGE-large | $0.08/1K docs |
+| Reranking (top-50) | cross-encoder/ms-marco-MiniLM-L-6-v2 | CPU-only |
+
+### Parallelization
+
+- **Indexing:** Can batch embed documents in parallel (batch_size=64)
+- **Query + BM25 + Vector:** Sequential within a query, parallel across queries
+- **Reranking:** Sequential per query (depends on initial retrieval)
+
+### Context Budget
+
+- **Expected context usage:** 4-8KB per RAG system design session
+- **When to context-optimize:** When reviewing large index configs or multi-stage pipeline code
+- **Context recovery:** Use `ctx_execute` for eval results, `ctx_fetch_and_index` for vector DB docs
+
+## Examples
+
+### Example 1: Building a RAG System for Documentation
+
+**User request:** "Build a RAG system so users can ask questions about our API docs."
+
+**Skill execution:**
+1. Chunk docs by section heading (512 token chunks, 50-token overlap)
+2. Embed with text-embedding-3-small, store in Pinecone
+3. Implement hybrid search: BM25 for exact endpoint names, vector for semantic queries
+4. Add cross-encoder reranker on top-20 candidates
+5. Build eval set with 50 query-relevant-doc pairs
+6. Measure recall@5=0.85 (above 0.80 threshold)
+7. Wire LLM generation with grounding instruction and citation format
+
+**Result:** Production RAG system with measured retrieval quality, latency budget, and eval harness.
+
+### Example 2: Diagnosing Hallucination
+
+**User request:** "Our RAG system keeps making up answers. The LLM is broken."
+
+**Skill execution:**
+1. Check retrieval: run eval set through the pipeline
+2. recall@5=0.55 (below threshold!) - retrieval is the problem
+3. Fix chunking strategy: code docs need function-boundary splitting, not paragraph
+4. Add BM25 hybrid for exact API endpoint matching
+5. Re-run eval: recall@5=0.88
+6. Hallucination rate drops from 30% to 4%
+
+**Result:** Hallucination was a retrieval failure, not a generation failure.
+
+### Example 3: Edge Case - Terminology Mismatch
+
+**User request:** "Our RAG can't find anything about 'throttling' even though our docs use 'rate-limiting'."
+
+**Skill execution:**
+1. Query expansion: add synonym mapping (throttling -> rate-limiting)
+2. BM25 handles exact match "rate-limiting" from query expansion
+3. Vector search handles semantic similarity between "throttling" and "rate-limiting"
+4. Re-run eval: recall@5 improves from 0.60 to 0.82
+
+**Result:** Query expansion + hybrid search resolves terminology mismatch.
 
 ## Anti-Patterns
 
@@ -510,8 +618,39 @@ A retrieval system is production-ready when:
 
 ---
 
+## References
+
+### Internal Dependencies
+- `data-engineer` — Provides document ingestion pipelines for indexing
+- `ml-engineer` — Fine-tunes embedding models and evaluates retrieval quality
+- `iterative-retrieval` — Progressive context refinement for subagents
+- `cost-aware-llm-pipeline` — Routes LLM calls in RAG pipeline to cheapest viable model
+- `backend-architect` — Designs serving infrastructure for search API
+- `observability-specialist` — Monitors retrieval latency and quality metrics
+
+### External Standards
+- [MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard) — Embedding model benchmark
+- [BEIR Benchmark](https://github.com/beir-cellar/beir) — Retrieval evaluation framework
+- [Reciprocal Rank Fusion Paper](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf) — Original RRF paper (k=60 default)
+- [Pinecone Documentation](https://docs.pinecone.io/) — Vector database reference
+
+### Related Skills
+- `ml-engineer` — Partner skill for embedding model selection and fine-tuning
+- `iterative-retrieval` — Uses search-vector-architect for subagent context retrieval
+- `cost-aware-llm-pipeline` — Companion skill for LLM cost in RAG pipelines
+- `data-engineer` — Precedes search-vector-architect for document ingestion
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
+
+---
+
 ## Integration with Mega-Mind
 
 `search-vector-architect` is invoked for all search, RAG, and semantic retrieval work. It is closely related to `ml-engineer` (for embedding model fine-tuning and evaluation) and `data-engineer` (for document ingestion pipelines). For multi-step context refinement during agent orchestration, pair with `iterative-retrieval`. For LLM cost control within RAG pipelines, use `cost-aware-llm-pipeline`.
 
 **Chain:** `data-engineer` → `search-vector-architect` → `ml-engineer` (eval) → `backend-architect` (serving) → `observability-specialist` (monitoring)
+'''

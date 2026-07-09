@@ -1,5 +1,7 @@
 # Reference
 
+> All skills conform to the **[Gold Standard SKILL.md v1.0](https://github.com/k1lgor/mega-mind-skills/blob/main/.agent/shared/GOLD-STANDARD-SKILL.md)** specification. Every skill includes: Blocking Violations table, Verification with quality gates, Performance & Cost model, structured Examples, Anti-Patterns tables, and full References/Changelog.
+
 ## Skills
 
 ### Core Workflow (9)

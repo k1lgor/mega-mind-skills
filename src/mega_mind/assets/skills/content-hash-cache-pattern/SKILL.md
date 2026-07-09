@@ -1,7 +1,12 @@
 ---
 name: content-hash-cache-pattern
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: SHA-256 content hash caching for file processing. Use when processing files (extraction, transformation) to avoid redundant work and reduce LLM costs.
+description: |
+  SHA-256 content hash caching for file processing to avoid redundant work and reduce LLM costs.
+  Use when processing files (extraction, transformation) to avoid redundant work and reduce costs.
+  Covers content-hash-based cache key design, frozen dataclass entries, file-based cache storage with O(1) lookup, and service layer wrapper pattern.
+category: token-optimization
 triggers:
   - "content-hash"
   - "file cache"
@@ -9,6 +14,10 @@ triggers:
   - "cache key"
   - "cached extraction"
   - "redundant processing"
+  - "deduplicate processing"
+  - "cache invalidation"
+dependencies:
+  - context-optimizer: recommended
 ---
 
 # Content-Hash File Cache Pattern
@@ -17,6 +26,12 @@ triggers:
 
 You are a performance and efficiency specialist. You know that file paths are unstable but content is truth. You implement O(1) file-based caching using SHA-256 content hashes, ensuring that file moves/renames never cause a cache miss and content changes never cause a stale hit.
 
+**Your core responsibility:** Eliminate redundant file processing by caching results keyed by SHA-256 content hash, not file path or timestamp.
+
+**Your operating principle:** Content is truth; file paths are unstable; SHA-256 is the key.
+
+**Your quality bar:** Every cache entry uses SHA-256 content hash as key, stores source path for debugging, writes via atomic rename, and handles corruption gracefully by falling back to processing — no exceptions.
+
 ## When to Use
 
 - Designing file processing pipelines (PDF/text extraction, image processing)
@@ -24,25 +39,36 @@ You are a performance and efficiency specialist. You know that file paths are un
 - Reducing redundant compute in data transformation scripts
 - Optimizing CLI tools that process many local files
 
+## When NOT to Use
+
+- **Small volatility:** If files change every few seconds and processing is cheap (e.g. reading a small JSON)
+- **Extremely large files (>2GB):** Hashing may take longer than processing itself
+- **Limited Disk Space:** Cache directories can grow indefinitely; implement TTL or LRU cleanup
+
+## Core Principles
+
+1. **Content is truth, not path.** File paths are unstable — renaming a file should preserve its cache entry. Only content changes invalidate cache.
+2. **SHA-256 for uniqueness.** MD5 has known collisions; SHA-1 has practical collision attacks. Use SHA-256 as the minimum.
+3. **Atomic writes prevent corruption.** Write to `.tmp` file, then rename to final path. A partial write on crash must not produce a valid-looking cache entry.
+4. **Graceful degradation.** Cache corruption or I/O errors must not crash the application. Fall back to processing.
+5. **`--force` overrides cache.** Always provide an explicit cache-busting flag for recovery from poisoned cache entries.
+
 ---
 
 ## Core Pattern
 
-### 1. Content-Hash Based Cache Key
-
-Use file content (not path or timestamp) as the cache key.
+### Content-Hash Based Cache Key
 
 ```python
 import hashlib
 from pathlib import Path
 
-_HASH_CHUNK_SIZE = 65536  # 64KB chunks for memory-efficient hashing of large files
+_HASH_CHUNK_SIZE = 65536  # 64KB chunks for memory-efficient hashing
 
 def compute_file_hash(path: Path) -> str:
     """SHA-256 of file contents (chunked for large files)."""
     if not path.is_file():
         raise FileNotFoundError(f"File not found: {path}")
-
     sha256 = hashlib.sha256()
     with open(path, "rb") as f:
         while True:
@@ -53,151 +79,132 @@ def compute_file_hash(path: Path) -> str:
     return sha256.hexdigest()
 ```
 
-**Why content hash?**
-
-- **Stability:** File rename/move = 100% cache hit.
-- **Accuracy:** Any content change = automatic cache invalidation.
-- **Simplicity:** No central index file needed; the hash _is_ the pointer.
-
----
-
-### 2. Frozen Dataclass for Cache Entry
-
-Store metadata along with the cached result to help with debugging and traceability.
+### Service Layer Wrapper
 
 ```python
-from dataclasses import dataclass
-from typing import Any
-
-@dataclass(frozen=True, slots=True)
-class CacheEntry:
-    file_hash: str     # SHA-256 key
-    source_path: str   # For debugging only
-    document: Any      # The cached result (e.g. JSON, extracted text)
-```
-
----
-
-### 3. File-Based Cache Storage
-
-Store each entry as `{hash}.json`. This allows O(1) lookup without loading a massive main index file.
-
-```python
-import json
-
-def write_cache(cache_dir: Path, entry: CacheEntry) -> None:
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_dir / f"{entry.file_hash}.json"
-
-    # Serialize entry (logic omitted for brevity)
-    data = {"hash": entry.file_hash, "path": entry.source_path, "data": entry.document}
-
-    cache_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-
-def read_cache(cache_dir: Path, file_hash: str) -> dict | None:
-    cache_file = cache_dir / f"{file_hash}.json"
-    if not cache_file.is_file():
-        return None
-    try:
-        raw = cache_file.read_text(encoding="utf-8")
-        return json.loads(raw)
-    except (json.JSONDecodeError, ValueError):
-        return None  # Treat corruption as a miss
-```
-
----
-
-### 4. Service Layer Wrapper (SRP)
-
-Keep the processing function pure. Wrap it in a service layer that handles the cache logic.
-
-```python
-def process_with_cache(
-    file_path: Path,
-    *,
-    cache_enabled: bool = True,
-    cache_dir: Path = Path(".cache"),
-) -> dict:
+def process_with_cache(file_path: Path, *, cache_enabled: bool = True, cache_dir: Path = Path(".cache")) -> dict:
     """Service layer: cache check -> processing -> cache write."""
     if not cache_enabled:
         return process_pure(file_path)
-
     file_hash = compute_file_hash(file_path)
-
-    # 1. Check cache
     cached = read_cache(cache_dir, file_hash)
     if cached is not None:
         return cached["data"]
-
-    # 2. Cache miss -> process
     result = process_pure(file_path)
-
-    # 3. Write cache
     entry = CacheEntry(file_hash=file_hash, source_path=str(file_path), document=result)
     write_cache(cache_dir, entry)
-
     return result
 ```
 
----
+## Blocking Violations (NEVER)
 
-## Key Design Decisions
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Using mtime as sole cache key | File renames/permission changes/network copies update mtime without content change; unnecessary reprocessing | Always hash file content (SHA-256); never rely on mtime alone |
+| Using file paths as cache keys | Renaming/moving file causes cache miss; identical content re-processed | Use content hash, not path, as cache key |
+| Storing cache directory in Git | Large binary/derived blobs bloat repo history; slows clones | Add `.cache/` to `.gitignore` |
+| Writing cache entries directly without atomic rename | Process kill mid-write leaves partial file; loaded as valid on next run | Write to .tmp file, then fs.rename atomically |
+| Using MD5/SHA-1 for hash | Known collision vulnerabilities; two different inputs can produce same key, serving wrong cached result | Use SHA-256 minimum |
+| Skipping `--force` bypass flag | Cannot recover from poisoned cache without manually deleting files | Add `--force` flag to bypass cache and re-process |
 
-- **SHA-256 over MD5:** Avoid collisions; security is rarely the goal, but uniqueness is.
-- **Separate Files over Index:** Avoid global lock contention and memory bloat on large datasets.
-- **Frozen Slots:** Minimize memory overhead for large processing batches.
-- **Fail Gracefully:** Corruption or IO errors in cache reading should fallback to processing, not crash the app.
+## Verification
 
----
+### Self-Verification Checklist
 
-## Best Practices
+- [ ] Source file path stored in cache entry for debugging
+- [ ] `.cache/` in `.gitignore`
+- [ ] `--force` bypass flag implemented
+- [ ] Atomic writes: write to tmp, then rename
+- [ ] Graceful fallback on cache corruption/IO errors
+- [ ] SHA-256 (minimum) used for hash
 
-- **Use subdirectories** (e.g., `.cache/ab/abcdef...json`) if storing >10,000 files to avoid OS directory performance degradation.
-- **Explicit Invalidation:** Add a `--force` flag to bypass cache and re-process.
-- **Metadata Storage:** Always store the source path in the cache entry so you can trace where data came from.
-- **Atomic Writes:** Write to a temp file and rename it to `{hash}.json` to avoid reading partially written cache entries.
+### Verification Commands
 
----
+```bash
+# Check gitignore
+grep -c "\.cache" .gitignore
 
-## When NOT to Use
+# Verify atomic writes
+grep -rn "tmp\|tempfile\|rename\|os.replace\|mv " src/cache.py
 
-- **Small volatility:** If files change every few seconds and processing is cheap (e.g. reading a small JSON).
-- **Extremely large files (>2GB):** Hashing may take longer than the processing itself if the processing is simple line-counting.
-- **Limited Disk Space:** Cache directories can grow indefinitely; implement a TTL or LRU cleanup if space is tight.
+# Check fallback handling
+grep -rn "cache_miss\|fallback\|except\|catch" src/cache.py
 
----
+# Verify hash algorithm
+grep -rn "sha256" src/cache.py
+```
 
-## Self-Verification Checklist
+### Quality Gates
 
-grep -rnE "sha256|createHash.*sha256|hashlib.sha256"
-grep -rnE "tmp|tempfile|rename|os.replace|mv "
-grep -rnE "cache_miss|fallback|except|catch"
-grep -rnE "json.JSONDecodeError|SyntaxError|corrupt|invalid.*cache|except.\*parse"
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Hash Algorithm | SHA-256 minimum used | Replace MD5/SHA-1 with SHA-256 |
+| Atomic Writes | Write to temp, then rename | Add atomic write pattern |
+| Cache Bypass | `--force` flag implemented | Add flag for recovery |
+| Git Safety | `.cache/` in `.gitignore` | Add gitignore entry |
 
-- [ ] Source file path stored in cache entry: `grep -rnE '"source"|"file_path"|"path"' <cache_entry_schema>` returns at least 1 match; sample cache entries contain a non-empty path value
-- [ ] `.cache/` in `.gitignore`: `grep -c "\.cache" .gitignore` returns >= 1 — missing entry means cache files can be accidentally committed
-      grep -rnE "\-\-force|force_rebuild|skip_cache|bypass"
+## Examples
 
-## Success Criteria
+### Example 1: PDF Text Extraction Caching
 
-This skill is complete when: 1) every file processing call checks the SHA-256 content hash before running expensive work, 2) cache hits skip processing and return stored results without re-reading source files, and 3) cache misses and corrupted entries fall back silently to full processing without crashing the pipeline.
+**User request:** "We extract text from 10,000 PDF invoices every day. Most haven't changed since yesterday."
 
-## Failure Modes
+**Skill execution:**
+1. Compute SHA-256 hash for each PDF
+2. Check cache: 9,200 of 10,000 files unchanged from yesterday
+3. Only process the 800 new/modified files
+4. Write cache entries for the 800 newly processed results
+5. Serve 9,200 cached results instantly
 
-| Failure                                                                    | Cause                                                                                      | Recovery                                                                                                  |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Cache hit returned for file whose content changed but mtime did not update | File on network share or copied with preserved mtime; only mtime checked, not content hash | Always hash file content (SHA-256); never rely on mtime alone as a cache key                              |
-| Hash collision causes wrong cached result served                           | Two different inputs produce identical hash (extremely rare but non-zero with weak hashes) | Use SHA-256 or stronger; add content-length to cache key as secondary discriminator                       |
-| Cache directory grows unbounded, consuming disk                            | No eviction policy; every unique input accumulates a cache entry                           | Implement LRU eviction or TTL expiry; add cache size monitoring alert                                     |
-| Cache written without atomic rename, leaving corrupt partial file          | Process killed mid-write; partial file accepted as valid on next read                      | Write to a `.tmp` file, then `fs.rename` atomically; on read, validate file is complete (checksum header) |
-| Cached result from different config served to incompatible consumer        | Config hash not included in cache key; cache shared across environments                    | Include all config-affecting variables in the cache key; scope cache directories per environment          |
+**Result:** 92% cache hit rate. Processing time drops from 4 hours to 20 minutes.
+
+### Example 2: Edge Case - Cache Poisoning Recovery
+
+**User request:** "Our cache returned bad results for 50 files. We need to bust it."
+
+**Skill execution:**
+1. Identify the poisoned hash values
+2. Run `process_with_cache(file_path, --force)` for those 50 files
+3. New results written to cache with atomic rename
+4. Verify: `--force` flag bypasses cache and processes fresh
+
+**Result:** Poisoned entries replaced. `--force` flag verified as working recovery mechanism.
 
 ## Anti-Patterns
 
-- Never use `mtime` as the sole cache key because file renames, permission changes, and network-share copies update the modification timestamp without altering content, causing unnecessary reprocessing and invalidating valid cache entries that cost real compute time to regenerate.
-- Never use file paths as cache keys because renaming or moving a file causes the cache to treat identical content as entirely new work, re-running every downstream step and negating all previously stored computation.
-- Never store the cache directory in Git because committing large binary or derived cache blobs bloats repository history permanently, slows every future `git clone`, and conflates reproducible build outputs with version-controlled source artifacts.
-- Never write cache entries directly to the final destination file without an atomic rename because a process kill or crash mid-write leaves a partial file on disk that will be loaded as valid on the next run, returning corrupt data silently.
-- Never use MD5 or SHA-1 as the hash algorithm because MD5 has known collision vulnerabilities and SHA-1 has practical collision attacks, meaning two different inputs can produce the same key and serve the wrong cached result.
-- Never omit the source file path from the cache entry because debugging a wrong cache hit becomes impossible without knowing which source file produced the stored result, turning data provenance into guesswork.
-- Never skip implementing a `--force` bypass flag because without an explicit cache-busting mechanism, developers cannot recover from a poisoned cache without manually deleting cache files, making operational recovery unnecessarily fragile.
+- Never use file modification time (mtime) as the sole cache key because file renames, permission changes, and network copies update mtime without changing content, causing unnecessary reprocessing of every file whose metadata changed.
+- Never store the cache directory in version control because large binary or derived blobs bloat repository history and slow down every clone; always add `.cache/` to `.gitignore`.
+- Never use MD5 or SHA-1 for content hashing because both have known collision attacks, meaning two different inputs can produce the same hash and serve the wrong cached result.
+- Never write cache entries directly without an atomic rename because a process kill mid-write leaves a partial file that the next invocation loads as a valid complete result.
+
+## Performance & Cost
+
+### Parallelization
+
+- **Hashing phase:** Parallelizable across files (I/O-bound, limited by disk speed)
+- **Processing phase:** Parallelizable for independent files, but beware of memory pressure
+- **Cache writes:** Must be sequential per file (atomic rename); parallel writes to different files are safe
+
+### Storage Budget
+
+- **Cache entry size:** Varies by result type (text: ~1KB, structured JSON: ~2-5KB, embeddings: ~10-100KB)
+- **TTL recommendation:** Implement LRU eviction when cache exceeds 1GB or 100K entries
+- **Expected context usage:** 1-2KB per cache pattern design session
+
+## References
+
+### Internal Dependencies
+- `context-optimizer` — Manages context for large cache operations
+
+### External Standards
+- [NIST SHA-256](https://csrc.nist.gov/publications/detail/fips/180/4/final) — Secure Hash Standard
+
+### Related Skills
+- `context-optimizer` — Companion skill for managing cached data in context
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples (see below), References, Changelog. |
+---

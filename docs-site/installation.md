@@ -1,6 +1,6 @@
 # Installation
 
-## Step 1 — Install the CLI
+## Step 1 — Install the CLI (v1.0.0)
 
 ```bash
 # pip (standard)
@@ -93,7 +93,7 @@ uvx mmo init --copilot --claude --force
 
 ```bash
 mmo --version
-# Should output: mmo, version 0.8.0
+# Should output: mmo, version 1.0.0
 ```
 
 Then in your AI assistant, run `/verify` to confirm all skills are correctly installed.

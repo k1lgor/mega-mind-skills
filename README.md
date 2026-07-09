@@ -1,14 +1,16 @@
-# Mega-Mind Skills System
+# Mega-Mind Skills System v1.0
 
-> **A unified superpowers + virtual company skill set for AI coding assistants**
+> **The most powerful skill system for AI coding assistants — 53 Gold Standard skills, 11 agents, 9 workflows.**
 
-This is a comprehensive skill-based workflow system that combines the disciplined development workflows of [Superpowers](https://github.com/obra/superpowers) with the domain expertise of [Virtual Company](https://github.com/k1lgor/virtual-company) and [Everything-Claude-Code](https://github.com/affaan-m/everything-claude-code). It provides structured, reliable behavior for AI coding assistants across the entire software development lifecycle.
+This is a comprehensive skill-based workflow system that combines the disciplined development workflows of [Superpowers](https://github.com/obra/superpowers) with the domain expertise of [Virtual Company](https://github.com/k1lgor/virtual-company) and [Everything-Claude-Code](https://github.com/affaan-m/everything-claude-code). **Upgraded to Gold Standard v1.0** — every skill now meets a rigorous 12-section specification with blocking violations, verification gates, performance/cost models, anti-patterns, and structured examples. It provides structured, reliable behavior for AI coding assistants across the entire software development lifecycle.
 
 **Compatible with:** Any AI coding agent (Antigravity · GitHub Copilot (VS Code) · Claude Code · Cursor · OpenCode · Codex · pi · and all tools supporting the [Agent Skills open standard](https://agentskills.io))
 
 ## Overview
 
-Mega-Mind brings together **53 skills**, **11 agent personas**, and **9 workflows** organized across the full software development lifecycle — from planning through production operations.
+Mega-Mind v1.0 brings together **53 Gold Standard skills**, **11 agent personas**, and **9 workflows** organized across the full software development lifecycle — from planning through production operations. All skills meet the **[Gold Standard SKILL.md v1.0](./.agent/shared/GOLD-STANDARD-SKILL.md)** specification with a minimum quality score of 8.5/10.
+
+> **New in v1.0:** Every skill now includes a Blocking Violations table, structured Verification with quality gates, Performance & Cost model selection guide, domain-specific Examples with edge cases, Anti-Patterns tables, and full References/Changelog. See [CHANGELOG.md](./CHANGELOG.md) for the complete upgrade details.
 
 ### The Mega-Mind Orchestrator (1 skill)
 

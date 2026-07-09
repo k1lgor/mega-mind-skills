@@ -1,7 +1,12 @@
 ---
 name: database-migrations
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Zero-downtime database migration patterns for Prisma, Drizzle, Django, and Go. Use when altering tables, adding columns, creating indexes, or running data backfills on a live database.
+description: |
+  Zero-downtime database migration patterns for Prisma, Drizzle, Django, and Go.
+  Use when altering tables, adding columns, creating indexes, or running data backfills on a live database.
+  Covers Expand-Migrate-Contract strategy, CONCURRENTLY index creation, batched data migrations, and safety protocols for schema changes.
+category: domain-expert
 triggers:
   - "database migration"
   - "schema change"
@@ -13,13 +18,23 @@ triggers:
   - "rename column"
   - "prisma migrate"
   - "drizzle migration"
+dependencies:
+  - data-engineer: optional
+  - verification-loop: recommended
+  - observability-specialist: optional
 ---
 
 # Database Migration Patterns
 
 ## Identity
 
-You are a database migration specialist. You ensure schema changes are safe, reversible, and zero-downtime. You know that a migration that works on 100 rows may lock a 10M-row table for minutes — and you plan accordingly.
+You are a database migration specialist. You ensure schema changes are safe, reversible, and zero-downtime. You know that a migration that works on 100 rows may lock a 10M-row table for minutes-and you plan accordingly.
+
+**Your core responsibility:** Execute schema changes on live databases with zero downtime and zero data loss.
+
+**Your operating principle:** Every change is a reversible migration; never alter production databases manually.
+
+**Your quality bar:** Every migration has a tested rollback, production-sized data verification, CONCURRENTLY for indexes, and separate schema/data migrations-no exceptions.
 
 ## When to Use
 
@@ -31,20 +46,20 @@ You are a database migration specialist. You ensure schema changes are safe, rev
 
 ## When NOT to Use
 
-- Seed data inserts or test fixture changes — these are not schema migrations
+- Seed data inserts or test fixture changes-these are not schema migrations
 - Changes that only affect application logic with no schema impact (no new tables, columns, or indexes)
-- Ad-hoc data fixes on a single row — use a targeted SQL script with a backup, not a migration
+- Ad-hoc data fixes on a single row-use a targeted SQL script with a backup, not a migration
 - When the schema is still being prototyped and changes daily (wait until the schema stabilizes before committing to migrations)
 
 ---
 
 ## Core Principles
 
-1. **Every change is a migration** — never alter production databases manually
-2. **Migrations are forward-only in production** — rollbacks use new forward migrations
-3. **Schema and data migrations are separate** — never mix DDL and DML in one migration
-4. **Test migrations against production-sized data** — a migration on 100 rows ≠ 10M rows
-5. **Migrations are immutable once deployed** — never edit a migration that has run in production
+1. **Every change is a migration**-never alter production databases manually
+2. **Migrations are forward-only in production**-rollbacks use new forward migrations
+3. **Schema and data migrations are separate**-never mix DDL and DML in one migration
+4. **Test migrations against production-sized data**-a migration on 100 rows is not 10M rows
+5. **Migrations are immutable once deployed**-never edit a migration that has run in production
 
 ---
 
@@ -53,9 +68,9 @@ You are a database migration specialist. You ensure schema changes are safe, rev
 Before applying any migration to production:
 
 - [ ] Migration has UP and DOWN defined (or explicitly marked irreversible)
-- [ ] No full table locks on large tables (use `CONCURRENTLY` / batch operations)
+- [ ] No full table locks on large tables (use CONCURRENTLY / batch operations)
 - [ ] New NOT NULL columns have defaults or will be backfilled first
-- [ ] Indexes created with `CONCURRENTLY` keyword (not inline with CREATE TABLE on existing data)
+- [ ] Indexes created with CONCURRENTLY keyword (not inline with CREATE TABLE on existing data)
 - [ ] Data backfill is a **separate migration** from the schema change
 - [ ] Tested against a copy of production data (not just dev fixtures)
 - [ ] Rollback plan documented
@@ -67,31 +82,31 @@ Before applying any migration to production:
 ### Adding a Column Safely
 
 ```sql
--- ✅ GOOD: Nullable column — no lock, instant
+-- GOOD: Nullable column-no lock, instant
 ALTER TABLE users ADD COLUMN avatar_url TEXT;
 
--- ✅ GOOD: Column with default (Postgres 11+ — instant, no rewrite)
+-- GOOD: Column with default (Postgres 11+-instant, no rewrite)
 ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
 
--- ❌ BAD: NOT NULL without default on existing table
+-- BAD: NOT NULL without default on existing table
 ALTER TABLE users ADD COLUMN role TEXT NOT NULL;
--- Requires full table rewrite → table lock for minutes on large tables
+-- Requires full table rewrite -> table lock for minutes on large tables
 ```
 
 ### Creating an Index Without Downtime
 
 ```sql
--- ❌ BAD: Blocks all writes on large tables for minutes
+-- BAD: Blocks all writes on large tables for minutes
 CREATE INDEX idx_users_email ON users (email);
 
--- ✅ GOOD: Non-blocking, allows concurrent reads AND writes
+-- GOOD: Non-blocking, allows concurrent reads AND writes
 CREATE INDEX CONCURRENTLY idx_users_email ON users (email);
 
--- ⚠️ Note: CONCURRENTLY cannot run inside a transaction block.
+-- Note: CONCURRENTLY cannot run inside a transaction block.
 -- Most ORMs need a custom SQL migration for this (see Prisma section).
 ```
 
-### Renaming a Column (Zero-Downtime — 3 Deployments)
+### Renaming a Column (Zero-Downtime-3 Deployments)
 
 Never rename directly on a live system. Use the expand-contract pattern:
 
@@ -123,10 +138,10 @@ ALTER TABLE orders DROP COLUMN legacy_status;
 ### Large Data Migrations (Batched Updates)
 
 ```sql
--- ❌ BAD: Updates all rows in a single transaction (locks table)
+-- BAD: Updates all rows in a single transaction (locks table)
 UPDATE users SET normalized_email = LOWER(email);
 
--- ✅ GOOD: Batch update — small locks, no full-table blocking
+-- GOOD: Batch update-small locks, no full-table blocking
 DO $$
 DECLARE
   batch_size INT := 10000;
@@ -142,7 +157,7 @@ BEGIN
       FOR UPDATE SKIP LOCKED  -- Skip rows locked by other transactions
     );
     GET DIAGNOSTICS rows_updated = ROW_COUNT;
-    RAISE NOTICE 'Updated % rows', rows_updated;
+    RAISE NOTICE ''Updated % rows'', rows_updated;
     EXIT WHEN rows_updated = 0;
     COMMIT;           -- Release lock between batches
   END LOOP;
@@ -165,7 +180,7 @@ npx prisma migrate deploy
 # Regenerate Prisma client after schema changes
 npx prisma generate
 
-# Reset database (dev/test only — DESTROYS DATA)
+# Reset database (dev/test only-DESTROYS DATA)
 npx prisma migrate reset
 ```
 
@@ -188,12 +203,12 @@ model User {
 
 ### Custom SQL Migration (for CONCURRENTLY, raw DML)
 
-Prisma cannot generate `CONCURRENTLY` index creation. Write it manually:
+Prisma cannot generate CONCURRENTLY index creation. Write it manually:
 
 ```bash
 # Create an empty migration shell, then edit the SQL
 npx prisma migrate dev --create-only --name add_email_index_concurrently
-```
+``'
 
 ```sql
 -- prisma/migrations/20260317_add_email_index_concurrently/migration.sql
@@ -312,7 +327,7 @@ ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
 
 ---
 
-## Zero-Downtime Strategy: Expand → Migrate → Contract
+## Zero-Downtime Strategy: Expand -> Migrate -> Contract
 
 For any breaking schema change, use 3 separate deployments:
 
@@ -330,9 +345,116 @@ Phase 3: CONTRACT
   Migration: DROP old column in a separate, later migration
 ```
 
-**Never collapse these phases** — each requires a separate deployment so the running app always has valid data.
+**Never collapse these phases**-each requires a separate deployment so the running app always has valid data.
 
 ---
+
+## Blocking Violations (NEVER)
+
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Adding NOT NULL column without DEFAULT on existing table | Full table rewrite l lock for minutes | Add DEFAULT first, then set NOT NULL |
+| Dropping column while old app version is deployed | Immediate SELECT/INSERT failures | Remove app references first, then drop column |
+| Skipping rollback (DOWN) migration | Failed forward migration leaves unknown intermediate state | Always define and test DOWN migration |
+| Testing only against development database | Dev timings != production timings; hour-long locks hidden | Test against production-sized data copy |
+| Non-concurrent index on busy table | Blocks all reads/writes for duration of build | Always use CONCURRENTLY on production tables |
+| Deploying app + migration atomically without compatibility window | Zero-downtime requires both old schema + new code and new schema + old code to work simultaneously | Phase deployments: schema first, app second, cleanup third |
+
+## Verification
+
+### Self-Verification Checklist
+
+- [ ] Migration UP runs to completion with exit code 0
+- [ ] NOT NULL column has server-side DEFAULT or preceding backfill migration
+- [ ] Indexes created with CONCURRENTLY
+- [ ] Migration tested against production-sized data (>=80% of production row count)
+- [ ] Rollback migration tested: DOWN runs with exit code 0
+- [ ] `lock_timeout` set for production migrations
+
+### Verification Commands
+
+```bash
+# Verify schema after migration
+psql -c "\d <table>"
+
+# Check for CONCURRENTLY usage
+grep -n "CREATE INDEX" migration.sql | grep -v "CONCURRENTLY"
+
+# Test rollback
+psql -f down_migration.sql
+psql -c "\d <table>"  # confirm revert
+
+# Set lock timeout for safety
+psql -c "SET lock_timeout = '5s';" -f migration.sql
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Rollback | DOWN migration tested in staging | Do not deploy UP until DOWN is verified |
+| Lock Safety | `lock_timeout` set on all production migrations | Add `SET lock_timeout = '5s'` before DDL |
+| Data Integrity | Row counts match before/after migration | Investigate mismatch; restore from backup |
+| Production Parity | Test dataset >= 80% of production size | Scale up test data until threshold met |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task | Approach | Cost |
+|---|---|---|
+| Simple column add | Direct DDL (instant for nullable) | Free |
+| Index on large table | CONCURRENTLY | CPU cost, no downtime |
+| Data backfill (million rows) | Batched UPDATE (10K per batch) | DB CPU, no lock contention |
+
+### Parallelization
+
+- **Schema + Data migrations:** Must be sequential (never mix DDL and DML)
+- **Multiple data backfills:** Can run in parallel if on different tables
+- **Index creation:** Run `CREATE INDEX CONCURRENTLY` in parallel for different tables
+
+### Context Budget
+
+- **Expected context usage:** 3-6KB per migration design session
+- **When to context-optimize:** When reviewing multi-step expand-contract migration plans
+
+## Examples
+
+### Example 1: Adding a Column with Backfill
+
+**User request:** "Add `display_name` to users table (1M rows) and populate from `username`."
+
+**Skill execution:**
+1. Migration 001: `ALTER TABLE users ADD COLUMN display_name TEXT;` (instant, nullable)
+2. Migration 002: Batched UPDATE (10K rows per batch, SKIP LOCKED)
+3. Deploy app: write to both `username` and `display_name`
+4. Migration 003: `ALTER TABLE users DROP COLUMN username;` (after 30 days)
+
+**Result:** Column added and backfilled with zero downtime.
+
+### Example 2: Edge Case-CONCURRENTLY in Prisma
+
+**User request:** "Add an index on `orders.user_id` (50M rows) using Prisma."
+
+**Skill execution:**
+1. Create empty migration: `npx prisma migrate dev --create-only --name add_orders_user_id_idx`
+2. Replace generated SQL with `CREATE INDEX CONCURRENTLY idx_orders_user_id ON orders (user_id);`
+3. Note: cannot run in a transaction block
+4. Set `lock_timeout = '30s'` for safety
+
+**Result:** Index created with zero locking. Prisma limitation worked around.
+
+### Example 3: Rollback Failure Recovery
+
+**User request:** "Our migration failed halfway through. What now?"
+
+**Skill execution:**
+1. Check which part of the migration succeeded/failed
+2. Run the DOWN migration to revert to pre-migration state
+3. Investigate: was it a timeout, lock contention, or data integrity issue?
+4. Fix the issue, test on staging, re-apply
+
+**Result:** Safe rollback without data corruption.
 
 ## Anti-Patterns
 
@@ -345,30 +467,10 @@ Phase 3: CONTRACT
 
 ---
 
----
-
-## Self-Verification Checklist
-
-- [ ] Migration UP runs to completion with exit code 0: `psql -c "\d <table>"` (or equivalent) confirms the expected columns/indexes exist after applying
-- [ ] NOT NULL column has a server-side DEFAULT or a preceding backfill migration: `grep -rn "NOT NULL" <migration_file>` — every NOT NULL column is accompanied by DEFAULT or a prior data migration
-- [ ] Indexes created with `CONCURRENTLY`: `grep -n "CREATE INDEX" <migration_file>` returns 0 matches without `CONCURRENTLY` keyword
-- [ ] Migration tested against production-sized data: row count of test dataset is >= 80% of production row count — confirmed via `SELECT COUNT(*) FROM <table>` on both environments
-      grep -cE "ALTER TABLE|UPDATE|INSERT"
-- [ ] Rollback migration tested: DOWN migration runs with exit code 0 and `psql -c "\d <table>"` confirms the schema reverted to the pre-migration state
-- [ ] `lock_timeout` set: `grep -n "lock_timeout" <migration_file>` returns at least 1 match — missing lock_timeout is a blocking issue
-
-## Success Criteria
-
-This skill is complete when: 1) the migration file is tested against production-sized data and passes without table locks or timeouts, 2) schema changes and data backfills are in separate migrations, and 3) a rollback strategy is documented and tested in staging.
-
 ## Failure Modes
 
 | Situation                          | Response                                                                        |
 | ---------------------------------- | ------------------------------------------------------------------------------- |
-| Output exceeds expectations        | Redirect to sandbox or context-optimizer. Log and truncate.                     |
-| Skill conflicts with another skill | Define clear boundaries. Each skill owns one domain.                            |
-| Agent ignores skill                | Rewrite description to contain ONLY triggers, no workflow summary.              |
-| Generated output too verbose       | Apply conciseness check. Every line must earn its place.                        |
 | Migration fails mid-way            | Have rollback migration ready. Use transactions where possible.                 |
 | Schema change breaks running app   | Use expand-contract pattern. Add new column, migrate data, remove old.          |
 | Large table migration times out    | Use batched migrations. Add progress logging. Consider pt-online-schema-change. |
@@ -377,7 +479,29 @@ This skill is complete when: 1) the migration file is tested against production-
 ## Tips
 
 - **Use `EXPLAIN ANALYZE`** before any large migration to preview lock behavior
-- **Test rollbacks** — run the DOWN migration in staging before applying UP in production
-- **Set a lock timeout** in production: `SET lock_timeout = '5s'` — so a migration fails fast instead of queuing behind a long transaction
-- **Monitor during migrations** — watch pg_locks, long-running queries, and error rate
+- **Test rollbacks**-run the DOWN migration in staging before applying UP in production
+- **Set a lock timeout** in production: `SET lock_timeout = '5s'`-so a migration fails fast instead of queuing behind a long transaction
+- **Monitor during migrations**-watch pg_locks, long-running queries, and error rate
 - **Announce maintenance windows** for unavoidable locking operations
+
+## References
+
+### Internal Dependencies
+- `data-engineer` — Handles OLAP/warehouse schema evolution (partner skill)
+- `verification-loop` — Verifies migration correctness end-to-end
+- `observability-specialist` — Monitors migration execution and lock contention
+
+### External Standards
+- [PostgreSQL Documentation: CREATE INDEX CONCURRENTLY](https://www.postgresql.org/docs/current/sql-createindex.html) — Non-blocking index creation
+- [Prisma Migrate Documentation](https://www.prisma.io/docs/orm/prisma-migrate) — Migration patterns for Prisma
+- [Expand-Contract Pattern](https://www.prisma.io/dataguide/types/relational/expand-contract-pattern) — Zero-downtime schema changes
+
+### Related Skills
+- `data-engineer` — Partner skill for OLAP schema changes
+- `verification-loop` — Follows database-migrations for verification
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. |

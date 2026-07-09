@@ -1,6 +1,8 @@
-# Installing Mega-Mind Skills
+# Installing Mega-Mind Skills v1.0
 
-This guide covers how to install the Mega-Mind skill set into your project so it is available to your AI coding assistant (Antigravity, GitHub Copilot, Claude Code, OpenCode, Codex, etc.).
+This guide covers how to install the Mega-Mind Gold Standard v1.0 skill set into your project so it is available to your AI coding assistant (Antigravity, GitHub Copilot, Claude Code, OpenCode, Codex, etc.).
+
+> **v1.0 Update:** All 53 skills have been upgraded to the [Gold Standard SKILL.md v1.0](./.agent/shared/GOLD-STANDARD-SKILL.md) specification — 12 required sections per skill including Blocking Violations, Verification with quality gates, Performance & Cost models, structured Examples, and Anti-Patterns tables.
 
 ---
 

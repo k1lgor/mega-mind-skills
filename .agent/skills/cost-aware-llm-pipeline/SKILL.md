@@ -1,7 +1,12 @@
 ---
 name: cost-aware-llm-pipeline
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: LLM cost optimization patterns for model routing, budget tracking, and prompt caching. Use when building AI pipelines where cost matters or when routing tasks to the right model tier.
+description: |
+  LLM cost optimization patterns for model routing, budget tracking, and prompt caching.
+  Use when building AI pipelines where cost matters or when routing tasks to the right model tier.
+  Covers immutable cost tracking, narrow retry logic, prompt caching, and model routing by task complexity with budget enforcement.
+category: meta-learning
 triggers:
   - "cost optimization"
   - "model routing"
@@ -11,6 +16,11 @@ triggers:
   - "which model should I use"
   - "reduce api costs"
   - "haiku vs sonnet vs opus"
+  - "token budget"
+dependencies:
+  - ml-engineer: recommended
+  - search-vector-architect: recommended
+  - rtk: optional
 ---
 
 # Cost-Aware LLM Pipeline
@@ -18,6 +28,12 @@ triggers:
 ## Identity
 
 You are an LLM cost optimization specialist. Your job is to ensure AI pipelines stay within budget while maximizing output quality — by routing tasks to the cheapest model that can handle them, tracking costs immutably, retrying only on transient errors, and caching long prompts.
+
+**Your core responsibility:** Design AI pipelines that deliver maximum quality per dollar by routing tasks to the cheapest viable model.
+
+**Your operating principle:** 4 levers — model routing, cost tracking, narrow retry, prompt caching — applied in order.
+
+**Your quality bar:** Every pipeline step has an explicit model assignment based on task complexity, per-call costs are logged immutably, budget ceiling is enforced, and retry logic only fires on transient errors — no exceptions.
 
 ## When to Use
 
@@ -34,19 +50,27 @@ You are an LLM cost optimization specialist. Your job is to ensure AI pipelines 
 - For prototyping — add cost controls after the pipeline logic is proven correct, not before
 - When the team has no visibility into API spend (cost controls without observability are theater)
 
+## Core Principles
+
+1. **Route by complexity, not by habit.** Always start with the cheapest model that could plausibly handle the task. Test Haiku before Sonnet, Sonnet before Opus. Escalate only when quality fails, not as a default.
+2. **Track costs immutably.** Every API call produces a frozen cost record — never mutate, always append. Immutable records are auditable; mutable counters hide the source of cost spikes.
+3. **Retry narrow, fail fast.** Only retry transient errors (connection, rate limit, server error). Authentication and bad-request errors must fail immediately — no retry budget wasted on permanent failures.
+4. **Cache long prompts, never short ones.** System prompts and reference documents over 1,024 tokens should use `cache_control`. The first call pays full price; subsequent calls pay ~10% of the prompt cost. Content under 1,024 tokens never qualifies.
+5. **Enforce budget before every call.** Check the cumulative cost against the budget ceiling before making any API call. Stop the pipeline when budget is exceeded — mid-pipeline cost spikes are the most expensive failure mode.
+
 ---
 
 ## Core Concept: The 4 Levers
 
 ```
-┌─────────────────────── Cost Optimization ───────────────────────┐
-│                                                                  │
-│  1. MODEL ROUTING     Route by complexity (Haiku vs Sonnet)     │
-│  2. COST TRACKING     Immutable records of every API call       │
-│  3. NARROW RETRY      Retry only transient errors, fail fast    │
-│  4. PROMPT CACHING    Cache long system prompts                 │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
++----------------------- Cost Optimization -----------------------+
+|                                                                  |
+|  1. MODEL ROUTING     Route by complexity (Haiku vs Sonnet)     |
+|  2. COST TRACKING     Immutable records of every API call       |
+|  3. NARROW RETRY      Retry only transient errors, fail fast    |
+|  4. PROMPT CACHING    Cache long system prompts                 |
+|                                                                  |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -72,7 +96,6 @@ HAIKU = "claude-haiku-3-5-20251001"
 SONNET = "claude-sonnet-4-5"
 OPUS = "claude-opus-4-5"
 
-# Complexity signals
 COMPLEX_TEXT_THRESHOLD = 10_000   # characters
 COMPLEX_ITEM_THRESHOLD = 30       # items to process
 
@@ -91,7 +114,7 @@ def select_model(
     return HAIKU  # 3-4x cheaper than Sonnet
 ```
 
-### Task → Model Mapping
+### Task to Model Mapping
 
 | Task                               | Model  | Rationale           |
 | ---------------------------------- | ------ | ------------------- |
@@ -160,22 +183,6 @@ class CostTracker:
         return f"${self.total_cost:.4f} / ${self.budget_limit:.2f} ({len(self.records)} calls)"
 ```
 
-### Using the Tracker
-
-```python
-tracker = CostTracker(budget_limit=0.50)
-
-# After each API call
-response = client.messages.create(model=model, ...)
-record = CostRecord.from_response(model, response.usage)
-tracker = tracker.add(record)
-
-if tracker.over_budget:
-    raise BudgetExceededError(f"Budget exceeded: {tracker.summary()}")
-
-print(tracker.summary())  # "$0.0234 / $0.50 (3 calls)"
-```
-
 ---
 
 ## Lever 3: Narrow Retry Logic
@@ -206,19 +213,19 @@ def call_with_retry(func, max_retries: int = MAX_RETRIES):
             wait = 2 ** attempt  # 1s, 2s, 4s
             print(f"Retry {attempt + 1}/{max_retries} after {wait}s: {e}")
             time.sleep(wait)
-    # AuthenticationError, BadRequestError → not caught → raise immediately
+    # AuthenticationError, BadRequestError -> not caught -> raise immediately
 ```
 
 ### Error Classification
 
 | Error                 | Retry? | Why                              |
 | --------------------- | ------ | -------------------------------- |
-| `APIConnectionError`  | ✅ Yes | Network blip                     |
-| `RateLimitError`      | ✅ Yes | Slow down                        |
-| `InternalServerError` | ✅ Yes | Anthropic server issue           |
-| `AuthenticationError` | ❌ No  | Wrong API key — fix it first     |
-| `BadRequestError`     | ❌ No  | Bad prompt — retrying won't help |
-| `NotFoundError`       | ❌ No  | Model name wrong                 |
+| `APIConnectionError`  | Yes    | Network blip                     |
+| `RateLimitError`      | Yes    | Slow down                        |
+| `InternalServerError` | Yes    | Server issue                     |
+| `AuthenticationError` | No     | Wrong API key - fix it first     |
+| `BadRequestError`     | No     | Bad prompt - retrying won't help |
+| `NotFoundError`       | No     | Model name wrong                 |
 
 ---
 
@@ -237,7 +244,7 @@ messages = [
             {
                 "type": "text",
                 "text": system_prompt,          # Long, static content
-                "cache_control": {"type": "ephemeral"},  # ← Cache this!
+                "cache_control": {"type": "ephemeral"},  # Cache this!
             },
             {
                 "type": "text",
@@ -252,11 +259,11 @@ messages = [
 
 | Cache?    | Content Type                                            |
 | --------- | ------------------------------------------------------- |
-| ✅ Always | System prompts (role, rules, guidelines)                |
-| ✅ Always | Reference documents included in every call              |
-| ✅ Always | Few-shot examples that don't change                     |
-| ❌ Never  | User-specific or per-request content                    |
-| ❌ Never  | Content shorter than 1,024 tokens (minimum for caching) |
+| Always    | System prompts (role, rules, guidelines)                |
+| Always    | Reference documents included in every call              |
+| Always    | Few-shot examples that don't change                     |
+| Never     | User-specific or per-request content                    |
+| Never     | Content shorter than 1,024 tokens (minimum for caching) |
 
 ---
 
@@ -268,31 +275,22 @@ async def cost_aware_pipeline(tasks: list[dict], budget: float = 1.00):
     tracker = CostTracker(budget_limit=budget)
 
     for task in tasks:
-        # 1. Route to cheapest viable model
         model = select_model(
             text_length=len(task.get("content", "")),
             requires_deep_reasoning=task.get("complex", False)
         )
 
-        # 2. Check budget before proceeding
         if tracker.over_budget:
             print(f"Budget exceeded at task {task['id']}. Cost: {tracker.summary()}")
             break
 
-        # 3. Call with retry
         response = call_with_retry(lambda: client.messages.create(
             model=model,
             max_tokens=1024,
-            messages=[{
-                "role": "user",
-                "content": task["prompt"]
-            }]
+            messages=[{"role": "user", "content": task["prompt"]}]
         ))
 
-        # 4. Track cost immutably
         tracker = tracker.add(CostRecord.from_response(model, response.usage))
-
-        # 5. Log progress
         print(f"Task {task['id']} [{model}]: {tracker.summary()}")
 
     return tracker
@@ -300,30 +298,115 @@ async def cost_aware_pipeline(tasks: list[dict], budget: float = 1.00):
 
 ---
 
-## Cost Optimization Checklist
+## Blocking Violations (NEVER)
 
-Before running any LLM pipeline:
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Sending same prompt to most expensive model without testing cheaper option | 20x cost difference; cheaper model often sufficient | Test Haiku first; escalate to Sonnet/Opus only if quality fails |
+| Building pipeline without per-call cost logging | Cannot identify which stage caused cost spike | Instrument every call with cost tag (stage name, model, tokens) |
+| Using unbounded context as pipeline input | Cost multiplied by ratio of irrelevant tokens | Compress context; only send relevant subset |
+| Retrying failed model call without exponential backoff | Naive retry during outage exhausts monthly budget in minutes | Implement exponential backoff with jitter; cap at 3 retries |
+| Hardcoding model names as string literals | Swapping models requires changes in every call site | Use single configuration entry for model assignment |
 
-- [ ] Am I using the cheapest model that can handle this task?
-- [ ] Do I have a budget limit set?
-- [ ] Are my long system prompts cached?
-- [ ] Is my retry logic narrowed to transient errors only?
-- [ ] Am I tracking costs per-call (not just total)?
-- [ ] Do I have an early exit when budget is exceeded?
+## Verification
 
----
+### Self-Verification Checklist
 
-## Tips
+- [ ] Cheapest viable model selected for each task type (Haiku for extraction, Sonnet for reasoning, Opus for architecture)
+- [ ] Long system prompts cached with `cache_control`
+- [ ] Retry logic narrowed to transient errors only
+- [ ] Budget limit set and enforced (pipeline stops when exceeded)
+- [ ] Per-call costs logged immutably
+- [ ] Cost-per-step visible: pipeline output includes cost summary table
 
-- **Profile before optimizing**: Run one test call and check the response usage fields
-- **Haiku is underrated**: For extraction/formatting tasks, accuracy is nearly identical to Sonnet at 3-4x lower cost
-- **Cache early**: The minimum cache size is 1,024 tokens — most system prompts qualify
-- **Budget gates**: Stop the pipeline when budget is 80% consumed (leave 20% for error recovery)
-- **Log per-call**: Aggregate cost is less useful than seeing which step is expensive
+### Verification Commands
+
+```bash
+# Check model routing
+python -c "from routing import select_model; print(select_model(text_length=500))"
+
+# Verify cost tracking
+python -c "from cost_tracker import CostTracker; t = CostTracker(budget_limit=0.50); print(t.summary())"
+
+# Run pipeline with dry-run budget check
+python pipeline.py --dry-run --budget 0.50
+
+# Check cumulative savings
+python -c "from cost_tracker import get_session_costs; print(get_session_costs().summary())"
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Model Selection | Cheapest model that passes quality bar used for each task | Add routing logic; downgrade over-provisioned tasks |
+| Budget Enforcement | Pipeline stops when budget exceeded | Add budget gate check before each call |
+| Retry Safety | Only transient errors retried, max 3 attempts | Audit error handling; remove permanent-error retries |
+| Cost Visibility | Per-stage cost report generated | Add cost instrumentation to each pipeline step |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task Type | Recommended Model | Cost/1K calls |
+|---|---|---|
+| Extraction/formatting | Haiku | $0.01-$0.05 |
+| Standard coding/review | Sonnet | $0.05-$0.30 |
+| Architecture/research | Opus | $0.30-$1.50 |
+
+### Parallelization
+
+- **Independent tasks:** Can parallelize with separate budget trackers
+- **Sequential pipeline:** Must run sequentially (each step depends on prior)
+- **Retry calls:** Always sequential with backoff
+
+### Context Budget
+
+- **Expected context usage:** 3-6KB per pipeline configuration session
+- **When to context-optimize:** When configuring complex multi-stage pipelines with budget constraints
+
+## Examples
+
+### Example 1: Multi-Stage Document Processing
+
+**User request:** "Process 1000 support tickets. Classify, summarize, and route them."
+
+**Skill execution:**
+1. Task 1 (Classify): Route to Haiku — simple intent classification
+2. Task 2 (Summarize): Route to Sonnet — needs reasoning and synthesis
+3. Task 3 (Route): Rules-based post-processing — no model needed
+4. Budget: $1.00 limit
+5. Result: 600 Haiku calls ($0.48), 400 Sonnet calls ($1.20) — over budget!
+6. Optimization: Use Haiku for summarization — quality check passes at $0.80 total
+
+**Result:** Pipeline within budget. $0.80 vs $3.50 for all-Sonnet.
+
+### Example 2: Edge Case - Retry Storm
+
+**User request:** "Our pipeline cost $50 yesterday instead of the usual $2. What happened?"
+
+**Skill execution:**
+1. Check cost logs: Retry loop ran 10x on each of 500 items
+2. Root cause: API had a brief outage; no backoff implemented
+3. Fix: Add exponential backoff with jitter, cap at 3 retries
+4. Result: Cost back to $2/day
+
+**Result:** Retry storm prevented. Cost spike eliminated.
+
+### Example 3: Prompt Caching Savings
+
+**User request:** "We send the same 2000-token system prompt to Haiku 10,000 times a day."
+
+**Skill execution:**
+1. Add `cache_control: {"type": "ephemeral"}` to system prompt block
+2. First call: full price. Subsequent 9,999 calls: 10% of prompt cost
+3. Daily savings: ~$16/day (from $16 to $1.60 for prompt tokens)
+
+**Result:** 90% cost reduction on prompt tokens.
 
 ## Anti-Patterns
 
-- Never send the same prompt to the most expensive model without first testing if a cheaper model meets the quality bar because the cost difference between GPT-4 and GPT-3.5 is 20x, and most classification and extraction tasks are solved correctly by the cheaper model.
+- Never send the same prompt to the most expensive model without first testing if a cheaper model meets the quality bar because the cost difference between Opus and Haiku is 20x, and most classification and extraction tasks are solved correctly by the cheaper model.
 - Never build a pipeline without per-call cost logging because without granular cost data you cannot identify which stage is responsible for a cost spike and the only remediation available is to reduce quality across the entire pipeline.
 - Never use unbounded context as pipeline input because sending an entire codebase or document corpus to a model call when only a subset is relevant multiplies cost by the ratio of irrelevant to relevant tokens.
 - Never retry a failed model call without exponential backoff and a cost cap because a naive retry loop during a model provider outage can exhaust your monthly budget in minutes.
@@ -332,26 +415,31 @@ Before running any LLM pipeline:
 
 ## Failure Modes
 
-| Failure                                                                     | Cause                                                                                 | Recovery                                                                                                                                                     |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Expensive model used for a task that a cheap model handles correctly        | No routing logic; all requests sent to the most capable model by default              | Add a task complexity classifier at the pipeline entry point; route simple extraction/classification tasks to the cheapest model that passes the quality bar |
-| Token budget exhausted mid-pipeline, truncating output                      | Input context not estimated before sending; pipeline has no budget gate               | Add a pre-flight token count check before every model call; if estimated tokens exceed budget, apply context compression or split the task                   |
-| Cost spike caused by prompt that triggers verbose model output              | Prompt uses open-ended instructions ("explain in detail") on a high-token-price model | Use constrained output prompts ("respond in under 100 words") on expensive models; validate output length against budget before accepting                    |
-| Model downgrade silently degrades output quality below acceptable threshold | Cheaper model selected for cost reasons but quality not re-validated after switch     | Define a minimum quality bar for each task type; run quality eval after every model routing change before promoting to production                            |
-| Retry storm multiplies cost by 3–10x during a model API outage              | Exponential backoff not implemented; naive retry on every 5xx response                | Implement exponential backoff with jitter; cap total retries at 3; log cost-per-retry; fail fast after budget threshold exceeded                             |
-| Cost attribution lost across pipeline stages                                | No cost tracking per stage; total bill visible but individual stage cost invisible    | Instrument every model call with a cost tag (stage name, model, input/output tokens); aggregate by stage for per-stage cost visibility                       |
+| Failure | Cause | Recovery |
+|---|---|---|
+| Expensive model used for task cheap model handles | No routing logic; all requests sent to most capable model by default | Add task complexity classifier; route simple tasks to cheapest model |
+| Token budget exhausted mid-pipeline, truncating output | Input context not estimated before sending; no budget gate | Add pre-flight token count check; apply context compression |
+| Cost spike from prompt triggering verbose output | Open-ended instructions on high-token-price model | Use constrained output prompts; validate length before accepting |
+| Model downgrade silently degrades quality | Cheaper model selected for cost but quality not re-validated | Define minimum quality bar; run eval after model routing change |
+| Retry storm multiplies cost 3-10x during API outage | Exponential backoff not implemented | Implement backoff with jitter; cap at 3 retries; fail fast after budget exceeded |
 
-## Self-Verification Checklist
+## References
 
-grep -cE "budget|max_cost|cost_limit"
+### Internal Dependencies
+- `ml-engineer` — Uses cost-aware routing for LLM-based model evaluation and GenAI pipelines
+- `search-vector-architect` — Routes LLM calls in RAG pipeline to cheapest viable model
 
-- [ ] The cheapest viable model is selected for each task type (Haiku for extraction/formatting, Sonnet for standard reasoning, Opus only for architectural tasks)
-      grep -cE "cache_control|ephemeral"
-      grep -cE "429|503|RetryError"
-      grep -cE "input_tokens|output_tokens|cost"
-      grep -cE "0\.8|80%"
-- [ ] Cost-per-step is visible: pipeline output includes a cost summary table with >= 1 row per stage
+### External Standards
+- [Anthropic Pricing](https://www.anthropic.com/pricing) — Current model pricing (verify periodically)
+- [OpenAI Pricing](https://openai.com/api/pricing/) — Alternative provider pricing reference
 
-## Success Criteria
+### Related Skills
+- `ml-engineer` — Partner skill for model evaluation and selection
+- `rtk` — Companion skill for token optimization in CLI commands
 
-This skill is complete when: 1) every step in the pipeline has an explicit model assignment based on task complexity, 2) per-call costs are logged immutably and a budget ceiling is enforced, and 3) retry logic only fires on transient errors and stops before budget is exhausted.
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. |
+---

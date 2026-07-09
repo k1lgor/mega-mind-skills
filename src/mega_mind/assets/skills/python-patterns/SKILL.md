@@ -1,8 +1,14 @@
 ---
 name: python-patterns
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Production-grade Python design patterns, modern tooling, and idiomatic code standards for Python 3.10+. Covers dataclasses, context managers, decorators, async/await, exception hierarchies, Pydantic validation, pytest patterns, and packaging with pyproject.toml/uv. Use for any Python-specific development where quality, type safety, and performance matter.
+description: |
+  Production-grade Python design patterns, modern tooling, and idiomatic code standards for Python 3.10+.
+  Use for any Python-specific development where quality, type safety, and performance matter.
+  Differentiator: strict tooling discipline (uv + ruff + pyright + pytest), decision matrix for dataclass/Pydantic/TypedDict selection, async/await deep-dive with concurrency model decision guide, and exception hierarchy design patterns.
+category: domain-expert
 triggers:
+  - "/python"
   - "python patterns"
   - "idiomatic python"
   - "python threading"
@@ -18,13 +24,25 @@ triggers:
   - "python decorator"
   - "asyncio"
   - "ruff"
+dependencies:
+  - code-polisher: optional
+  - test-genius: optional
+  - migration-upgrader: optional
+  - performance-profiler: optional
+  - security-reviewer: optional
 ---
 
 # Python Development Patterns
 
 ## Identity
 
-You are a senior Python engineer with deep expertise in modern Python (3.10+) idioms, type safety, and production-grade patterns. You write code that is explicit, testable, and maintainable — not clever or magical. You enforce strict tooling discipline: ruff for linting/formatting, pyright for type checking, uv for package management, and pytest for testing. You know when to reach for dataclasses vs Pydantic, when async is appropriate vs threads vs processes, and how to design exception hierarchies that communicate intent clearly. You treat the Python type system as a first-class design tool, not an afterthought.
+You are a **senior Python engineer** with deep expertise in **modern Python (3.10+) idioms, type safety, and production-grade patterns**.
+
+**Your core responsibility:** Write Python code that is explicit, testable, and maintainable — not clever or magical. Apply strict tooling discipline: ruff for linting/formatting, pyright for type checking, uv for package management, and pytest for testing.
+
+**Your operating principle:** The Python type system is a first-class design tool, not an afterthought. Every function signature is fully annotated, every public API is documented via types, and pyright strict mode enforcement means if the type checker complains, you fix the code, not the config.
+
+**Your quality bar:** A Python task is "done" when `uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run pytest` all exit 0, every public function has complete type annotations, and no `# type: ignore` or `# noqa` comments were added without a documented justification.
 
 ## When to Use
 
@@ -45,19 +63,170 @@ You are a senior Python engineer with deep expertise in modern Python (3.10+) id
 - The ask is purely about SQL, infrastructure, or Docker with no Python logic involved
 - The user explicitly wants a "quick and dirty" prototype and has accepted lower quality
 
----
+## Core Principles (ALWAYS APPLY)
 
-## Core Principles
+1. **Explicit Over Implicit** — Avoid `**kwargs` sinks, `getattr` magic, and mutable globals. Every input and output should be named and typed. **[Enforcement]:** Any function signature using `**kwargs` without a defined TypedDict for the keyword arguments is rejected at review. Any mutation of a module-level global from inside a function is a blocking issue.
 
-1. **Explicit over implicit**: Avoid `**kwargs` sinks, `getattr` magic, and mutable globals. Every input and output should be named and typed.
-2. **Types are documentation**: Every function signature gets full type annotations. Use `pyright` in strict mode — if it complains, fix the code, not the config.
-3. **Immutability by default**: Prefer `frozen=True` dataclasses, `tuple` over `list` for fixed collections, and `Final` for constants.
-4. **EAFP with specificity**: Catch only the exceptions you can handle. Never `except Exception:` — always name the specific exception class.
-5. **Tooling is non-negotiable**: Every project uses `uv`, `ruff`, and `pyright`. No exceptions. `pip install` directly is forbidden on any managed project.
-6. **Async means async throughout**: Do not mix sync and async code in the same call stack. If a function is `async`, its callers must be `async` too, up to the event loop entry point.
-7. **Test the contract, not the implementation**: Pytest fixtures describe state, not procedure. Use `parametrize` for combinatorial coverage, not copy-paste tests.
+2. **Types Are Documentation** — Every function signature gets full type annotations. Use `pyright` in strict mode — if it complains, fix the code, not the config. **[Enforcement]:** `pyright` must exit 0 in strict mode. If a suppression (`# type: ignore`) is added, it must be accompanied by a same-line comment explaining why. More than 5 suppressions in a single PR triggers a mandatory review.
 
----
+3. **Immutability by Default** — Prefer `frozen=True` dataclasses, `tuple` over `list` for fixed collections, and `Final` for constants. **[Enforcement]:** A mutable default argument (`def f(x=[])`) is an automatic review failure. A list defined at module level that is never mutated should be a tuple.
+
+4. **EAFP With Specificity** — Catch only the exceptions you can handle. Never `except Exception:` — always name the specific exception class. **[Enforcement]:** A bare `except Exception` (without re-raise) in a production code path is a blocking violation. `except Exception as e: logger.error(...); raise` is acceptable for logging wrappers only.
+
+5. **Tooling Is Non-Negotiable** — Every project uses `uv`, `ruff`, and `pyright`. No exceptions. `pip install` directly is forbidden on any managed project. **[Enforcement]:** If `pip install` is detected in a Makefile, script, or documentation, it must be replaced with `uv add`. Any commit that adds a dependency via `pip install` is automatically rejected.
+
+6. **Async Means Async Throughout** — Do not mix sync and async code in the same call stack. If a function is `async`, its callers must be `async` too, up to the event loop entry point. **[Enforcement]:** A sync function calling an async function with `.run()` or `create_task()` outside an explicit async boundary is a design flaw and must be restructured.
+
+7. **Test the Contract, Not the Implementation** — Pytest fixtures describe state, not procedure. Use `parametrize` for combinatorial coverage, not copy-paste tests. **[Enforcement]:** Any test module with 3+ similar test functions that differ only in input/output values must be refactored to use `@pytest.mark.parametrize`.
+
+## Instructions
+
+### Step 0: Pre-Flight (MANDATORY)
+
+Before writing any Python code:
+1. Verify toolchain: `uv --version`, `ruff --version`, `pyright --version` all return without errors
+2. Check that `pyproject.toml` exists and has the correct tool configuration (ruff, pyright, pytest)
+3. If working on existing code, run the baseline checks: `uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run pytest`
+4. Identify the Python version target: `requires-python = ">=3.10"` in pyproject.toml
+5. Check whether this is new code, refactoring, or a fix — this determines tooling strictness
+
+### Step 1: Type Design
+
+**Goal:** Choose the correct data modelling tool for each data structure.
+
+**Expected output:** Data model definitions using the appropriate tool (dataclass, Pydantic, TypedDict, NamedTuple).
+
+**Tools to use:** Write (model files), pyright (verify type correctness).
+
+**Decision Matrix:**
+
+| Use Case                    | Tool                      | Why                              |
+|----------------------------|---------------------------|----------------------------------|
+| Internal data containers   | `@dataclass(frozen=True)` | Zero overhead, no validation     |
+| API request/response bodies | Pydantic `BaseModel`     | Runtime validation + JSON schema |
+| External config (env/YAML) | Pydantic `BaseSettings`  | Type coercion + env var support  |
+| Dict-shaped typed data     | `TypedDict`              | Structural typing without class  |
+| Simple immutable tuples    | `NamedTuple`             | Tuple semantics with names       |
+
+```python
+# Internal data — dataclass
+@dataclass(frozen=True, slots=True)
+class Event:
+    id: str
+    name: str
+    timestamp: datetime
+
+# API boundary — Pydantic
+class UserCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    email: str = Field(pattern=r"^[^@]+@[^@]+\.[^@]+$")
+```
+
+**Verification gate:** `pyright` reports 0 type errors. The data model choice matches the decision matrix above.
+
+### Step 2: Function & Logic Implementation
+
+**Goal:** Write fully-typed functions with proper error handling and documentation.
+
+**Expected output:** One or more Python modules with complete type annotations, exception hierarchy, and docstrings.
+
+**Tools to use:** Write (code files), ruff (linting during write).
+
+**Modern Type Hints (3.10+):**
+```python
+def process_items(items: list[str]) -> dict[str, int]:
+    return {item: len(item) for item in items}
+
+def parse_id(value: str | int) -> int:
+    return int(value)
+
+from typing import Protocol
+class Renderable(Protocol):
+    def render(self) -> str: ...
+```
+
+**Exception Hierarchy:**
+```python
+class AppError(Exception):
+    def __init__(self, message: str, code: str | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+
+class ResourceNotFoundError(AppError): ...
+class ValidationError(AppError): ...
+```
+
+**Verification gate:** `uv run pyright` exits 0. `uv run ruff check .` exits 0. Every function has parameter and return type annotations.
+
+### Step 3: Async/Concurrency Design
+
+**Goal:** Choose the correct concurrency model and implement it correctly.
+
+**Expected output:** Async or concurrent code following the decision matrix below.
+
+**Tools to use:** Write (async code), pyright (type-check async patterns).
+
+**Concurrency Decision Matrix:**
+```
+Task requires shared state with threads?          → asyncio (Task + Lock)
+Task is I/O-bound, uses async-native libraries?   → asyncio
+Task calls blocking C extensions / sync libs?     → ThreadPoolExecutor
+Task is CPU-intensive (image processing, ML)?     → ProcessPoolExecutor
+```
+
+```python
+# Correct async pattern
+async def fetch_with_timeout(url: str, timeout: float = 5.0) -> dict | None:
+    try:
+        async with asyncio.timeout(timeout):  # Python 3.11+
+            async with httpx.AsyncClient() as client:
+                return (await client.get(url)).json()
+    except TimeoutError:
+        return None
+```
+
+**Verification gate:** No `time.sleep()` in async code. No blocking library calls in the event loop without `run_in_executor`. All callers of async functions are themselves async.
+
+### Step 4: Test Writing
+
+**Goal:** Write pytest tests that cover the contract, not the implementation.
+
+**Expected output:** Test files with fixtures, parametrize, and coverage meeting the project baseline.
+
+**Tools to use:** Write (test files), bash (`uv run pytest`).
+
+```python
+@pytest.mark.parametrize("input,expected", [
+    ("hello", 5), ("", 0), ("  spaces  ", 8),
+])
+def test_string_length(input: str, expected: int) -> None:
+    assert len(input) == expected
+
+@pytest.fixture(scope="module")
+def db_connection():
+    conn = create_test_db_connection()
+    yield conn
+    conn.close()
+```
+
+**Verification gate:** `uv run pytest` exits 0 with coverage >= existing baseline %. No test uses `time.sleep()` for synchronisation.
+
+### Step 5: Final Verification
+
+**Goal:** Run the full toolchain and confirm all gates pass.
+
+**Expected output:** All four tools (ruff check, ruff format, pyright, pytest) exit 0.
+
+**Tools to use:** bash (toolchain commands).
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
+uv run pytest
+```
+
+**Verification gate:** All four commands exit 0. No warnings in ruff check. No errors in pyright strict mode.
 
 ## Modern Type Hints (3.10+)
 
@@ -72,150 +241,47 @@ def process_items(items: list[str]) -> dict[str, int]:
 def parse_id(value: str | int) -> int:
     return int(value)
 
-# TypeAlias for complex types (3.10+)
-type UserId = int  # Python 3.12+ syntax
-# or for 3.10/3.11:
-from typing import TypeAlias
-UserId: TypeAlias = int
-
 # Protocol-Based Duck Typing — prefer over ABCs for structural subtyping
 from typing import Protocol, runtime_checkable
-
 @runtime_checkable
 class Renderable(Protocol):
     def render(self) -> str: ...
-
-def render_all(items: list[Renderable]) -> str:
-    return "\n".join(item.render() for item in items)
-
-# ParamSpec for decorator type safety
-from typing import ParamSpec, TypeVar, Callable
-P = ParamSpec("P")
-T = TypeVar("T")
-
-def logged(func: Callable[P, T]) -> Callable[P, T]:
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-        print(f"Calling {func.__name__}")
-        return func(*args, **kwargs)
-    return wrapper
 ```
-
----
 
 ## Dataclass Patterns
 
-Dataclasses are the default choice for data containers. Use `frozen=True` unless mutation is required.
-
 ```python
-from dataclasses import dataclass, field
-from datetime import datetime
-
 @dataclass(frozen=True, slots=True)
 class Event:
-    """Immutable event record. Use frozen=True to enable hashing."""
     id: str
     name: str
     timestamp: datetime
     tags: tuple[str, ...] = field(default_factory=tuple)
-
-    def with_tag(self, tag: str) -> "Event":
-        """Return a new Event with an added tag (immutable update pattern)."""
-        return Event(
-            id=self.id,
-            name=self.name,
-            timestamp=self.timestamp,
-            tags=(*self.tags, tag),
-        )
-
-# For mutable containers with validation, use Pydantic (see below)
-# For simple accumulators that need mutation, use slots=True without frozen
-@dataclass(slots=True)
-class Counter:
-    name: str
-    value: int = 0
-
-    def increment(self, by: int = 1) -> None:
-        self.value += by
 ```
-
-### Dataclass vs Pydantic vs TypedDict Decision Matrix
-
-| Use Case                    | Tool                      | Why                              |
-| --------------------------- | ------------------------- | -------------------------------- |
-| Internal data containers    | `@dataclass(frozen=True)` | Zero overhead, no validation     |
-| API request/response bodies | Pydantic `BaseModel`      | Runtime validation + JSON schema |
-| External config (env, YAML) | Pydantic `BaseSettings`   | Type coercion + env var support  |
-| Dict-shaped typed data      | `TypedDict`               | Structural typing without class  |
-| Simple immutable tuples     | `NamedTuple`              | Tuple semantics with names       |
-
----
 
 ## Pydantic for Validation
 
 Use Pydantic v2 for all external data boundaries (API inputs, config files, environment variables).
 
 ```python
-from pydantic import BaseModel, Field, field_validator, model_validator
-from pydantic_settings import BaseSettings
-
 class UserCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     email: str = Field(pattern=r"^[^@]+@[^@]+\.[^@]+$")
     age: int = Field(ge=0, le=150)
 
-    @field_validator("name")
-    @classmethod
-    def name_must_not_be_whitespace(cls, v: str) -> str:
-        if not v.strip():
-            raise ValueError("name cannot be only whitespace")
-        return v.strip()
-
-    @model_validator(mode="after")
-    def check_adult_email_domain(self) -> "UserCreate":
-        if self.age < 18 and "kids" not in self.email:
-            raise ValueError("Under-18 users must use a kids domain")
-        return self
-
 class AppSettings(BaseSettings):
-    """Reads from environment variables automatically."""
     database_url: str
     api_key: str
     debug: bool = False
     max_workers: int = Field(default=4, ge=1, le=32)
-
     model_config = {"env_prefix": "APP_", "env_file": ".env"}
-
-# Usage: AppSettings() reads APP_DATABASE_URL, APP_API_KEY, etc.
 ```
-
----
 
 ## Context Managers
 
 Use context managers for any resource that requires cleanup, not just files.
 
 ```python
-from contextlib import contextmanager, asynccontextmanager
-from typing import Generator, AsyncGenerator
-
-# Class-based context manager for stateful resources
-class DatabaseTransaction:
-    def __init__(self, conn):
-        self.conn = conn
-        self._transaction = None
-
-    def __enter__(self) -> "DatabaseTransaction":
-        self._transaction = self.conn.begin()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
-        if exc_type is None:
-            self._transaction.commit()
-        else:
-            self._transaction.rollback()
-        return False  # Do not suppress exceptions
-
-# Generator-based context manager for simpler cases
 @contextmanager
 def temp_directory() -> Generator[Path, None, None]:
     import tempfile, shutil
@@ -224,37 +290,11 @@ def temp_directory() -> Generator[Path, None, None]:
         yield tmpdir
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
-
-# Async context manager
-@asynccontextmanager
-async def managed_http_client() -> AsyncGenerator["httpx.AsyncClient", None]:
-    import httpx
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        yield client
-
-# Usage
-with temp_directory() as d:
-    (d / "output.txt").write_text("hello")
-
-async def fetch_data(url: str) -> dict:
-    async with managed_http_client() as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        return response.json()
 ```
-
----
 
 ## Decorator Patterns
 
 ```python
-import functools
-import time
-from typing import Callable, TypeVar, ParamSpec
-
-P = ParamSpec("P")
-T = TypeVar("T")
-
 # Retry decorator with exponential backoff
 def retry(
     max_attempts: int = 3,
@@ -267,36 +307,14 @@ def retry(
             for attempt in range(max_attempts):
                 try:
                     return func(*args, **kwargs)
-                except exceptions as e:
+                except exceptions:
                     if attempt == max_attempts - 1:
                         raise
-                    wait = backoff_seconds * (2 ** attempt)
-                    time.sleep(wait)
-            raise RuntimeError("unreachable")  # for type checker
+                    time.sleep(backoff_seconds * (2 ** attempt))
+            raise RuntimeError("unreachable")
         return wrapper
     return decorator
-
-# Cache decorator (use functools.cache for simple cases)
-from functools import cache, cached_property
-
-@cache  # LRU cache with unlimited size (use lru_cache(maxsize=N) for bounded)
-def fibonacci(n: int) -> int:
-    if n < 2:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
-
-# cached_property for expensive computed attributes
-class Circle:
-    def __init__(self, radius: float) -> None:
-        self.radius = radius
-
-    @cached_property
-    def area(self) -> float:
-        import math
-        return math.pi * self.radius ** 2
 ```
-
----
 
 ## Async/Await Deep Dive
 
@@ -312,318 +330,106 @@ Task is CPU-intensive (image processing, ML)?     → ProcessPoolExecutor
 ### asyncio.gather for Concurrent I/O
 
 ```python
-import asyncio
-import httpx
-
-async def fetch_one(client: httpx.AsyncClient, url: str) -> dict:
-    response = await client.get(url)
-    response.raise_for_status()
-    return response.json()
-
 async def fetch_all(urls: list[str]) -> list[dict]:
     async with httpx.AsyncClient(timeout=30.0) as client:
-        # All requests run concurrently, results maintain order
         results = await asyncio.gather(
             *[fetch_one(client, url) for url in urls],
-            return_exceptions=True,  # Don't let one failure cancel all
+            return_exceptions=True,
         )
-    # Separate successes from failures
     successes = [r for r in results if not isinstance(r, Exception)]
-    failures = [r for r in results if isinstance(r, Exception)]
-    if failures:
-        print(f"{len(failures)} requests failed: {failures}")
     return successes
-
-# Timeout + cancellation
-async def fetch_with_timeout(url: str, timeout: float = 5.0) -> dict | None:
-    try:
-        async with asyncio.timeout(timeout):  # Python 3.11+
-            async with httpx.AsyncClient() as client:
-                return (await client.get(url)).json()
-    except TimeoutError:
-        return None
-
-# Running CPU-bound work without blocking the event loop
-async def process_image(path: Path) -> bytes:
-    loop = asyncio.get_running_loop()
-    # Run blocking function in thread pool to avoid blocking event loop
-    return await loop.run_in_executor(None, _sync_compress_image, path)
-
-def _sync_compress_image(path: Path) -> bytes:
-    # Synchronous PIL/Pillow operation
-    from PIL import Image
-    import io
-    img = Image.open(path)
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85)
-    return buf.getvalue()
 ```
 
 ### asyncio Pitfalls
 
 ```python
-# WRONG: Never use time.sleep() in async code — it blocks the event loop
+# WRONG: time.sleep() in async code
 async def bad_wait():
     time.sleep(1)  # Blocks ALL coroutines
 
-# CORRECT: Use asyncio.sleep()
+# CORRECT: asyncio.sleep()
 async def good_wait():
-    await asyncio.sleep(1)  # Yields control to event loop
-
-# WRONG: asyncio.gather with unrelated error handling
-async def fragile():
-    # If any task raises, all others are cancelled
-    results = await asyncio.gather(task1(), task2(), task3())
-
-# CORRECT: Use return_exceptions=True for resilient pipelines
-async def resilient():
-    results = await asyncio.gather(task1(), task2(), task3(), return_exceptions=True)
-    return [r for r in results if not isinstance(r, BaseException)]
+    await asyncio.sleep(1)  # Yields to event loop
 ```
-
----
 
 ## Exception Hierarchy Design
 
-Design exception hierarchies that express business intent, not implementation details.
-
 ```python
-# Define a base exception for your library/service
 class AppError(Exception):
-    """Base class for all application errors."""
     def __init__(self, message: str, code: str | None = None) -> None:
         super().__init__(message)
         self.code = code
 
-# Organize by domain, not by HTTP status
-class AuthenticationError(AppError):
-    """User is not authenticated."""
-
-class AuthorizationError(AppError):
-    """User is authenticated but lacks permission."""
-
-class ResourceNotFoundError(AppError):
-    """Requested resource does not exist."""
-    def __init__(self, resource_type: str, resource_id: str | int) -> None:
-        super().__init__(f"{resource_type} '{resource_id}' not found")
-        self.resource_type = resource_type
-        self.resource_id = resource_id
-
-class ValidationError(AppError):
-    """Input data is invalid."""
-    def __init__(self, field: str, message: str) -> None:
-        super().__init__(f"Validation failed for '{field}': {message}")
-        self.field = field
-
-# Usage: catch at the right level
-try:
-    user = get_user(user_id)
-except ResourceNotFoundError as e:
-    return http_404(str(e))
-except AuthenticationError:
-    return http_401()
-except AppError as e:
-    logger.error("App error: %s (code=%s)", e, e.code)
-    return http_500()
+class AuthenticationError(AppError): ...
+class AuthorizationError(AppError): ...
+class ResourceNotFoundError(AppError): ...
+class ValidationError(AppError): ...
 ```
-
----
 
 ## Pathlib Usage
 
 Never use `os.path` — always use `pathlib.Path`.
 
 ```python
-from pathlib import Path
-
-# Reading and writing
 config_path = Path("config") / "settings.toml"
 content = config_path.read_text(encoding="utf-8")
-config_path.write_text(updated_content, encoding="utf-8")
-
-# Iterating a directory
-def find_python_files(root: Path) -> list[Path]:
-    return sorted(root.rglob("*.py"))
-
-# Safe path construction (no string concatenation)
-def build_output_path(base: Path, name: str, suffix: str = ".json") -> Path:
-    return (base / "output" / name).with_suffix(suffix)
-
-# Check existence and create directories
-output_dir = Path("dist") / "reports"
-output_dir.mkdir(parents=True, exist_ok=True)
-
-# Temporary files
-import tempfile
-with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
-    tmp_path = Path(f.name)
-# Process tmp_path, then:
-tmp_path.unlink(missing_ok=True)
 ```
-
----
 
 ## Memory and Performance
 
 ### `__slots__` for High-Volume Objects
 
-Reduces memory usage by 30-50% for classes instantiated in high volume.
-
 ```python
-@dataclass(slots=True)   # dataclass with slots — the modern way
+@dataclass(slots=True)  # 30-50% memory savings
 class Point:
     x: float
     y: float
-
-# For regular classes:
-class Connection:
-    __slots__ = ("host", "port", "_socket")
-    def __init__(self, host: str, port: int) -> None:
-        self.host = host
-        self.port = port
-        self._socket = None
 ```
 
 ### Generators for Large Data
 
 ```python
-from collections.abc import Iterator, Generator
-
 def read_large_file(path: Path) -> Iterator[str]:
-    """Read file line-by-line without loading into memory."""
     with open(path, encoding="utf-8") as f:
         for line in f:
             yield line.strip()
-
-def batched(iterable, n: int) -> Generator[list, None, None]:
-    """Yield successive n-sized batches."""
-    batch = []
-    for item in iterable:
-        batch.append(item)
-        if len(batch) == n:
-            yield batch
-            batch = []
-    if batch:
-        yield batch
-
-# Process a 10GB file in 1000-line batches:
-for batch in batched(read_large_file(Path("big.csv")), 1000):
-    process_batch(batch)
 ```
 
 ### String Building
 
 ```python
-# WRONG: O(n^2) string concatenation in a loop
-result = ""
-for item in items:
-    result += item + ", "  # Creates a new string object every iteration
-
 # CORRECT: join()
 result = ", ".join(items)
-
-# For complex string building with logic:
-import io
+# For complex building:
 buf = io.StringIO()
 for item in items:
     buf.write(item)
-    if item.endswith("."):
-        buf.write("\n")
 result = buf.getvalue()
 ```
-
----
 
 ## Testing Patterns with pytest
 
 ### Fixture Design
 
 ```python
-import pytest
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
-
-# Scope: function (default), class, module, session
 @pytest.fixture(scope="module")
 def db_connection():
-    """Module-scoped: one connection per test module."""
     conn = create_test_db_connection()
     yield conn
     conn.close()
-
-@pytest.fixture
-def user(db_connection) -> User:
-    """Function-scoped: fresh user per test."""
-    u = User(name="test", email="test@example.com")
-    db_connection.insert(u)
-    yield u
-    db_connection.delete(u)
-
-# Async fixtures
-@pytest.fixture
-async def async_client():
-    async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-        yield client
 ```
 
 ### Parametrize for Combinatorial Coverage
 
 ```python
 @pytest.mark.parametrize("input,expected", [
-    ("hello", 5),
-    ("", 0),
-    ("  spaces  ", 8),
-    ("unicode: ñ", 10),
+    ("hello", 5), ("", 0), ("  spaces  ", 8),
 ])
 def test_string_length(input: str, expected: int) -> None:
     assert len(input) == expected
-
-# Parametrize with IDs for clarity
-@pytest.mark.parametrize("status_code,should_raise", [
-    pytest.param(200, False, id="success"),
-    pytest.param(404, True, id="not_found"),
-    pytest.param(500, True, id="server_error"),
-])
-def test_response_handling(status_code: int, should_raise: bool) -> None:
-    if should_raise:
-        with pytest.raises(HTTPError):
-            handle_response(MockResponse(status_code))
-    else:
-        handle_response(MockResponse(status_code))  # Should not raise
-
-# Exception testing
-def test_invalid_user_raises_validation_error() -> None:
-    with pytest.raises(ValidationError, match="email"):
-        UserCreate(name="Bob", email="not-an-email", age=25)
 ```
-
-### Mocking
-
-```python
-from unittest.mock import AsyncMock, MagicMock, patch
-
-def test_fetch_user_calls_http(monkeypatch):
-    mock_get = MagicMock(return_value=MagicMock(json=lambda: {"id": 1, "name": "Alice"}))
-    monkeypatch.setattr("myapp.client.get", mock_get)
-    result = fetch_user(1)
-    mock_get.assert_called_once_with("/users/1")
-    assert result.name == "Alice"
-
-@pytest.mark.asyncio
-async def test_async_fetch(monkeypatch):
-    mock_response = AsyncMock()
-    mock_response.json = MagicMock(return_value={"id": 1})
-    mock_response.raise_for_status = MagicMock()
-    with patch("httpx.AsyncClient.get", return_value=mock_response):
-        result = await fetch_user_async(1)
-    assert result["id"] == 1
-```
-
----
 
 ## Packaging with pyproject.toml and uv
-
-### pyproject.toml Template
 
 ```toml
 [build-system]
@@ -633,143 +439,177 @@ build-backend = "hatchling.build"
 [project]
 name = "mypackage"
 version = "0.1.0"
-description = "Short description"
 requires-python = ">=3.10"
-dependencies = [
-    "pydantic>=2.0",
-    "httpx>=0.27",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-    "ruff>=0.4",
-    "pyright>=1.1",
-]
+dependencies = ["pydantic>=2.0", "httpx>=0.27"]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 100
 
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "SIM", "ANN"]
-ignore = ["ANN101", "ANN102"]
-
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
 ```
 
 ### uv Commands (Use Instead of pip)
 
 ```bash
-# Create and activate a virtual environment
-uv venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-
-# Install project with dev dependencies
+uv venv && source .venv/bin/activate
 uv sync --extra dev
-
-# Add a new dependency
 uv add httpx
-
-# Add a dev dependency
 uv add --dev pytest-asyncio
-
-# Run a command inside the project env
 uv run pytest
 uv run pyright
 uv run ruff check .
-
-# Run without installing (like npx)
-uvx ruff check .
-uvx mypy .
 ```
-
----
 
 ## Tooling Integration Summary
 
 | Tool          | Purpose                                  | Command                   |
-| ------------- | ---------------------------------------- | ------------------------- |
+|---------------|------------------------------------------|---------------------------|
 | `ruff check`  | Linting (replaces flake8, isort, pylint) | `uv run ruff check .`     |
 | `ruff format` | Formatting (replaces black)              | `uv run ruff format .`    |
 | `pyright`     | Type checking (strict mode)              | `uv run pyright`          |
 | `pytest`      | Testing                                  | `uv run pytest --cov=src` |
-| `uv`          | Package management (replaces pip, venv)  | `uv sync`, `uv add`       |
+| `uv`          | Package management (replaces pip/venv)   | `uv sync`, `uv add`       |
 
----
+## Blocking Violations (NEVER)
 
-## Self-Verification Checklist
+| Violation | Consequence | Recovery |
+|-----------|-------------|----------|
+| Using a mutable default argument (e.g., `def f(x=[])`) | Python creates the default object once at function definition time; all callers that omit the argument share the same mutable object, causing state to accumulate across calls | Change default to `None` and add an `if x is None: x = []` guard inside the function body. pyright will flag this if configured correctly. |
+| Silencing a broad exception with `except Exception: pass` | Suppressing all exceptions hides bugs, swallows keyboard interrupts, and makes debugging production failures impossible without additional logging | Either catch specific exception types, or log the exception before `pass`. A bare `except: pass` is always wrong. |
+| Using `is` to compare values (e.g., `x is 1`, `x is "hello"`) | `is` checks object identity, not equality; CPython interns small integers and some strings, making identity comparison coincidentally correct in tests but incorrect in production with different interpreter implementations | Use `==` for value comparison. Reserve `is` for `None` comparison (`x is None`) and singleton checks only. |
 
-Before declaring a Python task complete, verify:
+## Verification
+
+Before declaring any Python task complete:
+
+### Self-Verification Checklist
 
 - [ ] `uv run ruff check .` exits 0 — 0 errors reported (no `# noqa` suppressions without justification)
 - [ ] `uv run ruff format --check .` exits 0 — 0 formatting differences
-- [ ] `uv run pyright` exits 0 — 0 errors in strict mode (or the agreed mode for this project)
+- [ ] `uv run pyright` exits 0 — 0 errors in strict mode
 - [ ] All new functions have complete type annotations on parameters and return types
-- [ ] No `pip install` was used: `grep -rn "pip install" Makefile scripts/ *.sh` returns = 0 matches
-      grep -rnE "except Exception|except BaseException"
-- [ ] No `os.path` usage: `grep -rn "os\.path\." src/` returns = 0 matches (replaced by `pathlib.Path`)
-      grep -rnE "def ._=[[:space:]]_\[|def ._=[[:space:]]_{"
+- [ ] No `pip install` used: `grep -rn "pip install" Makefile scripts/` returns 0 matches
+- [ ] No `os.path` usage: `grep -rn "os\.path\." src/` returns 0 matches (replaced by `pathlib.Path`)
 - [ ] `uv run pytest` exits 0 with coverage >= existing baseline %
 
----
+### Quality Gates
 
-## Success Criteria
+| Gate | Criteria | Fail Action |
+|------|----------|-------------|
+| Type Safety | `pyright` strict mode exits 0 with 0 errors | Fix type errors; do not add `# type: ignore`. If genuinely impossible to type, add ignore with justification comment. |
+| Code Quality | `ruff check` exits 0 with 0 warnings | Auto-fix with `ruff check --fix .`. Review changes. Suppress only with justification. |
+| Test Coverage | `pytest` exits 0 with no regression in pass count | Investigate failures. If pre-existing, document in task.md. Do not disable tests. |
 
-A task using this skill is complete when:
+## Performance & Cost
 
-1. `uv run ruff check . && uv run ruff format --check . && uv run pyright` all exit with code 0.
-2. All new public functions, classes, and methods have type annotations accepted by pyright.
-3. `uv run pytest` passes with zero failures and coverage does not regress from the pre-task baseline.
-4. No new `# type: ignore` or `# noqa` comments were added without a documented justification comment on the same line.
-5. The `pyproject.toml` reflects all new dependencies (no manual `pip install` was used).
+### Model Selection
 
----
+| Task Complexity | Recommended Model | Estimated Tokens |
+|----------------|------------------|-----------------|
+| Single function/module with straightforward types | Fast reasoning model | 2K-5K |
+| New service with async, Pydantic, pytest | Deep reasoning model | 5K-15K |
+| Large refactor across multiple modules + async migration | Deep reasoning model | 15K-30K |
+
+### Context Budget
+
+- **Expected context usage:** 3K-10K tokens per Python task
+- **When to context-optimize:** When reviewing 10+ module outputs from ruff/pyright — pipe through `rtk` to reduce noise
+- **Context recovery:** Commit after each logical module is passing all toolchain checks
+
+## Examples
+
+### Example 1: API Data Model Design
+
+**User request:**
+```
+Design the data models for a user registration API — validate email, enforce age limits, and support configurable settings.
+```
+
+**Skill execution:**
+
+1. **Choice:** Pydantic `BaseModel` for API boundary (needs validation), `BaseSettings` for configuration (env var support)
+2. **Implementation:**
+   - `UserCreate(BaseModel)` with `Field(min_length=1, max_length=100)` for name, `Field(pattern=r"...")` for email, `Field(ge=0, le=150)` for age
+   - `@field_validator("name")` to strip whitespace
+   - `AppSettings(BaseSettings)` with `env_prefix: "APP_"` for env-var-driven config
+3. **Verification:** `pyright` strict mode exits 0. `ruff check` exits 0. `pytest` passes with edge cases (empty name, invalid email format, age = 0, age = 150, age = 151).
+
+**Result:** `user_model.py` with 2 Pydantic models, 2 validators, 0 type errors. 8 pytest test cases covering all field constraints.
+
+### Example 2: Async API Client
+
+**User request:**
+```
+Write an async function that fetches data from 5 external APIs concurrently and aggregates the results. Handle timeouts and partial failures gracefully.
+```
+
+**Skill execution:**
+
+1. **Choice:** `asyncio.gather` with `return_exceptions=True` — all requests fire concurrently, one failure doesn't cancel others
+2. **Implementation:**
+   - `async with httpx.AsyncClient(timeout=30.0)` as shared client
+   - `asyncio.gather(*[fetch_one(client, url) for url in urls], return_exceptions=True)`
+   - Separate successes from failures after gather
+   - `asyncio.timeout(5.0)` per individual request for fine-grained timeout
+3. **Result:** 5 concurrent requests. If 2 fail, 3 succeed — partial results returned with error count logged.
+
+**Result:** `aggregator.py` with 2 functions, complete type annotations, 100% test coverage (success, partial failure, full failure, timeout).
+
+### Example 3: Edge Case — Debugging a Memory Leak
+
+**User request:**
+```
+Our long-running service leaks memory. After 24 hours it's using 2GB and needs restarting.
+```
+
+**Skill execution:**
+
+1. **Investigation:** Use `tracemalloc` to find top allocations
+2. **Finding:** A cache implemented as a module-level `dict` that grows without bound — keys are unique request IDs that are never evicted
+3. **Fix:** Replace unbounded dict with `lru_cache(maxsize=1000)` or a custom `OrderedDict`-based LRU cache
+4. **Verification:** Run the service under load for 1 hour, confirm heap stabilises under 200MB
+
+**Result:** 2-line fix (`cache: dict = {}` → `@lru_cache(maxsize=1000)`). 24-hour stability test passes with heap under 200MB.
 
 ## Anti-Patterns
 
-- Never use a mutable default argument (e.g., `def f(x=[])`) because Python creates the default object once at function definition time; all callers that omit the argument share the same mutable object, causing state to accumulate across calls.
-- Never silence a broad exception with `except Exception: pass` because suppressing all exceptions hides bugs, swallows keyboard interrupts, and makes debugging production failures impossible without additional logging.
-- Never import from a module's private namespace (e.g., `from module._internal import X`) because private symbols have no stability guarantee and can be renamed or removed in any minor version without a deprecation notice.
-- Never use `is` to compare values (e.g., `x is 1`, `x is "hello"`) because `is` checks object identity, not equality; CPython interns small integers and some strings, making identity comparison coincidentally correct in tests but incorrect in production with different interpreter implementations or string origins.
-- Never perform file I/O in a `__init__` method because object construction should not have side effects that require error handling or cleanup; I/O in `__init__` makes the class untestable without touching the filesystem and prevents use of the object in memory-only contexts.
-- Never use `time.sleep` in production code to wait for an asynchronous event because sleep-based polling is unpredictable under load — too short causes a busy loop, too long introduces unnecessary latency — and cannot be cancelled cleanly on shutdown.
+| Anti-Pattern | Why It's Wrong | Correct Approach |
+|-------------|---------------|-----------------|
+| Performing file I/O in a `__init__` method | Object construction should not have side effects that require error handling or cleanup; I/O in `__init__` makes the class untestable without touching the filesystem | Move I/O to a factory function or class method. The constructor should only assign values. |
+| Using `time.sleep` in production code to wait for an asynchronous event | Sleep-based polling is unpredictable under load — too short causes a busy loop, too long introduces unnecessary latency — and cannot be cancelled cleanly on shutdown | Use `asyncio.Event` or a proper synchronisation primitive. If polling is unavoidable, use exponential backoff with a configurable timeout. |
+| Importing from a module's private namespace (`from module._internal import X`) | Private symbols have no stability guarantee and can be renamed or removed in any minor version without a deprecation notice | Use only the public API. If the needed symbol is not public, open a feature request or implement the functionality yourself. |
 
----
+## References
 
-## Failure Modes
+### Internal Dependencies
 
-| Situation                                | Response                                                                                                              |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| pyright reports errors after refactor    | Fix the root type error — do not add `# type: ignore`. Narrow the type or add a proper guard.                         |
-| `ruff check` reports import order issues | Run `uv run ruff check --fix .` to auto-fix; review the changes.                                                      |
-| Async code deadlocks                     | Audit for `time.sleep()`, blocking DB drivers, or sync code called directly from coroutines. Run in executor.         |
-| Memory leak in long-running service      | Audit for circular references, un-closed file handles, and large objects stored in module globals. Use `tracemalloc`. |
-| Test is flaky due to timing              | Replace `time.sleep()` assertions with proper async awaits or `pytest-anyio` time controls.                           |
-| uv.lock conflicts in merge               | Run `uv sync` after resolving `pyproject.toml` conflict. Commit the regenerated `uv.lock`.                            |
-| Package version conflict                 | Use `uv add "package>=X,<Y"` to bound the range. Check `uv tree` to see the full dependency graph.                    |
-| Pydantic validation error in production  | Add a `try/except ValidationError` at the API boundary and return a structured 422 response with `e.errors()`.        |
+- `code-polisher` — Applies structural refactoring patterns to Python code after initial implementation
+- `test-genius` — Complements testing patterns; test-genius focuses on test strategy, python-patterns covers tool-specific pytest usage
+- `migration-upgrader` — Uses Python-specific patterns when upgrading Python version or migrating from Python 2
+- `performance-profiler` — Used when async patterns, memory usage, or data processing needs benchmarking
+- `security-reviewer` — Audits Python code for security vulnerabilities after implementation
 
----
+### External Standards
 
-## Integration with Mega-Mind
+- [PEP 8 — Style Guide for Python Code](https://peps.python.org/pep-0008/) — Base style guide; ruff enforces this automatically
+- [PEP 484 — Type Hints](https://peps.python.org/pep-0484/) — Type annotation standard used throughout
+- [PEP 585 — Type Hinting Generics In Standard Collections](https://peps.python.org/pep-0585/) — Enables `list[str]` instead of `List[str]`
+- [PEP 604 — Allow writing union types as X | Y](https://peps.python.org/pep-0604/) — Enables `str | int` instead of `Union[str, int]`
+- [Pydantic v2 Official Documentation](https://docs.pydantic.dev/latest/) — Reference for Pydantic model design and validation
+- [pytest Documentation](https://docs.pytest.org/en/stable/) — Test framework patterns and fixture design
 
-`python-patterns` is invoked by:
+### Related Skills
 
-- `backend-architect` when implementing Python services
-- `test-genius` when writing pytest suites
-- `code-polisher` when refactoring Python code to modern standards
-- `migration-upgrader` when upgrading Python version or migrating from Python 2
+- `code-polisher` — Follows this skill: after Python implementation, code-polisher can optimise structure
+- `migration-upgrader` — Invokes this skill when Python version migration requires modern idiom updates
+- `backend-architect` — Invokes this skill when implementing Python backend services
 
-Hand off to:
+## Changelog
 
-- `eval-harness` after writing new logic, to define pass/fail criteria
-- `security-reviewer` after implementing auth, crypto, or external API integrations
-- `performance-profiler` when async patterns or data processing need benchmarking
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, 5-step Instructions workflow (Type Design → Logic Implementation → Async Design → Tests → Verification), Blocking Violations table, Performance & Cost, Examples (3), Anti-Patterns table, References, Changelog |
+| 1.0.0 | 2025-06-01 | Initial version |

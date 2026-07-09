@@ -1,26 +1,48 @@
 ---
 name: workflow-orchestrator
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Complex task scheduling and orchestration. Use for workflow automation tasks.
+description: |
+  Complex task scheduling and orchestration for multi-step workflow automation.
+  Use for workflow automation tasks — building Temporal workflows, Saga compensation patterns, event-driven orchestration, and cron-based scheduling.
+  Covers sequential/parallel/conditional workflows, Saga compensation, retry strategies, dead-letter queues, and state persistence.
+category: domain-expert
 triggers:
   - "workflow automation"
   - "task orchestration"
   - "scheduling"
   - "workflow engine"
+  - "Saga pattern"
+  - "compensation"
+  - "Temporal"
+  - "distributed workflow"
+  - "retry strategy"
+  - "dead letter queue"
+dependencies:
+  - verification-loop: recommended
+  - observability-specialist: recommended
+  - content-hash-cache-pattern: optional
 ---
 
 # Workflow Orchestrator Skill
 
 ## Identity
 
-You are a workflow orchestration specialist focused on automating complex task sequences.
+You are a workflow orchestration specialist focused on automating complex task sequences reliably, with compensation logic for partial failures. You design workflows that survive partial failures, retry transient errors, and leave the system in a consistent state even when individual steps fail. You never start parallel branches without a join condition, never retry non-idempotent steps without checking for partial completion, and never define a workflow without an explicit terminal state.
+
+**Your core responsibility:** Design and implement reliable multi-step workflows with proper compensation, retry, idempotency, and observability.
+
+**Your operating principle:** Every step has a retry policy, every mutation has compensation, every workflow has a terminal state.
+
+**Your quality bar:** Every workflow has compensation logic for mutating steps, retry bounds with exponential backoff, idempotency keys for external API calls, per-step observability, and >= 2 orchestrator replicas — no exceptions.
 
 ## When to Use
 
-- Building workflow automation
-- Task scheduling
-- Process orchestration
-- Event-driven systems
+- Building workflow automation with multiple sequential or parallel steps
+- Task scheduling with cron-based or event-driven triggers
+- Process orchestration requiring Saga compensation patterns
+- Event-driven systems with conditional branching and retry logic
+- Distributed transactions requiring rollback coordination
 
 ## When NOT to Use
 
@@ -29,285 +51,187 @@ You are a workflow orchestration specialist focused on automating complex task s
 - Real-time event handling with sub-second latency requirements — Temporal/orchestration adds latency overhead
 - When the "workflow" is just 2-3 API calls in sequence — implement it directly in the service layer
 
+## Core Principles
+
+1. **Every mutation has compensation.** Any step that modifies external state must have a compensating action that can undo it. Uncompensated mutations leave the system in an inconsistent state after failure.
+2. **Idempotency is required for retryable steps.** A retried step must produce the same result whether it runs once or twice. Use idempotency keys derived from workflow ID + step name.
+3. **State must persist between steps.** If the orchestrator crashes mid-workflow, it must resume from the last persisted checkpoint, not start from scratch.
+4. **Observability is not optional.** Every step must emit start/complete/error events. A workflow without per-step logs produces no forensic trail for debugging failures.
+5. **Parallel branches need explicit join conditions.** Unjoined parallel branches have no signal for when the aggregate is complete, causing downstream steps to start prematurely or never start.
+6. **Dead-letter queues prevent infinite retries.** Poison-pill messages that cannot be processed must be quarantined, not retried indefinitely.
+
+---
+
 ## Workflow Patterns
 
 ### Sequential Workflow
-
 ```
-Task A → Task B → Task C → Task D
+Task A -> Task B -> Task C -> Task D
 ```
 
 ### Parallel Workflow
-
 ```
-       ┌── Task B ──┐
-Task A ├── Task C ──┼── Task E
-       └── Task D ──┘
+       +-- Task B --+
+Task A +-- Task C --+-- Task E
+       +-- Task D --+
 ```
 
 ### Conditional Workflow
+```
+Task A -> Decision -> Task B (if condition)
+                  -> Task C (else)
+```
 
-```
-Task A → Decision → Task B (if condition)
-                 → Task C (else)
-```
+---
 
 ## Implementation
 
 ### Temporal Workflow
 
 ```typescript
-// workflows/order-workflow.ts
-import { proxyActivities } from "@temporalio/workflow";
-import type * as activities from "../activities";
-
-const {
-  validateOrder,
-  reserveInventory,
-  processPayment,
-  shipOrder,
-  notifyCustomer,
-} = proxyActivities<typeof activities>({
-  startToCloseTimeout: "1 minute",
-});
-
 export async function processOrder(orderId: string): Promise<OrderResult> {
-  // Step 1: Validate
   const order = await validateOrder(orderId);
-  if (!order.valid) {
-    throw new Error("Invalid order");
-  }
+  if (!order.valid) throw new Error("Invalid order");
 
-  // Step 2: Reserve inventory
   const reservation = await reserveInventory(order.items);
-  if (!reservation.success) {
-    throw new Error("Inventory not available");
-  }
+  if (!reservation.success) throw new Error("Inventory not available");
 
   try {
-    // Step 3: Process payment
     const payment = await processPayment(order.paymentInfo);
-    if (!payment.success) {
-      throw new Error("Payment failed");
-    }
-
-    // Step 4: Ship order
     const shipment = await shipOrder(orderId, reservation.id);
-
-    // Step 5: Notify customer
-    await notifyCustomer(order.customerId, {
-      type: "order_confirmed",
-      orderId,
-      trackingNumber: shipment.trackingNumber,
-    });
-
+    await notifyCustomer(order.customerId, { type: "order_confirmed", orderId });
     return { success: true, orderId, trackingNumber: shipment.trackingNumber };
   } catch (error) {
-    // Compensating transaction: release inventory
     await releaseInventory(reservation.id);
     throw error;
   }
 }
 ```
 
-### Workflow with Saga Pattern
+### Saga Compensation Pattern
 
 ```typescript
-// workflows/saga-workflow.ts
-export async function processOrderWithCompensation(orderId: string) {
+async function processOrderWithCompensation(orderId: string) {
   const compensations: (() => Promise<void>)[] = [];
 
   try {
-    // Step 1: Create order
     const order = await createOrder(orderId);
     compensations.push(async () => cancelOrder(orderId));
 
-    // Step 2: Reserve inventory
     const reservation = await reserveInventory(order.items);
     compensations.push(async () => releaseInventory(reservation.id));
 
-    // Step 3: Process payment
     const payment = await processPayment(order.payment);
     compensations.push(async () => refundPayment(payment.id));
-
-    // Step 4: Create shipment
-    const shipment = await createShipment(orderId);
-    compensations.push(async () => cancelShipment(shipment.id));
-
-    return { success: true };
   } catch (error) {
-    // Execute compensations in reverse order
     for (const compensate of compensations.reverse()) {
-      try {
-        await compensate();
-      } catch (compensationError) {
-        console.error("Compensation failed:", compensationError);
-      }
+      try { await compensate(); } catch (e) { console.error("Compensation failed:", e); }
     }
     throw error;
   }
 }
 ```
 
-## Task Scheduling
+## Blocking Violations (NEVER)
 
-### Cron-based Scheduling
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Starting parallel workflow without join condition | Branches run independently; no signal for aggregate completion | Add explicit join point before downstream steps |
+| Orchestrating steps sharing mutable state without locking | Race conditions; non-deterministic failures | Add optimistic locking or distributed lock on state updates |
+| Retrying non-idempotent step automatically | Duplicate side effects (double charge, double email) | Use idempotency key derived from workflow ID + step name |
+| Defining workflow without explicit terminal state | Workflow loops/stalls indefinitely, exhausting resources | Define end condition for every workflow |
+| Single orchestrator replica without health check | Orchestrator is single point of failure; workers idle | Run >= 2 replicas behind load balancer with liveness probe |
 
-```typescript
-// scheduler.ts
-import { CronJob } from "cron";
+## Verification
 
-const jobs = {
-  // Daily report at midnight
-  dailyReport: new CronJob(
-    "0 0 * * *",
-    async () => {
-      await generateDailyReport();
-    },
-    null,
-    true,
-    "America/New_York",
-  ),
+### Self-Verification Checklist
 
-  // Every hour
-  hourlySync: new CronJob("0 * * * *", async () => {
-    await syncData();
-  }),
+- [ ] Compensation logic exists for every step with side effects
+- [ ] Dead-letter queue configured for all workflows
+- [ ] Orchestrator replica count >= 2
+- [ ] Idempotency keys present on mutating steps
+- [ ] Retry bounds defined (max attempts, backoff)
+- [ ] State persisted between steps
+- [ ] Per-step observability: start/complete/error events emitted
 
-  // Every Monday at 9 AM
-  weeklyCleanup: new CronJob("0 9 * * 1", async () => {
-    await cleanupOldData();
-  }),
-};
+### Verification Commands
 
-// Start all jobs
-Object.values(jobs).forEach((job) => job.start());
+```bash
+# Check compensation coverage
+grep -rn "compensat\|rollback\|undo" src/orchestrator/
+
+# Check DLQ config
+grep -rn "DLQ\|dead.letter\|deadLetter" src/orchestrator/
+
+# Check idempotency keys
+grep -rn "idempotent\|idempotency.key\|dedup" src/orchestrator/
+
+# Check retry bounds
+grep -rn "maxAttempts\|max_retries\|retryable\|backoff" src/orchestrator/
+
+# Verify orchestrator replicas
+kubectl get deployment <name> -o jsonpath='{.spec.replicas}'
 ```
 
-### Event-Driven Orchestration
+### Quality Gates
 
-```typescript
-// event-orchestrator.ts
-import { EventEmitter } from "events";
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Compensation | Every mutating step has rollback | Add compensation before deploying |
+| Idempotency | Every external API call has idempotency key | Add key before enabling retry |
+| Retry Bounds | max retries defined, backoff configured | Add bounds to prevent retry storms |
+| State Persistence | Checkpoint between each step | Add state persistence before production |
+| High Availability | Replica count >= 2 | Add replicas and liveness probe |
 
-class WorkflowOrchestrator extends EventEmitter {
-  async executeWorkflow(workflowId: string, input: any) {
-    const workflow = await this.loadWorkflow(workflowId);
-    const context = { input, state: {}, events: [] };
+## Performance & Cost
 
-    for (const step of workflow.steps) {
-      this.emit("step:start", { workflowId, step: step.name });
+### Model Selection
 
-      try {
-        const result = await this.executeStep(step, context);
-        context.state[step.name] = result;
+| Task | Approach | Cost |
+|---|---|---|
+| Simple sequential | Direct function calls | Minimal |
+| Temporal workflow | Temporal server + workers | Server cost + worker compute |
+| Saga coordination | Compensation stack in code | Free |
 
-        this.emit("step:complete", { workflowId, step: step.name, result });
+### Parallelization
 
-        // Check for conditional branching
-        if (step.branch) {
-          const nextStep = step.branch[result.status];
-          if (nextStep) {
-            workflow.steps = this.insertSteps(workflow.steps, nextStep);
-          }
-        }
-      } catch (error) {
-        this.emit("step:error", { workflowId, step: step.name, error });
+- **Independent branches:** Run in parallel with explicit join
+- **Sequential steps:** Must run in order
+- **Compensation:** Runs in reverse order on failure
 
-        if (step.retry && step.retry.count < step.retry.maxRetries) {
-          await this.delay(step.retry.delay);
-          step.retry.count++;
-          continue;
-        }
+### Context Budget
 
-        if (step.compensate) {
-          await this.executeCompensation(step.compensate, context);
-        }
+- **Expected context usage:** 4-8KB per workflow design session
+- **When to context-optimize:** When reviewing multi-branch workflows or complex compensation chains
 
-        throw error;
-      }
-    }
+## Examples
 
-    return context.state;
-  }
-}
+### Example 1: Order Processing Workflow
 
-// Usage
-const orchestrator = new WorkflowOrchestrator();
+**User request:** "Build a reliable order processing workflow."
 
-orchestrator.on("step:start", ({ workflowId, step }) => {
-  console.log(`Starting ${step} in ${workflowId}`);
-});
+**Skill execution:**
+1. Design sequential flow: Validate -> Reserve Inventory -> Process Payment -> Ship -> Notify
+2. Add compensation for each step: release inventory if payment fails, refund if shipping fails
+3. Add idempotency keys on payment and shipping API calls
+4. Add retry with exponential backoff (3 attempts)
+5. Add state persistence between steps
+6. Configure DLQ for unprocessable orders
 
-orchestrator.on("step:error", ({ workflowId, step, error }) => {
-  console.error(`Error in ${step}: ${error.message}`);
-});
+**Result:** Reliable order processing with complete compensation, retry, and observability.
 
-await orchestrator.executeWorkflow("order-processing", { orderId: "123" });
-```
+### Example 2: Edge Case - Partial Failure
 
-## Retry Strategies
+**User request:** "Payment succeeded but shipping failed. The customer was charged but not shipped."
 
-```typescript
-// retry.ts
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: {
-    maxRetries: number;
-    delay: number;
-    backoff?: "linear" | "exponential";
-    maxDelay?: number;
-  },
-): Promise<T> {
-  let lastError: Error;
+**Skill execution:**
+1. Compensation for shipping failure: do NOT retry payment (already succeeded)
+2. Run compensation: refund payment via refundPayment()
+3. Log the failure with full context
+4. Send to DLQ for manual resolution
+5. Report: compensation completed successfully, order cancelled
 
-  for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-
-      if (attempt < options.maxRetries) {
-        const delay =
-          options.backoff === "exponential"
-            ? Math.min(
-                options.delay * Math.pow(2, attempt),
-                options.maxDelay || Infinity,
-              )
-            : options.delay;
-
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-  }
-
-  throw lastError;
-}
-
-// Usage
-const result = await withRetry(() => fetchFromExternalAPI(), {
-  maxRetries: 3,
-  delay: 1000,
-  backoff: "exponential",
-  maxDelay: 30000,
-});
-```
-
-## Self-Verification Checklist
-
-grep -rnE "compensat|rollback|undo"
-grep -rnE "DLQ|dead.letter|deadLetter"
-
-- [ ] Orchestrator replica count >= 2: `grep -n "replicas:" <deployment_manifest>` returns a value >= 2 — single-replica orchestrators fail this check; `kubectl get deployment <name> -o jsonpath='{.spec.replicas}'` returns >= 2
-      grep -rnE "idempotent|idempotency.key|dedup"
-      grep -rnE "maxAttempts|max_retries|retryable|backoff"
-      grep -rnE "persist|checkpoint|saveState|store"
-
-This task is complete when:
-
-1. The workflow executes successfully end-to-end in a test environment with all happy-path steps passing
-2. Failure injection testing confirms compensation logic runs correctly when any single step fails
-3. The workflow is observable: each step emits start/complete/error events that appear in the monitoring dashboard
+**Result:** Customer refunded. System in consistent state.
 
 ## Anti-Patterns
 
@@ -316,35 +240,35 @@ This task is complete when:
 - Never treat a timed-out step as failed without checking for partial completion because a step that timed out may have already mutated external state (e.g., charged a card, reserved inventory); retrying without checking for partial completion causes duplicate side effects.
 - Never define a workflow without an explicit terminal state because a workflow with no defined end condition can loop, stall, or accumulate running instances indefinitely, exhausting resources and making observability impossible.
 - Never retry a non-idempotent step automatically because an automatic retry of a step that is not idempotent (e.g., sends an email, charges a payment) executes the side effect multiple times, causing data corruption or duplicate user-facing actions.
-- Never orchestrate without logging each step's start, end, and output because a workflow with no per-step log produces no forensic trail; when a step fails mid-workflow the only way to diagnose it is to re-run the entire workflow from the beginning.
 
 ## Failure Modes
 
-| Failure                                                                        | Cause                                                                                                               | Recovery                                                                                                                                                  |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Saga compensation step fails, leaving distributed system in inconsistent state | Compensation function throws an uncaught error; partial rollback leaves inventory released but payment not refunded | Wrap every compensation step in its own retry with exponential backoff; log compensation failures to a dead-letter queue for manual resolution            |
-| Workflow state corrupted by concurrent update from two orchestrator instances  | Two orchestrator pods process the same workflow event simultaneously; no optimistic locking on state updates        | Use optimistic locking (version field) or distributed lock (Redis SETNX) on workflow state updates; configure Temporal/equivalent for exclusive execution |
-| Dead-letter queue overflows because poison-pill message never acknowledged     | One malformed message loops through retry indefinitely; DLQ fills; real failures stop alerting                      | Set a max-retry limit per message type; add a DLQ size alert at 80% capacity; auto-quarantine messages that exceed retry budget                           |
-| Orchestrator is single point of failure; worker nodes healthy but idle         | Orchestrator deployed as a single replica with no health check; workers wait for tasks that never arrive            | Run orchestrator with ≥2 replicas behind a load balancer; add a liveness probe that fails if the task queue depth grows beyond threshold                  |
-| Step retry without idempotency key causes duplicate side effects               | Step issues an external API call without an idempotency key; retry sends the call twice; payment charged twice      | Every step that mutates external state must include an idempotency key derived from the workflow ID and step name; verify by inspecting API call logs     |
+| Failure | Cause | Recovery |
+|---|---|---|
+| Saga compensation step fails, leaving distributed system in inconsistent state | Compensation function throws uncaught error; partial rollback | Wrap every compensation in retry with exponential backoff; log compensation failures to DLQ |
+| Workflow state corrupted by concurrent update from two orchestrator instances | Two pods process same workflow event simultaneously; no optimistic locking | Use optimistic locking (version field) or distributed lock on workflow state updates |
+| Dead-letter queue overflows because poison-pill message never acknowledged | One malformed message loops through retry indefinitely | Set max-retry limit per message type; add DLQ size alert at 80% capacity |
+| Orchestrator is single point of failure; worker nodes healthy but idle | Single replica with no health check | Run >= 2 replicas; add liveness probe; task queue depth alert |
+| Step retry without idempotency key causes duplicate side effects | Step issues external API call without idempotency key; retry sends call twice | Every mutating step must include idempotency key from workflow ID + step name |
 
-## Self-Verification Checklist
+## References
 
-- [ ] Compensation logic exists for every step with side effects: `grep -rnE "compensat|rollback|undo" src/orchestrator/` returns >= 1 match per step definition
-- [ ] Dead-letter queue configured: `grep -rnE "DLQ|dead.letter|deadLetter" src/orchestrator/` returns >= 1 match
-- [ ] Orchestrator replica count >= 2: `grep -n "replicas:" <deployment_manifest>` returns a value >= 2
-- [ ] Idempotency keys present on mutating steps: `grep -rnE "idempotent|idempotency.key|dedup" src/orchestrator/` returns >= 1 match
-- [ ] Retry bounds defined: `grep -rnE "maxAttempts|max_retries|retryable|backoff" src/orchestrator/` returns >= 1 match
-- [ ] State persisted between steps: `grep -rnE "persist|checkpoint|saveState|store" src/orchestrator/` returns >= 1 match
+### Internal Dependencies
+- `verification-loop` — Verifies all workflow phases pass
+- `observability-specialist` — Monitors workflow execution health
+- `content-hash-cache-pattern` — Caches workflow state snapshots
 
-## Success Criteria
+### External Standards
+- [Temporal Documentation](https://docs.temporal.io/) — Workflow orchestration engine
+- [Saga Pattern](https://microservices.io/patterns/data/saga.html) — Distributed transaction pattern
 
-This skill is complete when: 1) The workflow orchestration is implemented with compensation logic, retry policies, and idempotency for every mutating step. 2) Dead-letter queue and alerting are configured for all workflows. 3) Orchestrator runs with >= 2 replicas and a liveness probe. 4) The Self-Verification Checklist passes. 5) The Handoff block has been emitted with `next_skill` pointing to the next workflow chain step and `status: completed`.
+### Related Skills
+- `verification-loop` — Follows workflow-orchestrator for verification
+- `observability-specialist` — Partner skill for workflow monitoring
 
-## Tips
+## Changelog
 
-- Use idempotent operations for reliability
-- Implement proper compensation logic
-- Handle long-running workflows with state persistence
-- Monitor workflow execution
-- Set appropriate timeouts
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. |
+---

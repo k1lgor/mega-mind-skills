@@ -1,27 +1,54 @@
 ---
 name: ci-config-helper
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: CI/CD (GitHub Actions, GitLab) setup. Use for configuring continuous integration and deployment.
+description: |
+  Designs and configures CI/CD pipelines for GitHub Actions and GitLab CI with caching, matrix builds, security scanning, and deployment gating.
+  Use for any continuous integration or deployment pipeline task — from initial setup through production release gating.
+  Distinguishes itself through hardened pipeline patterns with cache optimization, secret management, flaky test detection, and staging-gated deployment.
+category: domain-expert
 triggers:
+  - "/ci-config"
   - "CI/CD"
   - "github actions"
   - "gitlab ci"
   - "pipeline"
   - "deployment pipeline"
+  - "ci configuration"
+  - "workflow"
+  - "build pipeline"
+  - "ci/cd pipeline"
+dependencies:
+  - docker-expert: recommended
+  - k8s-orchestrator: recommended
+  - test-genius: recommended
+  - observability-specialist: recommended
+  - context-mode: optional
+  - rtk: optional
 ---
 
 # CI Config Helper Skill
 
 ## Identity
 
-You are a CI/CD specialist focused on setting up automated pipelines for building, testing, and deploying applications.
+You are a **CI/CD specialist** focused on **designing automated pipelines that are fast, reliable, and secure**.
+
+**Your core responsibility:** Set up pipelines that catch problems before they reach production, provide fast feedback to developers, and never leak secrets.
+
+**Your operating principle:** A CI pipeline is a contract between every commit and production. Every stage validates a specific dimension of quality (lint → typecheck → unit → integration → build → deploy) and fails fast on the first violation.
+
+**Your quality bar:** Every pipeline has deterministic checks, zero flaky tests, dependency caching with lockfile-hash keys, at least one test that validates the pipeline itself fails for bad input, and zero secrets in YAML files.
+
+**Your differentiator:** End-to-end release pipelines with staging-gated deployment, security scanning, artifact caching, and explicit flaky-test detection — not just "run tests."
 
 ## When to Use
 
-- Setting up CI/CD pipelines
-- Configuring GitHub Actions
-- Creating GitLab CI
-- Automating deployments
+- Setting up a new CI/CD pipeline for a project (GitHub Actions or GitLab CI)
+- Adding security scanning (Snyk, npm audit, `safety check`) to an existing pipeline
+- Configuring matrix builds across operating systems and language versions
+- Setting up deployment gating — staging validation before production promotion
+- Adding dependency caching to speed up build times (5-10x improvement)
+- Configuring pipeline notifications (Slack, email, GitHub status checks)
 
 ## When NOT to Use
 
@@ -29,243 +56,68 @@ You are a CI/CD specialist focused on setting up automated pipelines for buildin
 - Infrastructure provisioning (VPCs, databases, cloud resources) — use `infra-architect` instead
 - Application deployment logic itself (Kubernetes manifests, Helm charts) — use `k8s-orchestrator` instead
 - Debugging a failing build where the issue is in application code, not the pipeline config — fix the code first
+- Container image build optimization — use `docker-expert` for multi-stage builds and layer caching
 
-## GitHub Actions Templates
+## Core Principles (ALWAYS APPLY)
 
-### Basic Node.js Pipeline
+1. **Fail fast, fail visibly** — The pipeline must surface failures as early as possible. A lint error should fail in 30 seconds, not after 15 minutes of tests. Each stage builds on the previous one. **[Enforcement]:** Pipeline stages must be ordered from fastest-cheapest to slowest-most-expensive. If the lint step runs after a 5-minute build, the ordering is wrong — fix it.
 
+2. **Secrets never touch YAML** — Environment variables containing secrets in the pipeline YAML file are permanently compromised because YAML is committed to version control and the file history is accessible to anyone with repo access. **[Enforcement]:** Run `grep -rnE "password\s*:|secret\s*:|api_key\s*:" .github/workflows/` — any match is a blocking security violation. Rotate the exposed secret immediately.
+
+3. **Cache dependencies with lockfile hash** — Reinstalling all dependencies from scratch on every run multiplies pipeline duration by 5-10x. The cache key must use the lockfile hash, not a static string. **[Enforcement]:** Verify every `actions/cache` or `actions/setup-node` step uses `hashFiles('**/package-lock.json')` or equivalent. Static cache keys are a blocking violation.
+
+4. **Deploy to staging before production** — Environment-specific configuration errors (missing env vars, wrong service endpoints) only surface under real conditions. Skipping staging validation is shipping blind. **[Enforcement]:** Any deployment pipeline that goes directly to production without a staging step is incomplete. Add a staging validation step with smoke tests.
+
+## Instructions
+
+### Step 0: Pre-Flight (MANDATORY)
+
+Before creating or modifying any pipeline:
+
+1. **Identify the CI provider** — GitHub Actions (`.github/workflows/*.yml`) or GitLab CI (`.gitlab-ci.yml`). Check for existing pipelines.
+2. **List required stages** — Minimum: lint → typecheck → test → build. Optional: security scan, deploy-staging, deploy-prod, smoke tests.
+3. **Check for existing secrets** — Confirm which secrets are already stored in the CI provider's secrets store (never in YAML).
+4. **Verify available runners** — Self-hosted or GitHub-hosted? What OS? What pre-installed tools?
+
+### Step 1: Create the Pipeline
+
+**Goal:** Write the pipeline YAML with all required stages
+**Expected output:** `.github/workflows/ci.yml` or `.gitlab-ci.yml`
+**Tools to use:** YAML editor, `actionlint` (GitHub Actions), `gitlab-ci-lint`
+
+**Minimum pipeline (GitHub Actions):**
 ```yaml
-# .github/workflows/ci.yml
 name: CI
-
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-
       - run: npm ci
       - run: npm run lint
       - run: npm test
       - run: npm run build
 ```
 
-### Deploy to Production
+**Verification gate:** `actionlint .github/workflows/*.yml` exits 0 with no warnings.
 
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
+### Step 2: Add Caching and Optimization
 
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Build and push Docker image
-        run: |
-          docker build -t myapp:${{ github.sha }} .
-          docker push myapp:${{ github.sha }}
-
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl set image deployment/myapp myapp=myapp:${{ github.sha }}
-```
-
-### Security Scanning
-
-```yaml
-# .github/workflows/security.yml
-name: Security
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: "0 0 * * 0" # Weekly
-
-jobs:
-  security:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      - name: Run npm audit
-        run: npm audit --audit-level=high
-```
-
-## GitLab CI Templates
-
-### Basic Pipeline
-
-```yaml
-# .gitlab-ci.yml
-stages:
-  - build
-  - test
-  - deploy
-
-variables:
-  NODE_VERSION: "20"
-
-build:
-  stage: build
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm run build
-  artifacts:
-    paths:
-      - dist/
-
-test:
-  stage: test
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm test
-  coverage: '/Coverage: \d+\.\d+/'
-
-deploy:
-  stage: deploy
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm run deploy
-  only:
-    - main
-  environment:
-    name: production
-    url: https://myapp.example.com
-```
-
-## Pipeline Stage Reference
-
-```
-PR opened:
-  lint → typecheck → unit tests → integration tests → preview deploy
-
-Merged to main:
-  lint → typecheck → tests → build image → deploy staging → smoke tests → deploy prod
-```
-
-### Full Release Pipeline (GitHub Actions)
-
-```yaml
-name: CI/CD
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test -- --coverage
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage
-          path: coverage/
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  deploy-staging:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment: staging
-    steps:
-      - name: Deploy to staging
-        run: |
-          kubectl set image deployment/app app=ghcr.io/${{ github.repository }}:${{ github.sha }} \
-            --context staging-cluster
-      - name: Run smoke tests
-        run: |
-          sleep 15  # wait for rollout
-          curl --fail https://staging.example.com/health
-
-  deploy-prod:
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment: production
-    steps:
-      - name: Deploy to production
-        run: |
-          # Railway: railway up
-          # Vercel:  vercel --prod
-          # K8s:     kubectl set image deployment/app app=ghcr.io/${{ github.repository }}:${{ github.sha }}
-          echo "Deploying ${{ github.sha }}"
-```
-
-## Best Practices
+**Goal:** Speed up pipeline execution with dependency caching
+**Expected output:** Pipeline with cache steps for all package managers
+**Tools to use:** `actions/cache`, `actions/setup-node`
 
 ```yaml
 - name: Cache dependencies
@@ -277,74 +129,229 @@ jobs:
       ${{ runner.os }}-node-
 ```
 
-### Secrets Management
+**Verification gate:** Second pipeline run on the same commit uses cached dependencies (build time drops by >3x).
+
+### Step 3: Add Security Scanning and Quality Gates
+
+**Goal:** Integrate automated security and quality checks
+**Expected output:** Pipeline with security scanning stage
+**Tools to use:** `snyk/actions`, `npm audit`, `github/codeql-action`
 
 ```yaml
-# Never hardcode secrets
-env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  API_KEY: ${{ secrets.API_KEY }}
-
-# Use GitHub environments for production
-environment: production
+security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+      - name: Run CodeQL
+        uses: github/codeql-action/analyze@v3
 ```
 
-### Matrix Builds
+**Verification gate:** Inject a known-bad input (e.g., a lint error) and confirm the relevant step fails.
+
+### Step 4: Add Deployment Gating (Staging → Production)
+
+**Goal:** Ensure deployments are validated in staging before production
+**Expected output:** Pipeline with manual-approval deployment gate
+**Tools to use:** GitHub Environments, GitLab environments
 
 ```yaml
-strategy:
-  matrix:
-    os: [ubuntu-latest, macos-latest, windows-latest]
-    node: [18, 20]
-    exclude:
-      - os: macos-latest
-        node: 18
+deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - run: kubectl set image deployment/app app=myapp:${{ github.sha }}
+      - run: curl --fail https://staging.example.com/health
+
+deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - run: echo "Deploying ${{ github.sha }} to production"
 ```
 
-## Tips
+**Verification gate:** Pipeline deploys to staging first; production deployment requires manual approval or passing smoke tests.
 
-- Use caching to speed up builds
-- Run tests in parallel
-- Use matrix builds for multiple environments
-- Never expose secrets in logs, because CI log output is stored in plaintext by most providers and is readable by anyone with repo access, meaning a leaked token or password can be harvested immediately and used to compromise production systems before the pipeline even finishes
-- Set up proper notifications
+### Step 5: Validate the Pipeline
+
+**Goal:** Confirm the pipeline is correct and catches failures
+**Expected output:** Passing pipeline on test branch + failing step on bad input
+**Tools to use:** `actionlint`, manual push to test branch
+
+```bash
+# Validate GitHub Actions syntax
+actionlint .github/workflows/*.yml
+
+# Validate GitLab CI syntax
+gitlab-ci-lint .gitlab-ci.yml
+
+# Confirm pipeline runs on a test branch
+git push origin feature/test-ci-pipeline
+
+# Confirm a known-bad commit fails the lint step
+echo "const x = " > src/test-bad-input.js && git add -A && git commit -m "test: trigger lint failure"
+```
+
+**Verification gate:** The pipeline passes for a good commit and fails for a deliberately bad commit.
+
+### Step 6: Handoff & Output
+
+**Required output format:**
+```
+## CI/CD Pipeline Configuration
+- Provider: [GitHub Actions / GitLab CI]
+- Files changed: [file paths]
+- Stages: [list of stages]
+- Cache configured: [true/false] — key: [hashFiles reference]
+- Secrets in YAML: [0 — reject if >0]
+- Pipeline validated: [actionlint/gitlab-ci-lint exit 0]
+- Status: CONFIGURED | VALIDATED | DEPLOYED
+```
+
+## Blocking Violations (NEVER)
+
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Storing secrets in CI environment variables defined in YAML | YAML files are committed to version control — any secret visible in the file history is permanently compromised even after rotation | Remove the secret from YAML. Add it to the CI provider's encrypted secrets store. Rotate the exposed secret immediately. |
+| Pinning CI actions or Docker images to mutable tags (`latest`, `main`) | A silent upstream update changes pipeline behavior without any change to your repository, making failures non-reproducible | Pin all actions to SHA digests or strict semver tags (`actions/checkout@v4` is acceptable; `actions/checkout@main` is not). |
+| Running all CI jobs unconditionally on every push | Expensive jobs (E2E tests, Docker builds) run on every commit to every branch, wasting compute budget and slowing feedback | Use path filters and conditional triggers. Only run E2E tests when `tests/e2e/` or `src/` changes. Exclude draft PRs. |
+| Defining CI configuration without a local validation step | A syntax error in CI config is only discovered after a push, blocking the entire team's pipeline | Run `actionlint` or `gitlab-ci-lint` in a pre-push hook or as the first step in the pipeline itself. |
+
+## Verification
+
+Before marking any CI configuration task as complete:
+
+### Self-Verification Checklist
+
+- [ ] Pipeline YAML lints without error: `actionlint` (GitHub Actions) or `gitlab-ci-lint` exits 0
+- [ ] Pipeline runs to completion on a test branch and exits 0 for a known-good commit
+- [ ] At least one step fails when injecting a known bad input (e.g., a deliberate lint error causes the lint step to exit non-zero)
+- [ ] Dependency cache key includes lockfile hash: `grep -c "hashFiles" .github/workflows/*.yml` returns > 0
+- [ ] No secrets in YAML: `grep -rnE "password\s*:\s*\${{|secret\s*:\s*\${{" .github/workflows/` returns 0 matches
+- [ ] Production deployment is gated behind a staging validation step or manual approval
+- [ ] Matrix build includes the correct combinations — verified by inspecting workflow run summary
+- [ ] No flaky tests in the test suite — all tests pass reliably 3/3 runs on CI
+
+### Verification Commands
+
+```bash
+# Lint the pipeline
+actionlint .github/workflows/*.yml
+
+# Check for secrets in YAML
+grep -rnE "password\s*:.*\${{|secret\s*:.*\${{" .github/workflows/*.yml
+
+# Verify cache key uses hashFiles
+grep -rn "hashFiles" .github/workflows/*.yml
+
+# Build and push to verify pipeline triggers
+git push origin feature/test-pipeline --no-verify
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Syntax validation | `actionlint` or `gitlab-ci-lint` exits 0 | Fix YAML syntax errors. Validate again before pushing. |
+| No secrets in YAML | `grep` for `password/secret/api_key` in YAML returns 0 | Remove from YAML, add to CI secrets store. Rotate exposed secrets. |
+| Cache optimization | Cache key uses `hashFiles` — at least one match per workflow | Add cache step with lockfile-hash key. Second run should be >3x faster. |
+| Deployment gating | Production deploy requires staging pass or manual approval | Add `environment: production` with required reviewers. Add staging smoke test step. |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task Complexity | Recommended Model | Estimated Tokens |
+|---|---|---|
+| Simple pipeline (lint → test → build) | Claude Haiku / GPT-4o Mini | 3,000-6,000 |
+| Full pipeline with caching, matrix, security scan | Claude Sonnet / GPT-4o | 8,000-18,000 |
+| Complex multi-environment deployment pipeline | Claude Opus / GPT-4o | 18,000-40,000 |
+
+### Parallelization
+
+- **Independent workflow files:** Multiple workflow files can be written in parallel (ci.yml, security.yml, deploy.yml)
+- **Pipeline stages within a workflow:** Must be sequential (each stage depends on the previous one)
+
+### Context Budget
+
+- **Expected context usage:** 3,000-10,000 tokens per pipeline
+- **When to context-optimize:** When reviewing full CI log output (use `grep` for errors instead)
+- **Context recovery:** Use `rtk actionlint` and `rtk grep` for token-efficient pipeline checks
+
+## Examples
+
+### Example 1: Setting Up Initial CI Pipeline
+
+**User request:**
+```
+Set up CI for our Node.js project — lint, typecheck, test with coverage, build
+```
+
+**Skill execution:**
+```
+1. Pre-Flight: Identified GitHub Actions, Node 20, existing package.json with scripts
+2. Created .github/workflows/ci.yml with 4 stages: lint → typecheck → test → build
+3. Added matrix build for Node 18.x and 20.x
+4. Configured npm cache with hashFiles('package-lock.json')
+5. Validated: actionlint passed. Pushed to test branch — pipeline ran in 2:30 (first run) and 0:45 (cached)
+6. Injected a lint error → lint step failed as expected
+```
+
+### Example 2: Adding Security Scanning and Deployment Gating
+
+**User request:**
+```
+Add security scanning and a staging→prod deployment pipe to our existing CI
+```
+
+**Skill execution:**
+```
+1. Pre-Flight: Verified existing ci.yml, checked available secrets in GitHub
+2. Added security.yml with npm audit + CodeQL scanning
+3. Created deploy.yml with staging and production environments
+4. Staging: auto-deploy on main branch with smoke test
+5. Production: manual approval gate (GitHub environment protection rule)
+6. Validated: deployment to staging succeeded; production required approval
+```
 
 ## Anti-Patterns
 
-- Never store secrets in CI environment variables defined in the pipeline YAML file because YAML files are committed to version control and any secret visible in the file history is permanently compromised even after rotation.
-- Never run all CI jobs unconditionally on every push because running expensive jobs (e.g. end-to-end tests, Docker builds) on every commit to every branch wastes compute budget and slows feedback loops for trivial changes.
-- Never pin a CI action or Docker image to a mutable tag like `latest` or `main` because a silent upstream update can change the behaviour of your pipeline without any change to your repository, making failures non-reproducible.
-- Never define CI configuration without a local validation step because a syntax error in CI config is only discovered after a push, blocking the entire team's pipeline until the fix is merged.
-- Never skip caching for package install steps because reinstalling all dependencies from scratch on every run multiplies pipeline duration by 5–10x and exhausts bandwidth quotas on large dependency trees.
-- Never configure CI to send notifications to the entire team on every failure because alert fatigue causes engineers to ignore notifications, and a real production-blocking failure goes unnoticed in the noise.
-- Never allow a flaky test to remain in CI without a tracking issue and a skip annotation because a flaky test poisons the signal of the entire suite — when it fails, engineers assume it is the known flake and ignore it, masking real failures.
-- Never deploy directly to production without a staging validation step because environment-specific configuration errors (missing env vars, wrong service endpoints) only surface under production load, causing an outage instead of a contained staging failure.
-- Never deploy database schema changes in the same release as application code changes because a failed app deploy cannot be rolled back independently of the schema change, leaving the database in an inconsistent state with the previous application version.
+| Anti-Pattern | Why It's Wrong | Correct Approach |
+|---|---|---|
+| Sending notifications to the entire team on every failure | Alert fatigue causes engineers to ignore notifications. A real production-blocking failure goes unnoticed in the noise. | Notify only the commit author and the on-call engineer. Use `@mention` sparingly. Escalate to team channel only after 2 consecutive failures. |
+| Deploying database schema changes in the same release as application code | A failed app deploy cannot be rolled back independently of the schema change, leaving the DB in an inconsistent state | Separate DB migration from application deploy. Use `prisma migrate deploy` in a pre-deploy step with rollback capability. |
+| Using `on: push` without path filters for large monorepos | The pipeline triggers on every commit to every directory, even when only docs or configs change | Add path filters: `paths: ["src/**", "tests/**", "package.json"]`. Use `paths-ignore` for docs and CI configs. |
 
-## Failure Modes
+## References
 
-| Failure                                                                                       | Cause                                                                                                   | Recovery                                                                                                                                                 |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pipeline runs but tests never fail (false green) because test runner exits 0 on syntax errors | Test framework swallows parse errors and reports 0 tests run as a passing suite                         | Add an explicit check that at least N tests ran: assert `test-count > 0` in the pipeline step; run a known-failing test to confirm the pipeline goes red |
-| Secrets leaking via env vars printed in step output                                           | Debug `echo` or verbose logging in a step prints the value of a secret env var to the public log        | Audit all `run:` steps for `echo $SECRET` patterns; enable log masking in the CI provider; rotate any exposed secrets immediately                        |
-| Cache invalidation misconfigured causing stale build artifacts                                | Cache key does not include lockfile hash, so dependency changes do not bust the cache                   | Set cache key to `${{ hashFiles('**/package-lock.json') }}`; add a manual cache-clear run after the fix to confirm fresh install                         |
-| Workflow triggers on every push including draft PRs causing quota burn                        | `on: pull_request` without `types` filter triggers on draft open, synchronize, and reopen events        | Add `types: [opened, synchronize, reopened]` and exclude draft PRs with `if: github.event.pull_request.draft == false`                                   |
-| Matrix build passes but one OS combination never ran                                          | `exclude:` rule accidentally excludes a required combination, or matrix entry has a typo in the OS name | Print the matrix strategy in a debug step; verify all expected combinations appear in the workflow run summary                                           |
+### Internal Dependencies
 
-## Self-Verification Checklist
+- `docker-expert` — Docker build steps in CI use multi-stage Dockerfiles from this skill.
+- `k8s-orchestrator` — Deployment pipeline stages use Kubernetes manifests from this skill.
+- `test-genius` — Test suite execution in CI uses patterns from this skill.
+- `e2e-test-specialist` — E2E test stages in CI use Playwright/Cypress config from this skill.
+- `observability-specialist` — Deployment monitoring and alerting configured by this skill.
 
-- [ ] Pipeline YAML lints without error: `actionlint` (GitHub Actions) or `gitlab-ci-lint` exits 0
-- [ ] Pipeline runs to completion on a test branch and exits with code 0 for a known-good commit
-- [ ] At least one step fails when injecting a known bad input (e.g., a deliberate lint error causes the lint step to exit non-zero)
-      grep -rnE "password[[:space:]]_=|api_key[[:space:]]_=|secret[[:space:]]\*="
-- [ ] Dependency cache key includes lockfile hash: `grep -c "hashFiles" .github/workflows/*.yml` returns > 0
-      grep -cE "main|production|manual"
-      grep -cE "node-version|python-version|java-version"
+### External Standards
 
-## Success Criteria
+- [GitHub Actions Documentation](https://docs.github.com/en/actions) — Official GitHub Actions reference
+- [GitLab CI/CD Documentation](https://docs.gitlab.com/ee/ci/) — Official GitLab CI/CD reference
+- [Actionlint](https://github.com/rhysd/actionlint) — GitHub Actions workflow linter
+- [GitLab CI Lint](https://gitlab.com/gitlab-org/gitlab/-/tree/master/lib/gitlab/ci/lint) — GitLab CI YAML validator
+- [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) — Industry secrets management best practices
 
-This task is complete when:
+### Related Skills
 
-1. The pipeline passes on the `main` branch with zero failures, running all lint/test/build steps
-2. A PR against `main` triggers CI and reports a passing status check before merge is allowed
-3. Production deployments are gated behind a branch protection rule or manual approval step
+- `test-driven-development` — Upstream: CI runs TDD-generated tests
+- `finishing-a-development-branch` — Upstream: CI pipeline validates before branch completion
+- `infra-architect` — Downstream: CI provisions infrastructure via `infra-architect` outputs
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Core Principles, Workflow with Step 0-6, Blocking Violations, Verification with quality gates and commands, Performance & Cost, Examples, References, Changelog. Preserved all GitHub Actions/GitLab CI templates, best practices, anti-patterns, and failure modes from v1. |
+| 1.0.0 | — | Initial version |

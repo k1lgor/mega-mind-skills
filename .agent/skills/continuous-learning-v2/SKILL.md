@@ -1,7 +1,12 @@
 ---
 name: continuous-learning-v2
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Instinct-based learning system that automatically extracts and evolves patterns from AI sessions. Use to build a growing library of project-specific preferences and workflows that improve the AI's effectiveness over time.
+description: |
+  Instinct-based learning system that automatically extracts and evolves patterns from AI sessions.
+  Use to build a growing library of project-specific preferences and workflows that improve the AI's effectiveness over time.
+  Covers instinct extraction with confidence weighting, conflict detection, instinct decay, and promotion of confirmed patterns to skills/workflows.
+category: meta-learning
 triggers:
   - "learn from this session"
   - "extract patterns"
@@ -10,6 +15,11 @@ triggers:
   - "remember this pattern"
   - "evolve my skills"
   - "what have you learned"
+  - "capture learning"
+dependencies:
+  - skill-stocktake: recommended
+  - autoresearch-loop: recommended
+  - skill-generator: recommended
 ---
 
 # Continuous Learning v2 — Instinct System
@@ -17,6 +27,12 @@ triggers:
 ## Identity
 
 You are a meta-learning specialist. Your job is to extract behavioral patterns from development sessions, store them as atomic "instincts", and evolve them into refined skills, commands, or agents over time. You make the AI system smarter with every session.
+
+**Your core responsibility:** Continuously improve the AI system by extracting, storing, and promoting learned patterns from every session.
+
+**Your operating principle:** Every user correction is a learning signal; every repeated pattern is an instinct candidate.
+
+**Your quality bar:** Every session produces at least one observation with evidence and confidence score; no instinct is added without checking for conflicts; high-confidence instincts are promoted to personal/; expired instincts are retired — no exceptions.
 
 ## When to Use
 
@@ -32,6 +48,17 @@ You are a meta-learning specialist. Your job is to extract behavioral patterns f
 - When there is nothing new to extract (no user corrections, no novel patterns, no repeated observations from this session)
 - As a substitute for documentation — instincts capture behavioral patterns, not architecture decisions or API contracts
 - When the session was purely exploratory with no confirmed outcomes (low-confidence noise is worse than no instinct)
+
+---
+
+## Core Principles
+
+1. **Atomic instincts.** One trigger, one action. Instincts that bundle multiple behaviors cannot be evaluated independently and create conflict resolution complexity.
+2. **Confidence-weighted.** Every instinct has a confidence score (0.3-0.9). Instincts below 0.7 are not applied automatically; they are surfaced for user confirmation.
+3. **Evidence-backed.** Every instinct must reference the specific observations that created it. An instinct without evidence is a preference, not a learned behavior.
+4. **Conflict-aware.** Before adding an instinct, search existing instincts in the same domain for conflicts. Conflicting instincts cause non-deterministic behavior.
+5. **Decay over time.** Unvalidated instincts lose relevance. After 90 days without re-validation, confidence drops. After 365 days, instincts expire.
+6. **Evolve or retire.** Three related instincts in the same domain should become a skill. An instinct that is never validated should be retired.
 
 ---
 
@@ -60,279 +87,85 @@ Use functional patterns over classes when appropriate.
 - User corrected class-based approach to functional on 2026-03-16
 ```
 
-**Instinct Properties:**
-
-- **Atomic** — one trigger, one action
-- **Confidence-weighted** — 0.3 = tentative, 0.9 = near-certain
-- **Domain-tagged** — code-style, testing, git, debugging, workflow, security, etc.
-- **Evidence-backed** — tracks what observations created it
-- **Scope-aware** — `project` (default, isolated) or `global` (cross-project)
-
----
-
 ## How the Learning Pipeline Works
 
 ```
-Session Activity
-      │
-      │ Capture: corrections, repeated patterns, tool choices
-      ▼
-┌─────────────────────────────────┐
-│  Observation Log                │
-│  .agent/instincts/observations/ │
-│  (prompts, corrections, patterns)│
-└─────────────────────────────────┘
-      │
-      │ Analyze: what patterns emerged?
-      ▼
-┌─────────────────────────────────┐
-│  Raw Instincts                  │
-│  .agent/instincts/personal/     │
-│  prefer-functional.yaml (0.7)   │
-│  use-vitest-not-jest.yaml (0.9) │
-└─────────────────────────────────┘
-      │
-      │ Evolve: cluster related instincts
-      ▼
-┌─────────────────────────────────┐
-│  Evolved Artifacts              │
-│  .agent/skills/[new-skill]/     │
-│  .agent/workflows/[workflow].md  │
-└─────────────────────────────────┘
+Session Activity -> Observation Log (.agent/instincts/observations/)
+                  -> Raw Instincts (.agent/instincts/personal/)
+                  -> Evolved Artifacts (.agent/skills/ or .agent/workflows/)
 ```
 
----
+## Blocking Violations (NEVER)
 
-## Instinct Creation
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Promoting instinct from single observation | One data point treated as universal pattern; no context recorded | Require >= 2 independent observations before promotion |
+| Adding instinct without checking for conflicts | Contradictory instincts cause non-deterministic behavior | Search existing instincts in same domain before adding |
+| Writing observations only at session end | Key decision moments forgotten by summary time | Write observation immediately after each significant decision |
+| Assigning high confidence without validation data | Confidence without evidence is indistinguishable from bias | Only assign high confidence with verifiable evidence |
+| Skipping instinct file format validation | Malformed file fails silently; agent regresses to baseline | Validate YAML/JSONL format after every write |
 
-### When to Create an Instinct
+## Verification
 
-Create an instinct when you observe:
+### Self-Verification Checklist
 
-1. **User corrections** — "No, do it this way instead"
-2. **Repeated patterns** — Same approach used 3+ times in a session
-3. **Explicit preferences** — "I always prefer X over Y"
-4. **Error resolutions** — "That failed because of X, always check Y first"
-5. **Tool preferences** — "Use pnpm, not npm" / "Always use Vitest"
+- [ ] At least 1 instinct file written per user correction
+- [ ] Every instinct has non-default confidence score
+- [ ] Instinct files valid JSONL/YAML
+- [ ] High-confidence instincts promoted or justified
+- [ ] Every instinct has non-empty evidence field
+- [ ] No conflict between new and existing instincts
 
-### Instinct File Format
+### Verification Commands
 
-```yaml
----
-id: [kebab-case-unique-id]
-trigger: "when [specific situation]"
-confidence: [0.3-0.9]
-domain: [code-style|testing|git|debugging|workflow|security|performance|architecture]
-source: [session-observation|user-correction|explicit-preference]
-scope: [project|global]
-created: [YYYY-MM-DD]
-last_validated: [YYYY-MM-DD]   # Last session where this instinct was confirmed as still valid
-review_by: [YYYY-MM-DD]         # Auto-calculated: created + 90 days. Instinct expires if not re-validated.
----
+```bash
+# Count observations
+ls .agent/instincts/observations/ | wc -l
 
-# [Human-readable name]
+# Validate instinct files
+python -c "import json,yaml; json.load(open('file.jsonl'))"
 
-## Action
-[What to do — one concrete action]
+# Check for conflicts
+grep -rn "domain:" .agent/instincts/personal/*.yaml | sort | uniq -c | sort -rn
 
-## Evidence
-- [Specific observation 1]
-- [Specific observation 2]
+# Check confidence scores
+grep "confidence:" .agent/instincts/personal/*.yaml
 ```
 
-### Instinct Decay (Anti-Staleness)
+### Quality Gates
 
-Instincts lose relevance over time. The system uses a **decay mechanism** to prevent stale
-preferences from conflicting with current practices:
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Observation Count | >= 1 per user correction | Capture at least one observation per correction |
+| Evidence Quality | All instincts have non-empty evidence field | Add evidence before saving instinct |
+| Conflict Check | No conflicts with existing instincts | Resolve conflicts before adding |
+| Format Validation | Files parse as valid JSONL/YAML | Fix format errors before session end |
 
-| Condition                                | Action                                                                                                           |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `last_validated` > 90 days old           | Confidence drops by -0.2 (automatic decay)                                                                       |
-| `last_validated` > 180 days old          | Confidence drops by -0.4. Flag for review at session start.                                                      |
-| `last_validated` > 365 days old          | Mark as `status: expired`. Not applied automatically.                                                            |
-| Instinct is validated in a new session   | Reset `last_validated` to today. Confidence increases by +0.05 (max 0.95).                                       |
-| New instinct contradicts an existing one | Both are flagged. The higher-confidence instinct wins. If equal, the newer one wins. Manual resolution required. |
+## Examples
 
-**Rule**: Before every session start, check all instincts with `review_by` in the past.
-Prompt the user to re-validate or archive each expired instinct.
+### Example 1: Correction Extraction
 
-### Conflict Detection
+**User request:** "No, use Vitest not Jest. I've told you this before."
 
-Before adding a new instinct, search existing instincts for conflicts:
+**Skill execution:**
+1. Create instinct: `prefer-vitest.yaml`, confidence=0.9
+2. Evidence: "User explicitly stated preference for Vitest over Jest"
+3. Check for conflicts: no conflicts found
+4. Promote to `personal/` immediately (high confidence + explicit instruction)
 
-```
-1. Search: `grep -rn "<domain>" .agent/instincts/personal/*.yaml` for instincts in the same domain
-2. Compare: does the new instinct's `action` contradict any existing `action`?
-3. If conflict: add a `supersedes: <old-id>` field to the new instinct, and add
-   `superseded_by: <new-id>` to the old instinct
-4. If no conflict: add normally
-```
+**Result:** Instinct saved. Future test setup will default to Vitest.
 
-### Confidence Scoring Guide
+### Example 2: Edge Case - Conflict Detection
 
-| Score | Meaning                                      | Threshold                | Decay-Adjusted                  |
-| ----- | -------------------------------------------- | ------------------------ | ------------------------------- |
-| 0.3   | One observation, tentative                   | Apply cautiously         | 0.3 - (0.2 per 90d unvalidated) |
-| 0.5   | 2-3 observations                             | Apply in likely contexts | 0.5 - (0.2 per 90d)             |
-| 0.7   | 4-5 observations or correction               | Apply by default         | 0.7 - (0.2 per 90d)             |
-| 0.9   | Explicit preference + multiple confirmations | Always apply             | 0.9 - (0.2 per 90d)             |
+**User request:** "Actually, for this monorepo, use Jest because Vitest has issues with the workspace setup."
 
----
+**Skill execution:**
+1. Compare with existing `prefer-vitest.yaml` (confidence=0.9, scope=global)
+2. Conflict detected: new instinct says Jest, existing says Vitest
+3. Resolution: new instinct has `supersedes: prefer-vitest`, scope=project
+4. Old instinct gets `superseded_by: prefer-jest-monorepo`, confidence reduced
 
-## Commands
-
-### Extract Instincts from Current Session
-
-At the end of a session, review what was learned:
-
-```
-EXTRACT INSTINCTS:
-1. List all corrections the user made to my approach
-2. Identify any patterns that appeared 3+ times
-3. Note any explicit preferences stated
-4. For each finding, draft an instinct YAML
-5. Ask user to confirm/reject each proposed instinct
-```
-
-### View Current Instincts
-
-```
-INSTINCT STATUS:
-List all instincts in .agent/instincts/personal/
-Group by domain
-Show confidence for each
-Highlight any that conflict with each other
-```
-
-### Evolve Instincts into Skills
-
-When you have 3+ related instincts in the same domain:
-
-```
-EVOLVE INSTINCTS:
-1. Find instincts with the same domain tag
-2. Identify the common theme
-3. Cluster into a coherent workflow
-4. Output as either:
-   - A new SKILL.md (if it's a repeatable workflow)
-   - A new workflow.md (if it's a multi-step process)
-   - An update to an existing skill (if it extends one)
-5. Ask user to review before creating
-```
-
-### Export Instincts
-
-```
-EXPORT INSTINCTS:
-Package all .agent/instincts/personal/*.yaml into:
-  .agent/instincts/export-[date].yaml
-  (for sharing with teammates or importing into other projects)
-```
-
-### Import Instincts
-
-```
-IMPORT INSTINCTS [file]:
-1. Read the instinct file
-2. Check for conflicts with existing instincts
-3. Prompt for each: Accept / Reject / Modify
-4. Save accepted instincts to .agent/instincts/personal/
-```
-
----
-
-## Directory Structure
-
-```
-.agent/
-├── instincts/
-│   ├── personal/           # Your learned instincts
-│   │   ├── prefer-vitest.yaml
-│   │   ├── use-pnpm.yaml
-│   │   └── ...
-│   ├── observations/       # Raw session observations (not committed)
-│   │   └── 2026-03-16.jsonl
-│   └── evolved/            # Instincts that became skills/workflows
-│       └── typescript-patterns.md
-```
-
----
-
-## Promotion: Project → Global
-
-A project instinct becomes a **global** instinct when:
-
-- It appears in 2+ different projects
-- Or the user explicitly marks it as global
-
-```yaml
-# Change scope field:
-scope: global # Was: project
-```
-
-Global instincts apply across all projects.
-
----
-
-## Example Session Extraction
-
-```
-USER: End of session. What did you learn?
-
-ASSISTANT: Here are the patterns I observed:
-
-1. **Instinct**: use-vitest-not-jest (confidence: 0.9)
-   - Trigger: "when setting up tests"
-   - Evidence: You rejected Jest setup 2x, explicitly said "always Vitest"
-   - Action: Default to Vitest for all new test setups
-
-2. **Instinct**: prefer-named-exports (confidence: 0.7)
-   - Trigger: "when creating a new module"
-   - Evidence: Corrected 3 default exports to named exports
-   - Action: Use named exports unless there's one primary export
-
-3. **Instinct**: run-typecheck-before-commit (confidence: 0.5)
-   - Trigger: "before finishing a feature"
-   - Evidence: Ran tsc --noEmit at end of 2 features
-   - Action: Always run TypeCheck as part of completion verification
-
-Shall I save these instincts? (Y/N for each)
-```
-
----
-
-## Integration with Mega-Mind
-
-The mega-mind orchestrator should **check for relevant instincts** before routing any task:
-
-```
-BEFORE executing any task:
-1. Check .agent/instincts/personal/ for relevant domain instincts
-2. Apply high-confidence (0.7+) instincts automatically
-3. Mention medium-confidence (0.5-0.7) instincts as options
-4. Ignore low-confidence (0.3-0.5) instincts unless in that domain
-```
-
----
-
-## Tips
-
-- **Start small** — one instinct per correction, don't batch-create them
-- **Evidence matters** — without evidence, an instinct is just a preference
-- **Evolve aggressively** — 3+ related instincts should become a skill
-- **Review quarterly** — expired instincts (project moved on) should be retired
-- **Share with team** — export and PR instincts that would help teammates
-- **Confidence drops** — if you act on an instinct and it's wrong, reduce confidence
-
-## Failure Modes
-
-| Failure                                                                    | Cause                                                                                  | Recovery                                                                                                                |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Instinct extracted from single session over-generalised                    | One data point treated as a universal pattern; context of the session not recorded     | Tag every instinct with its source session and domain; require 2+ independent observations before promoting to instinct |
-| Low-confidence observation promoted to instinct without validation         | Agent assigns high confidence to a pattern it observed only once                       | Add a confidence score to every instinct entry; only promote to active instinct when confidence ≥ 0.7 after validation  |
-| Instinct conflicts with existing instinct, causing contradictory behaviour | New instinct added without checking for conflicts in the instinct file                 | Before adding, search instinct file for related entries; resolve conflicts explicitly with a "supersedes" note          |
-| Session observation written too late                                       | Observation captured at end-of-session summary; key decision moments already forgotten | Write observations immediately after each significant decision, not at session end                                      |
-| Instinct file format invalid, causing silent load failure                  | Malformed YAML/JSON in the instinct file; parser fails silently                        | Validate instinct file format after every write; add a schema check as part of the session teardown step                |
+**Result:** Project-specific override of global instinct. Both coexist with clear hierarchy.
 
 ## Anti-Patterns
 
@@ -340,18 +173,52 @@ BEFORE executing any task:
 - Never add an instinct without checking for conflicts with existing instincts because contradictory instincts cause non-deterministic agent behaviour that is hard to diagnose.
 - Never write observations at session end because the key decision moments that produce the most valuable learning happen mid-session and are forgotten by the time the summary is written.
 - Never assign high confidence to an instinct without validation data because confidence without evidence is indistinguishable from bias.
-- Never skip instinct file format validation because a malformed file fails silently and the agent operates without any learned instincts, regressing to baseline behaviour.
-- Never record an instinct without its source context because a decontextualised instinct cannot be evaluated for applicability and may be applied in the wrong domain.
 
-## Self-Verification Checklist
+## Failure Modes
 
-- [ ] At least 1 instinct file written per user correction: `ls .agent/instincts/observations/ | wc -l` >= number of corrections observed in the session — 0 files after a session with corrections is a failure
-- [ ] Every instinct has a non-default confidence score: `grep -c '"confidence": 0' .agent/instincts/observations/*.jsonl` returns 0 — no instinct left at confidence 0
-- [ ] Instinct files are valid JSONL: `python -c "import sys,json; [json.loads(l) for l in open(sys.argv[1])]" .agent/instincts/observations/<file>.jsonl` exits 0 for every file written this session
-- [ ] High-confidence instincts promoted or justified: `grep -lE '"confidence": 0\.[89]|"confidence": 1\.' .agent/instincts/observations/*.jsonl | wc -l` matches `ls .agent/instincts/personal/ | wc -l` (promoted count) — unpromoted high-confidence instincts have a written justification
-- [ ] Every instinct has a non-empty `evidence` field: `grep -c '"evidence": ""' .agent/instincts/observations/*.jsonl` returns 0 — bare preferences without evidence fail this check
-      grep -rnE "cluster|consolidat|merged into skill"
+| Failure | Cause | Recovery |
+|---|---|---|
+| Instinct extracted from single session over-generalised | One data point treated as universal pattern; context not recorded | Tag every instinct with source session and domain; require 2+ observations |
+| Low-confidence observation promoted without validation | Agent assigns high confidence to pattern observed only once | Only promote to active when confidence >= 0.7 after validation |
+| Instinct conflicts with existing, causing contradictory behaviour | New instinct added without checking for conflicts | Search instinct file for related entries; resolve conflicts with supersedes note |
+| Session observation written too late | Observation captured at end-of-session; key moments forgotten | Write observations immediately after each significant decision |
 
-## Success Criteria
+## Performance & Cost
 
-This skill is complete when: 1) all user corrections and novel patterns from the current session have been captured as individual instinct entries, 2) each instinct has a confidence score and evidence, and 3) the instinct files are written to the correct directory before the session closes.
+### Model Selection
+
+| Task | Recommended Model | Cost per session |
+|---|---|---|
+| Observation extraction (per session) | Haiku | $0.01-$0.03 |
+| Instinct conflict check (10 instincts) | Haiku | $0.02-$0.05 |
+| Instinct promotion evaluation | Sonnet | $0.05-$0.10 |
+| Skill evolution (3+ instincts → skill) | Sonnet | $0.10-$0.25 |
+
+### Token Budget
+
+- **Observation entry:** ~200-500 tokens per observation
+- **Instinct file:** ~300-800 tokens per instinct
+- **Full learning pipeline run:** ~2-4KB total
+- **Expected context usage:** 1-3KB per end-of-session pipeline
+- **When to context-optimize:** When processing 20+ observations from a long session
+
+## References
+
+### Internal Dependencies
+- `skill-stocktake` — Periodic audit of instincts for relevance and overlap
+- `autoresearch-loop` — Uses instinct library as input for broader skill improvements
+- `skill-generator` — Converts 3+ related instincts into a new skill
+
+### External Standards
+- [Spaced Repetition](https://en.wikipedia.org/wiki/Spaced_repetition) — Inspiration for instinct decay mechanism (90/180/365 day intervals)
+
+### Related Skills
+- `skill-stocktake` — Follows continuous-learning-v2 for periodic instinct audit
+- `autoresearch-loop` — Uses extracted instincts as input for system-wide improvements
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
+---

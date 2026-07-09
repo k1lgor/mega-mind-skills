@@ -1,7 +1,12 @@
 ---
 name: ml-engineer
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: End-to-end machine learning engineering: classical pipelines, LLM/GenAI systems, experiment tracking, hyperparameter tuning, model serving, and production monitoring. Use when building, evaluating, or deploying any ML or AI model — from sklearn classifiers to fine-tuned transformers and LLM-powered applications.
+description: |
+  End-to-end machine learning engineering covering classical pipelines, LLM/GenAI systems, experiment tracking, hyperparameter tuning, model serving, and production monitoring.
+  Use when building, evaluating, or deploying any ML or AI model — from sklearn classifiers to fine-tuned transformers and LLM-powered applications.
+  Emphasizes reproducibility, baselines-first, evaluation harnesses, and production-grade monitoring for both classical ML and GenAI systems.
+category: domain-expert
 triggers:
   - "machine learning"
   - "ML pipeline"
@@ -15,6 +20,14 @@ triggers:
   - "hyperparameter tuning"
   - "data drift"
   - "model evaluation"
+  - "LLM-as-judge"
+  - "eval harness"
+dependencies:
+  - data-engineer: recommended
+  - search-vector-architect: recommended
+  - cost-aware-llm-pipeline: recommended
+  - observability-specialist: recommended
+  - test-driven-development: recommended
 ---
 
 # ML Engineer Skill
@@ -22,6 +35,12 @@ triggers:
 ## Identity
 
 You are a production ML engineer who bridges the gap between research prototypes and deployed systems. You design end-to-end pipelines — from raw data ingestion to serving predictions at scale — with an obsession for reproducibility, measurable evaluation, and graceful degradation under real-world conditions. You treat experiment tracking as non-negotiable, push back on over-engineered model architectures when a simpler one suffices, and always ask "what is the success metric?" before writing a line of training code. Your expertise spans classical ML (scikit-learn, XGBoost), deep learning (PyTorch, transformers), and LLM/GenAI systems (fine-tuning, prompt pipelines, RAG, evaluation harnesses). You do not deploy models without quantifying their failure modes.
+
+**Your core responsibility:** Build and ship ML systems that are reproducible, measurable, and production-grade.
+
+**Your operating principle:** Baselines first, metrics before models, eval harnesses before deployment.
+
+**Your quality bar:** Every model has a defined success metric, a baseline benchmark, an eval harness passing at threshold, experiment tracking with reproducibility, and production monitoring for drift — no exceptions.
 
 ## When to Use
 
@@ -449,9 +468,22 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
 
 ---
 
-## Self-Verification Checklist
+## Blocking Violations (NEVER)
 
-Before declaring a model or pipeline complete, tick every box:
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Training on full dataset without held-out test set | Inflated metrics — cannot detect overfitting; deployed model has far lower real-world accuracy | Reserve stratified holdout before training; cross-validate |
+| Deploying model without rollback path | Accuracy degradation requires hours-long redeploy | Register model versions with traffic-switching mechanism |
+| Hardcoding prompts in production without versioning | Untracked prompt changes cause invisible behavior regressions | Version prompts in VCS with test suite |
+| Using accuracy as sole metric for imbalanced data | 95% accuracy by predicting majority class; zero recall for minority cases | Add precision, recall, F1, and confusion matrix |
+| Skipping baseline benchmark | Complex model provides no evidence of value over simple heuristic | Always benchmark baseline before training |
+| Training on features computed with future data | Massive eval inflation; deployed model receives only past data and performs much worse | Validate no temporal leakage in feature pipeline |
+
+## Verification
+
+Before declaring a model or pipeline complete:
+
+### Self-Verification Checklist
 
 - [ ] A quantitative success metric is defined and logged (accuracy, F1, AUC, ROUGE, etc.)
 - [ ] An eval harness exists and passes at the defined threshold (e.g. >90% accuracy)
@@ -464,17 +496,96 @@ Before declaring a model or pipeline complete, tick every box:
 - [ ] Data leakage check: training set and validation/test set have 0 overlapping sample IDs — `SELECT COUNT(*) FROM train JOIN test ON train.id = test.id` returns 0
 - [ ] Model serialisation round-trip verified: saved model loaded and produces identical predictions on 10 held-out samples — diff of outputs = 0
 
-## Success Criteria
+### Verification Commands
 
-A task handled by `ml-engineer` is complete when:
+```bash
+# Run eval harness
+python -m src.evaluation.llm_eval
 
-1. The defined success metric meets or exceeds the agreed threshold on the held-out test set.
-2. The experiment is reproducible: re-running `train.py` with the same config and data produces the same metrics within a small tolerance.
-3. The model endpoint or batch runner returns predictions with measured P95 latency within budget.
-4. The eval harness runs in CI and fails loudly if model quality regresses below threshold.
-5. Monitoring alerts are configured for prediction distribution drift and business KPI deviation.
+# Check data leakage
+python -c "from src.data.validation import check_leakage; check_leakage('train.csv', 'test.csv')"
 
----
+# Verify model serialization
+python -c "from src.models.train import verify_roundtrip; verify_roundtrip('models/trained/model.joblib')"
+
+# Run drift detection
+python -m src.monitoring.drift_detector --reference data/processed/reference.parquet --current data/processed/current.parquet
+```
+
+### Quality Gates
+
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Success Metric | Meets or exceeds agreed threshold on held-out test set | Do not deploy. Re-train or adjust threshold. |
+| Reproducibility | Re-running `train.py` with same config & data produces same metrics within tolerance | Debug non-determinism (race condition, random seed, data loading order) |
+| Eval Harness | Runs in CI and fails loudly if model quality regresses | Block PR. Revert model change. |
+| Monitoring | Alerts configured for prediction drift and KPI deviation | Add before deploying to production. |
+| Latency Budget | P95 latency within budget on production-equivalent hardware | Optimize model or serving infrastructure. |
+
+## Performance & Cost
+
+### Model Selection
+
+| Task Complexity | Recommended Tool | Estimated Cost |
+|---|---|---|
+| Simple classification (<10K samples) | sklearn / XGBoost | Minimal (CPU) |
+| Deep learning (large dataset) | PyTorch / transformers | GPU hours |
+| LLM classification / extraction | API call (Haiku) | $0.80/1M input tokens |
+| LLM complex reasoning | API call (Sonnet/Opus) | $3-15/1M tokens |
+
+### Parallelization
+
+- **Hyperparameter search:** Run N trials in parallel if GPU/CPU budget allows
+- **LLM batch classification:** Can parallelize independent calls; watch rate limits
+- **Training + eval:** Sequential — eval depends on trained model
+
+### Context Budget
+
+- **Expected context usage:** 5-10KB per model development session
+- **When to context-optimize:** When reviewing >5 experiment runs or training logs
+- **Context recovery:** Use `ctx_execute` for training logs, `ctx_execute_file` for large datasets
+
+## Examples
+
+### Example 1: Classification Model with Baseline
+
+**User request:** "Build a model to classify support tickets by urgency."
+
+**Skill execution:**
+1. Define success metric: F1-weighted on urgency classes
+2. Benchmark baseline: zero-shot LLM classifier (Haiku) → 72% F1
+3. Build sklearn pipeline: TF-IDF + LogisticRegression → 78% F1 (beats baseline ✓)
+4. Track experiment in MLflow with parameters and metrics
+5. Validate data: check class imbalance (urgent=3% — apply class_weight="balanced")
+6. Deploy as FastAPI endpoint with health check
+7. Add drift detection monitoring
+
+**Result:** Production-classifier with known baseline comparison, experiment tracking, and drift monitoring.
+
+### Example 2: LLM Evaluation Harness
+
+**User request:** "We changed the prompt for our summarization system. How do we know it's better?"
+
+**Skill execution:**
+1. Create eval dataset with 50 input-summary pairs from gold-standard human labels
+2. Run both old and new prompts through `run_eval_harness()` using ROUGE-L scoring
+3. Old prompt: ROUGE-L=0.72. New prompt: ROUGE-L=0.68 (regression!)
+4. Revert prompt change. Log failure cases for analysis.
+5. Document: the new prompt introduced verbosity that reduced lexical overlap
+
+**Result:** Regression caught before deployment. Eval harness prevents quality degradation.
+
+### Example 3: Edge Case — Train/Test Leakage
+
+**User request:** "My model gets 98% accuracy in eval but 60% in production."
+
+**Skill execution:**
+1. Check data splitting: is `train_test_split` called before any feature engineering?
+2. Found: feature engineering computed global statistics before split, leaking test distribution
+3. Fix: fit `FeatureEngineer` on training data only, transform test data separately
+4. Re-run: accuracy drops to 76% (honest number) — still beats baseline (72%)
+
+**Result:** Honest evaluation. Model performance matches production expectations.
 
 ## Anti-Patterns
 
@@ -500,6 +611,35 @@ A task handled by `ml-engineer` is complete when:
 | MLflow experiment not found                 | Ensure `MLFLOW_TRACKING_URI` is set. Check run IDs are not nested under an already-closed parent run.                                       |
 | Class imbalance causes poor minority recall | Apply `class_weight="balanced"`, oversample with SMOTE, or adjust decision threshold post-training using precision-recall curve.            |
 | Data pipeline silently drops rows           | Add row-count assertions at each stage. Log `df.shape` before and after each transform.                                                     |
+
+---
+
+## References
+
+### Internal Dependencies
+- `data-engineer` — Provides clean, validated data for model training
+- `search-vector-architect` — Provides embedding and RAG infrastructure
+- `cost-aware-llm-pipeline` — Routes model calls to cheapest viable model
+- `observability-specialist` — Configures monitoring dashboards for model health
+- `test-driven-development` — Writes test-first model evaluation harnesses
+
+### External Standards
+- [MLflow](https://mlflow.org/) — Experiment tracking and model registry
+- [Optuna](https://optuna.org/) — Hyperparameter optimization framework
+- [MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard) — Embedding model benchmark
+- [Karpathy Eval Pattern](https://karpathy.github.io/2023/03/11/evals/) — Structured evaluation loop for AI systems
+
+### Related Skills
+- `data-engineer` — Precedes ml-engineer in the Data vertical chain
+- `search-vector-architect` — Partner skill for embedding and retrieval work
+- `cost-aware-llm-pipeline` — Companion skill for LLM cost optimization
+- `observability-specialist` — Follows ml-engineer for production monitoring
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
 
 ---
 

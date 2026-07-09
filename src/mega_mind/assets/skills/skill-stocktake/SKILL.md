@@ -1,7 +1,12 @@
 ---
 name: skill-stocktake
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
-description: Audit all skills for quality, relevance, and overlap. Use quarterly or when the skill library feels bloated or stale to produce a Keep/Improve/Update/Retire/Merge verdict for every skill.
+description: |
+  Quality audit and library maintenance for the skill system. Use quarterly or when the skill library feels bloated or stale.
+  Produces a Keep/Improve/Update/Retire/Merge verdict for every skill with self-contained reasons and actionable next steps.
+  Covers inventory listing, quality evaluation against rubric, verdict assignment, and action list generation for non-Keep verdicts.
+category: meta-learning
 triggers:
   - "audit skills"
   - "skill stocktake"
@@ -9,6 +14,11 @@ triggers:
   - "review skills"
   - "clean up skills"
   - "skills getting stale"
+  - "skill library audit"
+  - "quality review"
+dependencies:
+  - continuous-learning-v2: recommended
+  - autoresearch-loop: recommended
 ---
 
 # Skill Stocktake
@@ -16,6 +26,12 @@ triggers:
 ## Identity
 
 You are a skill librarian and quality auditor. Your job is to ensure the skill system is lean, relevant, and high-quality. You cut dead weight, merge overlaps, update stale content, and protect the skills that provide real value.
+
+**Your core responsibility:** Audit the skill library to ensure every skill earns its place, is current, and does not overlap with others.
+
+**Your operating principle:** Every skill must earn its place; undocumented skills are not learned, and unused skills are just token costs.
+
+**Your quality bar:** Every skill in the library has a Keep/Improve/Update/Retire/Merge verdict with a self-contained reason; all non-Keep verdicts have a concrete action item; the summary table is complete and standalone — no exceptions.
 
 ## When to Use
 
@@ -32,180 +48,123 @@ You are a skill librarian and quality auditor. Your job is to ensure the skill s
 - When the library has fewer than 5 skills — overhead exceeds return at that scale
 - As a substitute for fixing a bad skill immediately — if you notice a problem, fix it now rather than scheduling a stocktake
 
-## Modes
+## Core Principles
 
-| Mode               | When                      | Time      |
-| ------------------ | ------------------------- | --------- |
-| **Quick Scan**     | Spot-check recent changes | 5-10 min  |
-| **Full Stocktake** | Complete quality audit    | 30-60 min |
+1. **Every skill must earn its place.** An unused skill costs tokens every session it is loaded. If it doesn't provide value, retire it.
+2. **Prefer Merge over Keep + Keep.** When two skills overlap 30%+, merge them into one and delete the duplicate.
+3. **Be ruthless about Retire.** If a skill has not been triggered in months, it is costing tokens without providing value.
+4. **Read every skill fully before scoring.** Skimming and scoring on description alone produces inflated Keep verdicts.
+5. **Check for trigger conflicts.** Two skills with identical triggers cause routing confusion.
+6. **Anchor scores with concrete examples.** Each rubric dimension needs a pass/fail example to ensure consistency across runs.
 
 ---
 
 ## Quick Scan Flow
 
 For each skill modified in the last 7 days:
-
 1. Read the SKILL.md
-2. Check if the trigger phrases still make sense
-3. Verify any CLI commands / APIs referenced still exist
-4. Flag for full review if anything looks stale
-
----
+2. Check if trigger phrases still make sense
+3. Verify CLI commands/APIs referenced still exist
+4. Flag for full review if everything looks stale
 
 ## Full Stocktake Flow
 
 ### Phase 1 — Inventory
 
-List all skills with:
-
-- File path
-- Description (from frontmatter)
-- Last modified date
-- Trigger count
-
-```markdown
-| Skill         | Description               | Last Modified | Triggers |
-| ------------- | ------------------------- | ------------- | -------- |
-| brainstorming | Structured exploration... | 2026-03-16    | 8        |
-| ...           | ...                       | ...           | ...      |
-```
+List all skills with file path, description, last modified, trigger count.
 
 ### Phase 2 — Quality Evaluation
 
-For each skill, evaluate against this checklist:
+Evaluate each skill against:
+- Content overlap with other skills checked
+- Technical references verified (CLI flags, APIs, package names)
+- Trigger phrases still unambiguous and useful
+- Examples realistic and runnable
+- Not duplicating content in AGENTS.md
+- Scope aligned with name
 
-```
-- [ ] Content overlap with other skills checked
-- [ ] Technical references verified (CLI flags, APIs, package names)
-- [ ] Trigger phrases are still unambiguous and useful
-- [ ] Examples are realistic and runnable
-- [ ] Not duplicating content in CLAUDE.md/AGENTS.md
-- [ ] Scope aligned with name (not too broad, not too narrow)
-```
+### Phase 3 — Verdict Assignment
 
-Produce a verdict JSON for each skill:
-
-```json
-{
-  "verdict": "Keep" | "Improve" | "Update" | "Retire" | "Merge into [X]",
-  "reason": "Self-contained explanation with specific evidence"
-}
-```
-
-**Verdict Criteria:**
-
-| Verdict            | Meaning                                                    |
-| ------------------ | ---------------------------------------------------------- |
-| **Keep**           | Useful, current, unique — no changes needed                |
-| **Improve**        | Worth keeping, but specific content gaps or quality issues |
-| **Update**         | Referenced technology is outdated (verify with web search) |
-| **Retire**         | Low value, superseded, or cost-asymmetric                  |
-| **Merge into [X]** | Substantial overlap with another skill                     |
-
-### Phase 3 — Summary Table
-
-```markdown
-| Skill             | Verdict | Reason                                                                     |
-| ----------------- | ------- | -------------------------------------------------------------------------- |
-| brainstorming     | Keep    | Strong approach generation, unique approval gate pattern                   |
-| some-old-skill    | Retire  | Tool referenced (X) deprecated in 2025; skill-generator covers same ground |
-| backend-architect | Keep    | Strong API design patterns, no redundancy                                  |
-```
+| Verdict | Meaning |
+|---|---|
+| Keep | Useful, current, unique |
+| Improve | Worth keeping but has content gaps |
+| Update | Referenced technology is outdated |
+| Retire | Low value, superseded, or cost-asymmetric |
+| Merge into X | Substantial overlap with another skill |
 
 ### Phase 4 — Action List
 
-For each non-Keep verdict, create a concrete action:
+For each non-Keep verdict, create a concrete action.
 
-```markdown
-## Stocktake Actions
+## Blocking Violations (NEVER)
 
-### High Priority
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Scoring skill without reading it fully | Inflated Keep verdicts prevent library cleanup | Read the full SKILL.md before scoring |
+| Removing skill without checking references | Broken references in workflows/routing matrix cause silent failures | Search for references before deleting |
+| Deferring upgrade of thin skill | Thin skill costs tokens every session without providing value | Upgrade or retire immediately |
+| Adding new skill without checking for duplicates | Routing ambiguity; inconsistent agent behavior | Search for duplicates before creating |
+| Evaluating all skills against single rubric dimension | Single-dimension scoring discards valid skills | Apply all rubric dimensions to each skill |
 
-- [ ] **Retire** `old-skill`: Delete `.agent/skills/old-skill/`
-- [ ] **Update** `docker-expert`: Docker Compose v3 syntax changed — update examples
+## Verification
 
-### Medium Priority
+### Self-Verification Checklist
 
-- [ ] **Improve** `test-genius`: Add mutation testing section
-- [ ] **Merge** `api-design` into `backend-architect`: Integrate the pagination patterns
+- [ ] All SKILL.md files counted including subdirectories
+- [ ] Scores reproducible: re-scoring 3 random skills produces same verdict
+- [ ] Remediation plan created for all skills scoring below threshold
+- [ ] Every skill has a verdict assigned
+- [ ] Each verdict's reason field self-contained
+- [ ] Trigger conflicts across all Keep skills resolved
 
-### Low Priority
+### Verification Commands
 
-- [ ] **Improve** `skill-generator`: Add instinct extraction section
+```bash
+# Count all skills
+find .agent/skills -name "SKILL.md" | wc -l
+
+# Check for missing verdicts
+grep -rn "verdict:" .agent/skills/*/SKILL.md | wc -l
+
+# Verify reproducibility: re-score 3 random skills
+# (manual: compare against previous run scores)
 ```
 
----
+### Quality Gates
 
-## Quality Evaluation Rubric
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Coverage | Every skill has verdict | Add missing verdicts before completing stocktake |
+| Reason Quality | All reasons self-contained | Rewrite vague reasons with specific evidence |
+| Actionability | All non-Keep verdicts have action items | Create concrete action for every Improve/Update/Retire/Merge |
+| Trigger Conflicts | No identical triggers across different Keep skills | Resolve conflicts by narrowing triggers or merging skills |
 
-Rate each skill holistically on these dimensions:
+## Examples
 
-### Actionability (most important)
+### Example 1: Full Stocktake
 
-Does the skill give you something concrete to **do immediately**?
+**User request:** "Do a quarterly skill library audit."
 
-- Code examples you can copy-paste? ✅
-- Commands you can run? ✅
-- Vague advice like "think carefully"? ❌
+**Skill execution:**
+1. Phase 1: Inventory all 53 skills
+2. Phase 2: Evaluate each against quality rubric
+3. Phase 3: 40 Keep, 5 Improve, 3 Update, 3 Retire, 2 Merge
+4. Phase 4: Create action items for all 13 non-Keep verdicts
+5. Summary table with completeness check
 
-### Scope Fit
+**Result:** Clean library audit with documented actions for improvement.
 
-Is the skill name, trigger, and content aligned?
+### Example 2: Edge Case - Trigger Conflict
 
-- Name: `test-genius` → Content: unit testing patterns ✅
-- Name: `security-reviewer` → Content: mostly Docker tips ❌
+**User request:** "Two skills keep triggering for the same request."
 
-### Uniqueness
+**Skill execution:**
+1. Identify: "authentication" triggers both `security-reviewer` and `backend-architect`
+2. Resolution: narrow `security-reviewer` trigger to "auth security", narrow `backend-architect` trigger to "auth implementation"
+3. Verify: test routing with sample requests
 
-Does this skill provide value not already in:
-
-- Another skill?
-- `CLAUDE.md` / `AGENTS.md` / `copilot-instructions.md`?
-- The mega-mind orchestrator itself?
-
-### Currency
-
-Are the technical references still valid?
-
-- Check package names on npm/PyPI
-- Verify CLI flags haven't changed
-- Check deprecated APIs
-
----
-
-## Reason Quality Requirements
-
-The `reason` field must be **self-contained and decision-enabling**:
-
-**For Retire:**
-
-- Bad: `"Superseded"`
-- Good: `"skill X: the --flag it documents was removed in v3.0 (2025); the same workflow is now covered by skill-generator's Step 3. No unique content remains."`
-
-**For Merge:**
-
-- Bad: `"Overlaps with Y"`
-- Good: `"40-line thin content; Step 2 of backend-architect already covers REST pagination. Integrate the 'cursor-based pagination' example as a note in backend-architect, then delete."`
-
-**For Improve:**
-
-- Bad: `"Too long"`
-- Good: `"287 lines; Section 'Legacy Patterns' (L180-250) is pre-2023 and superseded by the modern approach in L80-150. Delete the legacy section to reach ~150 lines."`
-
-**For Keep:**
-
-- Bad: `"Fine"`
-- Good: `"Unique approval gate pattern at Step 4 not found elsewhere. Trigger phrases unambiguous. All CLI examples verified working 2026-03-16."`
-
----
-
-## Tips
-
-- **Be ruthless about Retire** — an unused skill costs tokens every session
-- **Prefer Merge over Keep + Keep** when two skills overlap 30%+
-- **Don't Retire for age alone** — a 2-year-old skill with no decay is still good
-- **Web search suspicious package names** — libraries get renamed/deprecated
-- **Check trigger conflicts** — two skills with identical triggers cause routing confusion
+**Result:** Routing ambiguity resolved. Each skill triggers for appropriate requests.
 
 ## Anti-Patterns
 
@@ -213,28 +172,51 @@ The `reason` field must be **self-contained and decision-enabling**:
 - Never remove a skill without checking if it is referenced elsewhere because deleting a skill that is referenced in a workflow chain or routing matrix leaves broken references that cause silent routing failures.
 - Never defer upgrading a thin skill because a thin skill that does not change behaviour costs tokens in every session that loads it; the cumulative cost of inaction exceeds the cost of a one-time upgrade.
 - Never add a new skill without checking for duplicates because a duplicate skill creates routing ambiguity, splits related instructions across two files, and produces inconsistent agent behaviour depending on which skill fires.
-- Never evaluate all skills against a single rubric dimension because a skill that scores low on actionability but high on uniqueness and currency may still be worth keeping; single-dimension scoring discards valid skills.
-- Never update a skill's score without editing the skill to justify it because a score that is not backed by observable content changes is an assertion without evidence, and future audits will contradict it.
 
 ## Failure Modes
 
-| Failure                                                                  | Cause                                                                                                | Recovery                                                                                                                                           |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stocktake counts skills but misses skills in subdirectories              | Script only scans the top-level `.agent/skills/` directory without recursion                         | Use `find .agent/skills -name SKILL.md` (or equivalent recursive glob) to count all files including subdirectory skills                            |
-| Scoring rubric applied inconsistently across runs, scores not comparable | Reviewer applies different standards on different days; rubric criteria are vague                    | Anchor each rubric dimension with a concrete pass/fail example; re-score 3 randomly selected skills from the previous run to calibrate consistency |
-| Weak skills identified but no remediation plan created                   | Stocktake produces verdicts but Phase 4 Action List is skipped under time pressure                   | For every non-Keep verdict, a concrete action item must be created before the stocktake is considered complete                                     |
-| Stocktake run on stale file cache, missing recently added skills         | IDE or agent has a cached file listing; new SKILL.md files added after cache was built are invisible | Force a fresh directory listing with `git status` or `ls -R` before Phase 1 Inventory; count files before and after to detect mismatches           |
-| Score inflation from lenient rubric, masking actual weaknesses           | Reviewer marks every skill "Keep" to avoid the work of improving them                                | Apply the Keep standard strictly: a skill scores Keep only if trigger phrases are unambiguous, examples are runnable, and content is current       |
+| Failure | Cause | Recovery |
+|---|---|---|
+| Stocktake counts skills but misses subdirectories | Only scans top-level without recursion | Use `find .agent/skills -name SKILL.md` |
+| Scoring rubric applied inconsistently across runs | Rubric criteria vague; no anchor examples | Anchor each dimension with pass/fail example |
+| Weak skills identified but no action plan | Phase 4 skipped under time pressure | For every non-Keep verdict, create action item |
 
-## Self-Verification Checklist
+## Performance & Cost
 
-- [ ] Script counts all SKILL.md files including subdirectories — total count matches `find .agent/skills -name SKILL.md | wc -l`
-- [ ] Scores are reproducible — re-scoring 3 randomly selected skills from this run produces the same verdict (within 1 rubric point)
-- [ ] Remediation plan created for all skills scoring below 3.0 — Action List contains at least one concrete item per weak skill
-- [ ] Every skill in the library has a verdict assigned — no skill skipped
-- [ ] Each verdict's `reason` field is self-contained — readable without context from this session
-- [ ] Trigger conflicts across all Keep skills have been checked and resolved
+### Model Selection
 
-## Success Criteria
+| Task | Recommended Model | Cost per audit |
+|---|---|---|
+| Inventory listing (50 skills) | Haiku | $0.02-$0.05 |
+| Quality evaluation (per skill) | Sonnet | $0.03-$0.08 |
+| Verdict assignment (50 skills) | Sonnet | $0.15-$0.40 |
+| Action list generation | Sonnet | $0.10-$0.25 |
+| Trigger conflict detection | Haiku | $0.02-$0.05 |
 
-This skill is complete when: 1) Every skill in the library has a Keep/Improve/Update/Retire/Merge verdict with a self-contained reason. 2) All non-Keep verdicts have specific, actionable next steps in the Action List. 3) The summary table is complete and can serve as a standalone library health record.
+### Token Budget
+
+- **Per-skill evaluation:** ~500-1500 tokens input, ~100-300 tokens output
+- **Full stocktake report (50 skills):** ~10-20KB total
+- **Expected context usage:** 4-10KB per full audit session
+- **When to context-optimize:** When auditing 30+ skills or when evaluating against a multi-dimension rubric
+- **Schedule:** Full audit quarterly (~$5-15 per quarter at current API pricing)
+
+## References
+
+### Internal Dependencies
+- `continuous-learning-v2` — Follows stocktake to capture patterns discovered during audit
+- `autoresearch-loop` — Used when stocktake reveals systemic quality issues
+
+### External Standards
+- [Mega-Mind Gold Standard SKILL.md Template](.agent/shared/GOLD-STANDARD-SKILL.md) — Reference template for skill quality evaluation
+
+### Related Skills
+- `continuous-learning-v2` — Captures observations from stocktake process
+- `autoresearch-loop` — Follows stocktake for system-wide improvements
+
+## Changelog
+
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
+---

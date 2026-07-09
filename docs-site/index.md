@@ -1,15 +1,17 @@
-# Mega-Mind Skills System
+# Mega-Mind Skills System v1.0
 
-A unified skill system for any AI coding assistant — covering the full software
+A unified Gold Standard skill system for any AI coding assistant — covering the full software
 development lifecycle from planning through production operations and compliance.
 
-- **53 Skills** - Core workflow, domain expert, meta/learning, and token optimization skills — each with triggers, anti-patterns, and self-verification.
+- **53 Gold Standard Skills** — Core workflow, domain expert, meta/learning, and token optimization — every skill meets the [Gold Standard SKILL.md v1.0](https://github.com/k1lgor/mega-mind-skills/blob/main/.agent/shared/GOLD-STANDARD-SKILL.md) specification with 12 required sections including Blocking Violations, Verification with quality gates, Performance & Cost models, and Anti-Patterns tables.
 
-- **11 Agent Personas** - Deep-dive personas for architecture, QA, security, accessibility, adversarial testing, privacy, incidents, and releases.
+- **11 Agent Personas** — Deep-dive personas for architecture, QA, security, accessibility, adversarial testing, privacy, incidents, and releases.
 
-- **9 Workflow Chains** - Executable sequences covering the full lifecycle: brainstorm → plan → build → verify → ship → release → operate → learn.
+- **9 Workflow Chains** — Executable sequences covering the full lifecycle: brainstorm → plan → build → verify → ship → release → operate → learn.
 
-- **Multi Platforms** - Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
+- **Multi-Platform** — Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
+
+> **New in v1.0 (2026-07-09):** All 53 skills upgraded to Gold Standard. 19,531 total lines, 12/12 sections compliance. See the [changelog](changelog.md) for details.
 
 ## Quick Start
 

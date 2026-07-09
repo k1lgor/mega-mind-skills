@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] — 2026-07-09
+
+### 🏆 Gold Standard v1.0 — All 53 Skills Upgraded
+
+Every skill upgraded to the **Gold Standard SKILL.md v1.0** specification — 12 required sections:
+Blocking Violations, Verification with quality gates, Performance & Cost models, structured
+Examples, Anti-Patterns tables, and full References/Changelog. This is the largest quality
+upgrade in the project's history.
+
+- **Created** `.agent/shared/GOLD-STANDARD-SKILL.md` — universal 12-section template with scoring rubric
+- **All 53 skills** now at 12/12 gold standard sections (100% compliance, 19,531 total lines)
+- **Fixed** RTK skill Redux anti-patterns (critical copy-paste bug)
+- **Fixed** broken `rtk bun test (or npm test)` syntax across all skills
+- **Added** Blocking Violations, Performance & Cost, References to every skill
+- **Enhanced** mega-mind orchestrator to 671 lines with workflow chain selection guide
+- **Enhanced** security-reviewer with OWASP Top 10 (2025), CWE mappings, STRIDE threat modeling
+- **Updated** AGENTS.md, README.md, USAGE.md, and pyproject.toml for v1.0
+
+---
+
 ## [0.8.0] — 2026-05-23
 
 ### 🏗️ Full Lifecycle Coverage

@@ -1,10 +1,12 @@
 ---
 name: rtk
+version: "1.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
-  RTK (Rust Token Killer) is a CLI proxy that reduces LLM token consumption by 60-90%
-  on common development commands. Use this skill to optimize CLI operations and track
-  token savings. Always prefer RTK-wrapped commands when RTK is installed.
+  RTK (Rust Token Killer) CLI proxy that reduces LLM token consumption by 60-90% on common development commands.
+  Use to optimize CLI operations and track token savings — always prefer RTK-wrapped commands when RTK is installed.
+  Covers git, cargo, npm/pnpm/bun, pytest, go, and common utilities with measured savings statistics per command.
+category: token-optimization
 triggers:
   - "rtk"
   - "token optimization"
@@ -13,373 +15,206 @@ triggers:
   - "reduce tokens"
   - "compact output"
   - "cli optimization"
+  - "rtk gain"
+dependencies:
+  - verification-loop: recommended
+  - executing-plans: recommended
+  - context-optimizer: recommended
 ---
 
 # RTK (Rust Token Killer) Skill
 
-## Overview
+## Identity
 
-RTK is a high-performance CLI proxy that minimizes LLM token consumption by filtering and compressing command outputs. It achieves **60-90% token savings** on common development operations.
+You are a token optimization specialist. RTK is a high-performance CLI proxy that minimizes LLM token consumption by filtering and compressing command outputs. You always prefer RTK-wrapped commands when RTK is installed, and fall back gracefully when it is not.
+
+**Your core responsibility:** Minimize LLM token consumption by routing CLI commands through RTK for 60-90% output compression.
+
+**Your operating principle:** Always prefer RTK when installed; fall back gracefully when unavailable; never fail or stall waiting for RTK.
+
+**Your quality bar:** All supported CLI operations use RTK-wrapped equivalents, `rtk gain` shows measurable token savings for the session, and fallback to raw commands is seamless when RTK is unavailable — no exceptions.
 
 ## When to Use
 
-- **Before running verbose commands**: `git log`, `cargo test`, `bun install (or npm install)`
-- **When context window is limited**: Large projects with many files
-- **For cost optimization**: Reduce token usage per session
-- **For build/test output**: Only show failures, not full output
+- **Before running verbose commands:** `git log`, `cargo test`, `npm install`
+- **When context window is limited:** Large projects with many files
+- **For cost optimization:** Reduce token usage per session
+- **For build/test output:** Only show failures, not full output
 
 ## When NOT to Use
 
 - When RTK is not installed — fall back gracefully to raw commands; do not fail or stall waiting for RTK
-- When verbose output is explicitly needed for debugging (e.g., investigating a specific build warning) — use the raw command directly
+- When verbose output is explicitly needed for debugging — use the raw command directly
 - For commands where RTK's output compression would hide information needed for the current task
 - For `git commit`, `git push`, or other write commands where you need to confirm the exact output
 
-## Quick Check: Is RTK Installed?
+## Core Principles
 
-```bash
-rtk --version    # Should show version like "rtk 0.27.2"
-rtk gain         # Should show token savings stats
-```
+1. **Prefer RTK for verbose commands.** Always wrap git, cargo, npm, pytest in RTK when installed.
+2. **Fall back gracefully.** If RTK is not installed, use raw commands. Never block on RTK being unavailable.
+3. **Check savings periodically.** Use `rtk gain` to see cumulative impact and verify RTK is active.
+4. **Use proxy for unsupported commands.** `rtk proxy <cmd>` still tracks usage even without filtering.
 
-If these fail, RTK is not installed. Use standard commands instead.
+---
 
 ## Command Reference
 
-### Git Operations
-
+### Git Operations (70-85% savings)
 ```bash
-# Status (70% savings)
 rtk git status
-rtk git status --short
-
-# Log (85% savings)
 rtk git log -10
-rtk git log --oneline -20
-rtk git log --graph --oneline --all
-
-# Diff (80% savings)
 rtk git diff
-rtk git diff --cached
-rtk git diff main..feature
-
-# Branch (60% savings)
-rtk git branch
-rtk git branch -a
 ```
 
-### Rust / Cargo
-
+### Rust/Cargo (80-90% savings)
 ```bash
-# Test (90% savings - failures only)
 rtk cargo test
-rtk cargo test --lib
-rtk cargo test <test_name>
-
-# Build (80% savings - errors/warnings only)
 rtk cargo build
-rtk cargo build --release
-
-# Check (compact output)
-rtk cargo check
-rtk cargo check --all-targets
-
-# Clippy (85% savings - grouped by severity)
 rtk cargo clippy
-rtk cargo clippy --all-targets
 ```
 
-### Node.js / JavaScript / TypeScript
-
+### Node.js/TypeScript (80-99% savings)
 ```bash
-# Test runners
-rtk bun test (or rtk npm test)          # Generic bun test (or npm test)
-rtk vitest            # Vitest (99.5% savings)
-
-# Linting (84% savings)
-rtk lint              # ESLint/Biome
-rtk eslint src/
-
-# TypeScript (83% savings)
-rtk tsc               # TypeScript compiler
-rtk npx tsc --noEmit
-
-# Frameworks
-rtk next              # Next.js (87% savings)
-rtk playwright        # E2E tests (94% savings)
+rtk npm test
+rtk tsc
+rtk lint
 ```
 
-### Python
-
+### Python (80-90% savings)
 ```bash
-# Linting/Formatting
-rtk ruff check        # Ruff linter (80% savings)
-rtk ruff format       # Ruff formatter
-
-# Type checking (80% savings)
-rtk mypy src/
-
-# Testing (90% savings)
 rtk pytest
-rtk pytest tests/
-
-# Package management
-rtk pip list          # pip/uv (70-85% savings)
+rtk ruff check
+rtk mypy src/
 ```
 
-### Go
-
+### Go (75-90% savings)
 ```bash
-# Testing (90% savings)
 rtk go test ./...
-rtk go test -v ./...
-
-# Build (80% savings)
 rtk go build ./...
-
-# Vet (75% savings)
-rtk go vet ./...
-
-# Linting (85% savings)
 rtk golangci-lint run
 ```
 
-### Package Managers
-
+### Utilities (50-70% savings)
 ```bash
-# pnpm (70-90% savings)
-rtk pnpm list
-rtk pnpm outdated
-rtk pnpm install (or rtk npm install)
-
-# npm
-rtk npm list
-rtk npm outdated
-
-# pip
-rtk pip list
-rtk pip outdated
+rtk ls -la
+rtk read <file>
+rtk grep <pattern> <path>
 ```
 
-### Database / ORM
+## Blocking Violations (NEVER)
+
+| Violation | Consequence | Recovery |
+|---|---|---|
+| Calling raw command when RTK-wrapped equivalent exists | Missed token savings of 60-90%; unnecessary context pressure | Check RTK availability first, then use RTK wrapper |
+| Failing or stalling when RTK not installed | Blocks workflow for missing optional tool | Check `rtk --version` first; fall back to raw command |
+| Using RTK on command with <200 token output | Compression overhead exceeds benefit | Skip RTK for tiny outputs; use raw command |
+| Not checking `rtk gain` to verify savings | Cannot measure impact; RTK may not be filtering effectively | Periodically run `rtk gain` to verify savings |
+
+## Verification
+
+### Self-Verification Checklist
+
+- [ ] RTK installed and `rtk --version` exits 0
+- [ ] Token count after compression is lower than before (verified via `rtk gain`)
+- [ ] Compressed output is syntactically valid (key fields present)
+- [ ] All supported CLI operations use RTK-wrapped equivalents
+- [ ] Fallback to raw commands in place when RTK unavailable
+- [ ] Verbose debugging commands use raw CLI (not RTK)
+
+### Verification Commands
 
 ```bash
-# Prisma (88% savings)
-rtk prisma migrate status
-rtk prisma db push
-rtk prisma studio
-```
+# Check installation
+rtk --version
 
-### Utilities
-
-```bash
-# Directory listing
-rtk ls                # Tree format with counts
-rtk ls -la            # Detailed listing
-
-# File reading (with filtering)
-rtk read <file>       # Smart file reading
-rtk read --filter=aggressive <file>
-
-# Search
-rtk grep <pattern> <path>    # Grouped by file
-
-# JSON inspection
-rtk json <file>       # Structure without values
-
-# Optimization Flags (NEW in v0.27+)
-rtk --ultra-compact <cmd>   # Inline format with ASCII icons (Level 2)
-rtk --skip-env <cmd>        # Set SKIP_ENV_VALIDATION=1 for child processes
-```
-
-## Token Savings Statistics
-
-```bash
-# View cumulative savings
+# Check cumulative savings
 rtk gain
-
-# View command history
 rtk gain --history
 
-# Example output:
-# ╭──────────────────────────────────────────────╮
-# │ Total commands: 127                          │
-# │ Tokens saved: 89,432                         │
-# │ Average savings: 78.3%                       │
-# │ Cost saved: $1.79                            │
-# ╰──────────────────────────────────────────────╯
+# Verify compression quality
+rtk git log --oneline -5
+# Confirm output is readable and complete for the task
 ```
 
-## Proxy Mode
+### Quality Gates
 
-For commands not specifically supported by RTK, use proxy mode:
+| Gate | Criteria | Fail Action |
+|---|---|---|
+| Installation | `rtk --version` exits 0 | Fall back to raw commands |
+| Savings | `rtk gain` shows tokens saved > 0 | Verify RTK is being invoked correctly |
+| Fallback | Raw commands work when RTK unavailable | Ensure no hard dependency on RTK |
+| Output Quality | Compressed output contains needed fields | Use raw command for missing details |
 
-```bash
-# Still tracks usage, just no filtering
-rtk proxy <any-command> <args>
+## Examples
 
-# Examples
-rtk proxy docker ps
-rtk proxy kubectl get pods
-rtk proxy curl https://api.example.com
-```
+### Example 1: Git Log Optimization
 
-## Tool Translation Table
+**User request:** "Show me the last 50 commits."
 
-When RTK is installed, translate commands automatically:
+**Skill execution:**
+1. Without RTK: `git log -50` produces ~3,500 tokens of full commit messages
+2. With RTK: `rtk git log -50` produces ~500 tokens (summary format)
+3. Key fields preserved: commit hash, author, date, subject
+4. Verification: `rtk gain` shows 85% token savings
 
-| Original                         | RTK-Optimized                | Savings |
-| -------------------------------- | ---------------------------- | ------- |
-| `git status`                     | `rtk git status`             | 70%     |
-| `git log -10`                    | `rtk git log -10`            | 85%     |
-| `git diff`                       | `rtk git diff`               | 80%     |
-| `cargo test`                     | `rtk cargo test`             | 90%     |
-| `cargo build`                    | `rtk cargo build`            | 80%     |
-| `cargo clippy`                   | `rtk cargo clippy`           | 85%     |
-| `bun test (or npm test)`         | `rtk bun test (or npm test)` | 90%     |
-| `bun run lint (or npm run lint)` | `rtk lint`                   | 84%     |
-| `npx tsc --noEmit`               | `rtk tsc`                    | 83%     |
-| `pytest`                         | `rtk pytest`                 | 90%     |
-| `go test ./...`                  | `rtk go test`                | 90%     |
-| `pnpm list`                      | `rtk pnpm list`              | 70-90%  |
-| `ls -la`                         | `rtk ls`                     | 60%     |
-| `cat <file>`                     | `rtk read <file>`            | 50-70%  |
+**Result:** 85% token reduction. All needed information (hashes, authors, dates) preserved.
 
-## Integration with Mega-Mind
+### Example 2: Edge Case - RTK Not Installed
+
+**User request:** "Run tests and show results."
+
+**Skill execution:**
+1. Check `rtk --version`: exits non-zero (not installed)
+2. Fall back to `npm test` directly
+3. Output is full-verbosity (no compression)
+4. Proceed without blocking — RTK is an optimization, not a requirement
+
+**Result:** Workflow continues seamlessly. No delay from missing optional tool.
 
 ## Anti-Patterns
 
-- Never mutate state outside of a createSlice reducer because mutations outside reducers bypass Immer's change tracking, producing state updates that the Redux DevTools cannot record and that time-travel debugging cannot replay.
-- Never put non-serializable values in Redux state because non-serializable values (Date objects, class instances, functions) cannot be persisted, replayed, or compared with strict equality, causing silent failures in selectors and middleware.
-- Never use useSelector with a new object or array literal in the selector function because a selector that returns a new reference on every call causes the component to re-render on every dispatch, regardless of whether the relevant data changed.
-- Never dispatch an action that triggers another dispatch synchronously because synchronous chained dispatches bypass the middleware pipeline for the inner dispatch and create action ordering that is impossible to reproduce in tests.
-- Never store derived data in Redux state when it can be computed from existing state because redundant derived state goes out of sync with its source, requiring manual synchronisation logic that is consistently forgotten or incorrectly implemented.
-- Never use RTK Query with a baseUrl that differs between environments without configuration because a hardcoded baseUrl causes all API calls to target the wrong environment in staging or production, making the bug invisible until deployment.
+- Never call a raw command when an RTK-wrapped equivalent exists because you miss 60-90% token savings and put unnecessary pressure on the context window with verbose output that RTK would have compressed.
+- Never fail or stall when RTK is not installed because RTK is an optional optimization, not a hard dependency; check availability with `rtk --version` and fall back gracefully to raw commands.
+- Never use RTK on commands producing less than ~200 tokens of output because the RTK wrapper overhead exceeds the savings, and the raw output fits trivially in context.
+- Never skip running `rtk gain` periodically to verify savings because without measurement you cannot confirm RTK is active, correctly configured, and actually filtering output.
 
-## Failure Modes
+## Performance & Cost
 
-| Failure                                                        | Cause                                                                                                  | Recovery                                                                                                                                  |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Token savings not achieved because context was already small   | RTK applied to a command that outputs fewer than 200 tokens; compression overhead exceeds benefit      | Skip RTK for small-output commands; use `rtk gain` to identify which command types are actually saving tokens in this project             |
-| RTK not installed in environment, command fails silently       | `rtk` binary not on PATH; CI or remote environment missing the install step                            | Check `rtk --version` exits 0 before wrapping any command; fall back to raw command if check fails; add RTK install to CI setup step      |
-| Command output truncated unexpectedly, leaving partial context | RTK's output filter aggressively drops lines that match a suppression rule; needed information removed | Re-run the raw command without RTK to see full output; file an issue or adjust RTK filter config; for debugging sessions use raw commands |
-| RTK applied to wrong file, compressing irrelevant content      | `rtk read <file>` called on a binary or auto-generated file; output is noise                           | Verify the target file path with `ls` before reading; only use `rtk read` on human-readable source or config files                        |
+### Savings by Command Type
 
-### When to Suggest RTK
+| Command | Raw Tokens | RTK Tokens | Savings |
+|---|---|---|---|
+| `git log -50` | ~3,500 | ~500 | 85% |
+| `cargo test` | ~8,000 | ~800 | 90% |
+| `npm test` | ~5,000 | ~500 | 90% |
+| `pytest` | ~6,000 | ~600 | 90% |
+| `go test ./...` | ~4,000 | ~600 | 85% |
+| `ls -la` (large dir) | ~500 | ~150 | 70% |
 
-1. **User asks to run a command** → Check if RTK version exists
-2. **Output seems verbose** → Suggest using RTK next time
-3. **Context window is filling** → Remind about RTK savings
+### Installation Cost
 
-### Example Interaction
+- **Binary size:** ~5MB on disk
+- **Install time:** <10 seconds via cargo install or prebuilt binary
+- **CPU overhead:** <2ms per wrapped command
+- **Expected context usage:** negligible (~200 bytes for `rtk gain` check)
 
-```
-User: Run git log to see recent commits
+## References
 
-AI: Running optimized command with RTK:
-    $ rtk git log --oneline -10
+### Internal Dependencies
+- `verification-loop` — Uses RTK for all verification commands
+- `executing-plans` — Uses RTK when running plan steps
+- `context-optimizer` — Pair with RTK for full token optimization strategy
 
-    a1b2c3d feat: add user authentication
-    e4f5g6h fix: resolve session timeout
-    ...
+### External Standards
+- [RTK Repository](https://github.com/rtk-ai/rtk) — Official RTK project
 
-    💡 Token savings: 87% (used 234 tokens vs 1,800 raw)
-    💰 Run `rtk gain` to see cumulative savings
-```
+### Related Skills
+- `context-optimizer` — RTK handles deterministic CLI compression; context-mode handles non-deterministic large data
+- `verification-loop` — RTK used throughout verification phases
 
-## Fallback Behavior
+## Changelog
 
-If RTK is not installed or fails:
-
-```
-1. Try RTK command
-2. If fails → Execute raw command
-3. Log that RTK would have saved tokens
-4. Continue normally
-```
-
-The system gracefully degrades without breaking functionality.
-
-## Configuration
-
-### RTK Config File
-
-Location: `~/.config/rtk/config.toml`
-
-```toml
-[tracking]
-# Custom database location (optional)
-database_path = "~/.local/share/rtk/tracking.db"
-
-[tee]
-# Save full output on failure
-enabled = true
-directory = "~/.local/share/rtk/tee"
-max_files = 20
-max_size_mb = 1
-```
-
-### Environment Variables
-
-```bash
-RTK_DB_PATH=/custom/path/tracking.db
-RTK_TEE=true
-RTK_TEE_DIR=/custom/tee
-```
-
-## Best Practices
-
-1. **Prefer RTK for verbose commands**: Always wrap git, cargo, npm, pytest
-2. **Check savings periodically**: `rtk gain` to see impact
-3. **Use proxy for unsupported commands**: Still tracks usage
-4. **Combine with other skills**: Use RTK within TDD, debugging, and review workflows
-
-## Common Issues
-
-### RTK Not Found
-
-```bash
-# Install RTK
-cargo install rtk
-
-# Or download binary
-curl -sSL https://github.com/rtk-ai/rtk/releases/latest/download/rtk-$(uname -s)-$(uname -m) -o /usr/local/bin/rtk
-chmod +x /usr/local/bin/rtk
-```
-
-### Wrong Package Installed
-
-There are two "rtk" packages:
-
-- ✅ **rtk-ai/rtk** (Rust Token Killer) - This is what we want
-- ❌ **reachingforthejack/rtk** (Rust Type Kit) - Different project
-
-Verify: `rtk gain` should show token savings, not "command not found"
-
-### Command Not Supported
-
-Use proxy mode:
-
-```bash
-rtk proxy <unsupported-command>
-```
-
-## Related Skills
-
-- `executing-plans` - Use RTK when running plan steps
-- `test-driven-development` - Use `rtk cargo test` / `rtk bun test` (or `rtk npm test`)
-- `debugging` - Use `rtk git diff` for changes
-- `verification-loop` - Use RTK for verification commands
-
-## Self-Verification Checklist
-
-- [ ] RTK installed and `rtk --version` exits 0 — verified before using any RTK-wrapped commands
-- [ ] Token count after compression is lower than before — `rtk gain` shows cumulative tokens saved > 0 for this session
-- [ ] Compressed output is syntactically valid — key fields (test names, error messages, file paths) are present and parseable in the RTK output
-- [ ] All supported CLI operations use RTK-wrapped equivalents (`rtk git status`, `rtk bun test`, etc.)
-- [ ] Fallback to raw commands is in place when RTK is unavailable (no hard dependency)
-- [ ] Verbose debugging commands use raw CLI (not RTK) when full output is needed
-
-## Success Criteria
-
-This skill is complete when: 1) all supported CLI commands in the current session use RTK-wrapped equivalents, 2) `rtk gain` shows measurable token savings, and 3) there is a documented fallback for environments where RTK is not installed.
+| Version | Date | Changes |
+|---|---|---|
+| 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, References, Changelog. |
+---
