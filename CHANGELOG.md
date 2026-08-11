@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] — 2026-08-11
+
+### 🔧 Hotfix: Platform-Independent Content Hashes
+
+- Content hashes in `skills-manifest.json` are now computed over **line-ending-normalized** bytes (CRLF ≡ LF), so `mmo check`, `mmo doctor`, and the `validate.yml` CI gate produce identical results on Windows and Linux checkouts. The `v1.0.1` tag shipped hashes derived from Windows CRLF working-tree bytes, which made the manifest-freshness check fail on Linux CI; this release corrects that before any distribution.
+
+---
+
 ## [1.0.1] — 2026-08-11
 
 ### 🔧 Routing & Validation Hardening

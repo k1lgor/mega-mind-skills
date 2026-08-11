@@ -1,6 +1,6 @@
 [project]
 name = "mmo"
-version = "1.0.1"
+version = "1.0.2"
 description = "The most powerful AI skill system on GitHub — 53 Gold Standard v2.0 skills, 11 agent personas, 9 executable workflows, and comprehensive lifecycle coverage from planning through production operations. All skills meet the Gold Standard SKILL.md v2.0 specification with 12 required sections: blocking violations, verification gates, performance/cost models, anti-patterns, and structured examples. Compatible with any AI coding agent (Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)."
 authors = [
     { name = "Plamen Ivanov", email = "paco.iwanow@gmail.com" },
