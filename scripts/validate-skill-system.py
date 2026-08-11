@@ -72,14 +72,17 @@ def check_skill_count(manifest: dict) -> list[dict]:
 def check_manifest_fresh(manifest: dict) -> list[dict]:
     import hashlib
 
+    def norm_sha256(path: Path) -> str:
+        data = path.read_bytes().replace(b"\r\n", b"\n")  # platform-independent
+        return hashlib.sha256(data).hexdigest()
+
     stale = []
     for entry in manifest["skills"]:
         path = SKILLS_DIR / entry["name"] / "SKILL.md"
         if not path.exists():
             stale.append(f"{entry['name']}: SKILL.md missing on disk")
             continue
-        actual = hashlib.sha256(path.read_bytes()).hexdigest()
-        if actual != entry["sha256"]:
+        if norm_sha256(path) != entry["sha256"]:
             stale.append(
                 f"{entry['name']}: hash mismatch — run `python scripts/build-manifest.py`"
             )

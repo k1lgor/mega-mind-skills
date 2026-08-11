@@ -48,7 +48,8 @@ def test_manifest_hashes_match_disk():
     for entry in m["skills"]:
         path = ROOT / ".agent" / "skills" / entry["name"] / "SKILL.md"
         assert path.exists()
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == entry["sha256"]
+        data = path.read_bytes().replace(b"\r\n", b"\n")  # platform-independent
+        assert hashlib.sha256(data).hexdigest() == entry["sha256"]
 
 
 def test_generated_regions_are_fresh():

@@ -4,6 +4,12 @@ import shutil
 from pathlib import Path
 
 
+def _norm_sha256(path: Path) -> str:
+    """Content hash with line endings normalized so hashes match the manifest
+    on any platform (Windows CRLF checkouts hash identically to Linux LF)."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def _verify_copied(src_root: Path, dst_root: Path, label: str) -> None:
     """Receiving inspection: fail loudly if any copied file differs from source."""
     mismatches = []
@@ -14,9 +20,7 @@ def _verify_copied(src_root: Path, dst_root: Path, label: str) -> None:
         dest = dst_root / rel
         if not dest.exists():
             mismatches.append(f"missing: {label}/{rel}")
-        elif hashlib.sha256(item.read_bytes()).hexdigest() != hashlib.sha256(
-            dest.read_bytes()
-        ).hexdigest():
+        elif _norm_sha256(item) != _norm_sha256(dest):
             mismatches.append(f"corrupt: {label}/{rel}")
     if mismatches:
         raise RuntimeError(
@@ -59,7 +63,7 @@ def verify_install(target_dir: str, platform: str = "agent") -> list[str]:
             path = skills_dir / name / "SKILL.md"
             if not path.exists():
                 problems.append(f"missing skill: {name}")
-            elif hashlib.sha256(path.read_bytes()).hexdigest() != by_name[name]:
+            elif _norm_sha256(path) != by_name[name]:
                 problems.append(f"content mismatch: {name}")
         for name in sorted(installed - set(by_name)):
             problems.append(f"unexpected skill: {name}")

@@ -109,7 +109,7 @@
         "content-hash-cache-pattern: optional",
         "cost-aware-llm-pipeline: recommended"
       ],
-      "sha256": "4c9d0977f34243ca6fd4586654c045af20379900bd018b233eb7da691f78641c",
+      "sha256": "4008f2c8f6e94f22e4db49e9707e021240229b3955da69327d4cc9357fcdaf65",
       "line_count": 220,
       "sections": {
         "Identity": true,
@@ -149,7 +149,7 @@
         "skill-stocktake: recommended",
         "skill-generator: recommended"
       ],
-      "sha256": "9ff9d12f9346653957815af459cc6fb959283fceedba7dc84b1e981f9fe84f19",
+      "sha256": "2f68da58b8bfd17c5f1d8d086e2ce66ac67535e01ccda4af5c439c3cb0f943da",
       "line_count": 179,
       "sections": {
         "Identity": true,
@@ -195,7 +195,7 @@
         "test-genius: optional",
         "code-polisher: optional"
       ],
-      "sha256": "58883c7606a66d16ffd63ce234cc4467a8f68d9273b9699e7c69e2bdaeab9079",
+      "sha256": "75f7c726c8157335f803755b253de80b19330fc8a02f58bc6d10d8ff72a1df48",
       "line_count": 500,
       "sections": {
         "Identity": true,
@@ -238,7 +238,7 @@
         "cost-aware-llm-pipeline: optional",
         "context-mode: optional"
       ],
-      "sha256": "baec1908016b9a17c3d804a9b55e06f769edc35366ba74c374f001bcd6b8713c",
+      "sha256": "197c6627d88a090e27475d2ce15ec6da3288d30b0ec2cd2bf7eb92da7f6211e5",
       "line_count": 348,
       "sections": {
         "Identity": true,
@@ -282,7 +282,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "68eab6decda55f0e3954444267e5772322cfc8eb303037050f2c7838d3eb6d46",
+      "sha256": "e0ed8517fed9d760e863a3df8b7d1f970435d9645dd638ae5a47ca15ddb4cc43",
       "line_count": 358,
       "sections": {
         "Identity": true,
@@ -321,7 +321,7 @@
         "test-genius: recommended",
         "plankton-code-quality: recommended"
       ],
-      "sha256": "1f34b380dbc1e8b96e511a8a790d534ce280ba112ef68747290056a3e8f11da0",
+      "sha256": "99e3816559e0abdfcdfb744545c87ff8c36cc896cf4b073a926a378a209c9da3",
       "line_count": 351,
       "sections": {
         "Identity": true,
@@ -358,7 +358,7 @@
       "dependencies": [
         "context-optimizer: recommended"
       ],
-      "sha256": "76aa15859f586eb811e6b09efee9171e621457b41b4eeeb43cbc7ba90798c87d",
+      "sha256": "391787492e8405e5904c1b5b7e5dba3c7dc6da4a624381828dc54867b244427a",
       "line_count": 211,
       "sections": {
         "Identity": true,
@@ -409,7 +409,7 @@
         "iterative-retrieval: recommended",
         "verification-loop: recommended"
       ],
-      "sha256": "48ce35ae9cf08dd98aba62312cb038004caba6cd421d8fadced27d25f1212076",
+      "sha256": "829ba66cf8e7bffd5d9876e18fdc99de0ba8ce750955ab94978a34934e3855d9",
       "line_count": 233,
       "sections": {
         "Identity": true,
@@ -448,7 +448,7 @@
         "autoresearch-loop: recommended",
         "skill-generator: recommended"
       ],
-      "sha256": "12398f75cba8296a56ac395b3c2eb6b610bfbf12e3081b37c251aa3ad327a6d4",
+      "sha256": "60be8c72563dd72747a89da10369f0c6bd2b70b05562daa4547202de06e038d7",
       "line_count": 225,
       "sections": {
         "Identity": true,
@@ -488,7 +488,7 @@
         "search-vector-architect: recommended",
         "rtk: optional"
       ],
-      "sha256": "7fbdc11adae56b5a628327314297b6148568b6518f6c854a3117c8370a8a2195",
+      "sha256": "24f472a894c759b739f79537a85cb3aa620887391a3d66839d1655a4d8091b10",
       "line_count": 446,
       "sections": {
         "Identity": true,
@@ -534,7 +534,7 @@
         "doc-writer: recommended",
         "observability-specialist: optional"
       ],
-      "sha256": "e7c384c9e828ed6a0dfc43b279a1fd5e75d87d225fde3cb0c3d54091db1a716c",
+      "sha256": "973844b612552242cabf6c79beadfefe8880a0e0ae24b1e247b7289a4023e95b",
       "line_count": 580,
       "sections": {
         "Identity": true,
@@ -582,7 +582,7 @@
         "observability-specialist: recommended",
         "infra-architect: optional"
       ],
-      "sha256": "d8ab923e24cf1d9045db8ccb1424dd9e4c7048bd3820d7db027bebc2ec072c0d",
+      "sha256": "2bbf16c0ed8ffc11ce505c611231e72079b268f741ba6ea36d14f8f5c6a21d1b",
       "line_count": 582,
       "sections": {
         "Identity": true,
@@ -623,7 +623,7 @@
         "verification-loop: recommended",
         "observability-specialist: optional"
       ],
-      "sha256": "d91e84271dd0f291748857251b18e811840ee189a6eccadd5311f7d4eb240f8a",
+      "sha256": "5ac6479782e4f2d00be3d40721880bed8cad8d28dea55a43665da9b4410f3c95",
       "line_count": 508,
       "sections": {
         "Identity": true,
@@ -667,7 +667,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "b94eda659e965b2e167cd201882f1366e2bac143e229ed1d680b15491c18e10d",
+      "sha256": "b4e55c67ca3da28aca55b430256d879f1809629f58a0e741d804963a5c0efbb2",
       "line_count": 427,
       "sections": {
         "Identity": true,
@@ -705,7 +705,7 @@
       "dependencies": [
         "verification-loop: recommended"
       ],
-      "sha256": "f1474a7aaf15c8e659eead8b53917d83b24637d8580bd5fa0d7df5e9e4e6917b",
+      "sha256": "721ebd97fc177d28af6664d93525d4e08c1bfe108d0271936d0d6f6f44a5fbd7",
       "line_count": 280,
       "sections": {
         "Identity": true,
@@ -754,7 +754,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "580517e9ed4da344c4a6a0cc4aec6bd913f389c9e3422204cf8b5365bf0f7785",
+      "sha256": "57f075326eb455ae47a6bca027f50189041641d9242a7e4bc41302f0748c487a",
       "line_count": 356,
       "sections": {
         "Identity": true,
@@ -796,7 +796,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "bf74280decb1addaf4f011f01c3e159c469fb3bd136b613a6e4a9bd85268f093",
+      "sha256": "67fe1a04d68488e03bb65b5b89c1f05f820f22fa34afa03c53dd6b5c52e1ef0f",
       "line_count": 304,
       "sections": {
         "Identity": true,
@@ -841,7 +841,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "00b76b280e0072fa43fecb6c550de5c7935f96ed7d40099c8be584d03d4b3607",
+      "sha256": "ef349f987c66fa18f6dc1b57b61575effbf9fa38d4f96890e49897dde330062f",
       "line_count": 383,
       "sections": {
         "Identity": true,
@@ -890,7 +890,7 @@
         "debugging: optional",
         "cost-aware-llm-pipeline: optional"
       ],
-      "sha256": "7d47e241b4a5fd47a9c9c50a8b242f492c700de6f7db69873f0d045ef38abf22",
+      "sha256": "138dfb76045b5ad6b314a653ee99cae2453f454d63a3643cdc534a836ad6b749",
       "line_count": 447,
       "sections": {
         "Identity": true,
@@ -932,7 +932,7 @@
         "continuous-learning-v2: recommended",
         "rtk: recommended"
       ],
-      "sha256": "d88a355ef0998120d725119caa7e46e95dd55391cf2bd1483b9a349a343695a6",
+      "sha256": "4dc65de0370d526898ba949b9fe00a2ced7b064880cda2f469ad3ce9e0ede9c2",
       "line_count": 438,
       "sections": {
         "Identity": true,
@@ -972,7 +972,7 @@
         "test-genius: optional",
         "performance-profiler: optional"
       ],
-      "sha256": "015ab407c510aab85af4b19d23e8a6d4cb2bc3e00b1ef839afea469b0909e0b4",
+      "sha256": "192f8effb9682c6d62f3ba9f2b03b0a5cef977b440dfd9c2f2c37aeca14f45b9",
       "line_count": 518,
       "sections": {
         "Identity": true,
@@ -1013,7 +1013,7 @@
         "docker-expert: optional",
         "security-reviewer: recommended"
       ],
-      "sha256": "b9a73f8216c7f3cc2f23823302c84273412d96c374b7eb26deea8f9c6c25a704",
+      "sha256": "f71a685be4d7855b2c6133392e1453a894fb0ffc51574472e773e5f547fd70b8",
       "line_count": 389,
       "sections": {
         "Identity": true,
@@ -1053,7 +1053,7 @@
         "context-optimizer: recommended",
         "content-hash-cache-pattern: optional"
       ],
-      "sha256": "1f0538f14a78645173e5a475383984ac92ffe568dae7d8f09c2c8acec44b909a",
+      "sha256": "98d504bf79ddad45ef7342d1cf998069669131334207944b8f3a24043665e99d",
       "line_count": 203,
       "sections": {
         "Identity": true,
@@ -1101,7 +1101,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "52c5b51b44afbbef4922e71fd7b1f8fd78b255581b97856ba7a584d7b30ec03a",
+      "sha256": "b70364f97cfe74be84990822c575e2035f695807c12abf4a19aeb90131701acb",
       "line_count": 383,
       "sections": {
         "Identity": true,
@@ -1141,7 +1141,7 @@
         "migration-upgrader: optional",
         "python-patterns: optional"
       ],
-      "sha256": "04b0a9edfc349f87dd08e0b67fb00809daf92e6a692fd3f8f97d9d28f65bbbe0",
+      "sha256": "7dc1e43b2baf09d7d551e1da9d39addebbe9a1428f99c5d8bf93e7874e2fe747",
       "line_count": 366,
       "sections": {
         "Identity": true,
@@ -1190,7 +1190,7 @@
         "context-mode: recommended",
         "rtk: optional"
       ],
-      "sha256": "a47b35c3204ea1b7b23ab737ecbcae4800f4c8f6680af35be628c7e7ad189cde",
+      "sha256": "53bf0f535e01c8a11bd641ccd5d2f84d2c59cd9980578536b5317d5ded8678c8",
       "line_count": 637,
       "sections": {
         "Identity": true,
@@ -1238,7 +1238,7 @@
         "finishing-a-development-branch: optional",
         "security-reviewer: recommended"
       ],
-      "sha256": "558aebb70ec8fd1489d9261793ccb7ad2544ae6cb3dc31967c4845b01890cc01",
+      "sha256": "5ef281aca897d468f34dd22dd3f74517d6b2aa63998e3e9fc826dabcd84ac8af",
       "line_count": 418,
       "sections": {
         "Identity": true,
@@ -1285,7 +1285,7 @@
         "observability-specialist: recommended",
         "test-driven-development: recommended"
       ],
-      "sha256": "7f73a38e5a1a5900ad5c825fcfc2b77407cc98eb60a367b31ed1eae0e7c60091",
+      "sha256": "2a7fe7c81341fa46cab918fb3d8b47af66a506beaa7e3937f4f017134d686e8d",
       "line_count": 651,
       "sections": {
         "Identity": true,
@@ -1325,7 +1325,7 @@
         "ux-designer: recommended",
         "test-genius: optional"
       ],
-      "sha256": "1a65068baa9d64eed7dc4b4ae1e564f19cd9d30702d620c6ae5ca2eb09f5208f",
+      "sha256": "31ba08cbcb25002daa608e76ce167cb26bc82f10b09175675ebe5a29688477d6",
       "line_count": 375,
       "sections": {
         "Identity": true,
@@ -1365,7 +1365,7 @@
         "security-reviewer: recommended",
         "finishing-a-development-branch: recommended"
       ],
-      "sha256": "684d530948b96ebc97e1c5bf39a36681ec626144427dceb4612711445ec15340",
+      "sha256": "7ba17712438f794dd3c15a71f9c2841e6f065e20b4fa98cd1b6e45c5c9aa2bf6",
       "line_count": 182,
       "sections": {
         "Identity": true,
@@ -1405,7 +1405,7 @@
         "multi-execute: required",
         "writing-plans: optional"
       ],
-      "sha256": "ddb5b0415ae0d41115e73e23d988b47953ef00e03b3c1c8bd75906a81ea5adb2",
+      "sha256": "ac8a2a071acc5a8f298d6c807881769b3205e454a577a9df5e2d1856354f5017",
       "line_count": 181,
       "sections": {
         "Identity": true,
@@ -1450,7 +1450,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "b9abb774f6bb49bbac37acb6c7c10f060aa54772a9906e6c4ac6c0f3ff7e6e7a",
+      "sha256": "69198932796cc7e8e0d097dc1a6a16f4f2cc922d35bb81f9665e776824a92b5f",
       "line_count": 424,
       "sections": {
         "Identity": true,
@@ -1491,7 +1491,7 @@
         "rtk: optional",
         "context-optimizer: recommended"
       ],
-      "sha256": "1b8b77c4b936ff8e8fbd68c9e478c327e990d0a57c8e1a81e06c3372abc3cd23",
+      "sha256": "757f8b504cd4cfe00c7105bd06670894bb22967bd162924de0eab6a222b88b8b",
       "line_count": 319,
       "sections": {
         "Identity": true,
@@ -1532,7 +1532,7 @@
         "code-polisher: recommended",
         "test-driven-development: recommended"
       ],
-      "sha256": "c893ed90fdcb5ffb945d8b7745df4148954a99a63869224ca03c3eb1cc59c76f",
+      "sha256": "9bbb6b5376766a50cca1104f8e1150acdeca558fefbd9abe25cab086903dc6be",
       "line_count": 194,
       "sections": {
         "Identity": true,
@@ -1573,7 +1573,7 @@
         "writing-plans: recommended",
         "verification-loop: recommended"
       ],
-      "sha256": "1f7bccee48d73939f64753d081112f70c20ca214e611b4bf8e7c47746664e87c",
+      "sha256": "affe7c6cd46090ffb3abf3b4008205309c90cede9e468f8f83dfdf543ed4f800",
       "line_count": 226,
       "sections": {
         "Identity": true,
@@ -1622,7 +1622,7 @@
         "performance-profiler: optional",
         "security-reviewer: optional"
       ],
-      "sha256": "a3ab783cf22d3f67bdc326c24292499deb08ac0e030a52f78bd9662cc3583a54",
+      "sha256": "e6e1c9d6fd211f4e2c3e5beda4d415fdf09d40d684bd93b39f36d79c9f014417",
       "line_count": 616,
       "sections": {
         "Identity": true,
@@ -1660,7 +1660,7 @@
         "finishing-a-development-branch: required",
         "test-driven-development: optional"
       ],
-      "sha256": "34952eeaf2069f754a1dfdeb9a673d70e57579041e682f615cb605914d087832",
+      "sha256": "69ffcb0d00b005cf0df1af463e43a027b9012b39a4a4abe7f01ee0154e9a5340",
       "line_count": 338,
       "sections": {
         "Identity": true,
@@ -1698,7 +1698,7 @@
         "cost-aware-llm-pipeline: recommended",
         "verification-loop: optional"
       ],
-      "sha256": "62befd43859a31b0954eee3345fb97f80ce9171a1881ad9c25fbd031a74c1f4a",
+      "sha256": "27ec555897f888392534bf548308ecad104974370fb9750382f8cc45cf3a3b92",
       "line_count": 303,
       "sections": {
         "Identity": true,
@@ -1739,7 +1739,7 @@
         "finishing-a-development-branch: required",
         "security-reviewer: optional"
       ],
-      "sha256": "9f60ac2d1f7505ce9679b13342d908e38384c40dc34ce66b8bd9397030681d56",
+      "sha256": "fde8be8523a1f42498766a7ad18d78b93e598cdfb48fd83372b7120774aff591",
       "line_count": 373,
       "sections": {
         "Identity": true,
@@ -1778,7 +1778,7 @@
         "executing-plans: recommended",
         "context-optimizer: recommended"
       ],
-      "sha256": "f04db9dfdffba6984c28da4f43d194ec531466e712360bdd55b6910be79fd9d9",
+      "sha256": "fed7a5c87f37c7639c5413ea639f65413557c55a387fa7ee56609589f18b47f5",
       "line_count": 221,
       "sections": {
         "Identity": true,
@@ -1818,7 +1818,7 @@
         "brainstorming: recommended",
         "tech-lead: recommended"
       ],
-      "sha256": "9b7c3f1cc2f3ff9aa192cce36730be19e2d2769beac8ecdc29184d99d261d5c5",
+      "sha256": "f0c87341a5e4c8b8e0e27b55f5c3d821f2ebc249eb0d54af5709f4a0291c266a",
       "line_count": 250,
       "sections": {
         "Identity": true,
@@ -1868,7 +1868,7 @@
         "backend-architect: optional",
         "observability-specialist: optional"
       ],
-      "sha256": "4f2f39c338b850b47caa6fd7b4e8f917b9e758a014c4ae01f82af4edbcfd55f5",
+      "sha256": "9154af4271c5677e01f79e2dfc1e8f5f69d764e4f2bc7cb9540f7dbfb0a5a3c9",
       "line_count": 657,
       "sections": {
         "Identity": true,
@@ -1911,7 +1911,7 @@
         "cost-aware-llm-pipeline: optional",
         "mega-mind: optional"
       ],
-      "sha256": "d22078a2a93b2e2b274c6471e48511a6c7c760c58b52778ff3e7da5681ee647b",
+      "sha256": "e464343505fab4accabb0dbe52fecf72b3768072b6d1a08b306beac34eb14a32",
       "line_count": 452,
       "sections": {
         "Identity": true,
@@ -1954,7 +1954,7 @@
         "search-first: recommended",
         "context-mode: optional"
       ],
-      "sha256": "defa64fa8157ae563859346fc372c1e7b63765e01e50bbf6fa55692b407f491c",
+      "sha256": "bd5865f1ed88f99f3a05f68736ecb69020e0bbedc5a087d2c9581d4793348cb9",
       "line_count": 407,
       "sections": {
         "Identity": true,
@@ -1992,7 +1992,7 @@
         "continuous-learning-v2: recommended",
         "autoresearch-loop: recommended"
       ],
-      "sha256": "064b5050e22db1802cc282c1fd8f0092e955d18b98080710a0af54ac9b201313",
+      "sha256": "1161a965189515ec0df6b2db27a0c5c62a74f00a19bbbae5a82b197ad1302de1",
       "line_count": 270,
       "sections": {
         "Identity": true,
@@ -2035,7 +2035,7 @@
         "frontend-architect: optional",
         "infra-architect: optional"
       ],
-      "sha256": "fb950ec518d51bc924ce4c4459c23141b13dd7b5bd054e633db9aef69ad53d5e",
+      "sha256": "a76c3833cdcf1314eb92e831e2d0ad3f0b575898dfdbe4dbad95db9b10b12449",
       "line_count": 460,
       "sections": {
         "Identity": true,
@@ -2073,7 +2073,7 @@
         "cost-aware-llm-pipeline: optional",
         "rtk: recommended"
       ],
-      "sha256": "599857443ee8b1d42925b3a230615427d8d4eae9fd799b87328676df7f16de80",
+      "sha256": "2adadfb687c7273561fdc1699d9e2b1635e1517e72c4339bbc295142d43b5f52",
       "line_count": 385,
       "sections": {
         "Identity": true,
@@ -2116,7 +2116,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "a915026513cc0d83f8367d7c9702743fb56371298839105265ce939b77c65da3",
+      "sha256": "a1ca399418cc2c2b942f0033c2d6d97e76e4aa3887d903dade850a9a74fe462e",
       "line_count": 337,
       "sections": {
         "Identity": true,
@@ -2156,7 +2156,7 @@
         "receiving-code-review: optional",
         "git: required"
       ],
-      "sha256": "cbeb9c996f1d41e866a5a62aedb9cfd1c86490b601697b4a4d272ae1d3a2dbfb",
+      "sha256": "6aa61fab9c8b21a4588a1de96fe4bbbd19af9e929df0a6fa6aa6a41cfa566558",
       "line_count": 407,
       "sections": {
         "Identity": true,
@@ -2196,7 +2196,7 @@
         "frontend-architect: recommended",
         "verification-loop: recommended"
       ],
-      "sha256": "e2011d4417bfd2b8dd884d81bb76f6fd215f185436050002153bd5a4dfa17676",
+      "sha256": "d6058b7ada3cc56a0f3133719e9e98262f9c5fb9947eeb78ad4db6d66e116541",
       "line_count": 251,
       "sections": {
         "Identity": true,
@@ -2239,7 +2239,7 @@
         "security-reviewer: recommended",
         "context-optimizer: recommended"
       ],
-      "sha256": "abd862b9456cfd05ddf2f69ad8c36bff79da68ec0d4029d9c0e0c2e62c71d4ba",
+      "sha256": "6c86c79a2bea2ecc0cd10e46c26f8e787f862f986717892bd71fbe54c73ea5a2",
       "line_count": 284,
       "sections": {
         "Identity": true,
@@ -2280,7 +2280,7 @@
         "observability-specialist: recommended",
         "content-hash-cache-pattern: optional"
       ],
-      "sha256": "1ee207958f2916b0235907ba2f65381b3187046303c30eb170487d102050079a",
+      "sha256": "87009bb7115bfc631b98b23e9474ed36f1577bfdbcbd52379b941f0107312d44",
       "line_count": 275,
       "sections": {
         "Identity": true,
@@ -2322,7 +2322,7 @@
         "cost-aware-llm-pipeline: optional",
         "context-mode: optional"
       ],
-      "sha256": "04cbdb6928931ec653f6db2179478f46fc8f9928d1b3220d07c808340d90bebc",
+      "sha256": "f53a5afa8e8dbbc2b4574e9b44c01d14bd77ab992c6417145a56e29f02107406",
       "line_count": 415,
       "sections": {
         "Identity": true,

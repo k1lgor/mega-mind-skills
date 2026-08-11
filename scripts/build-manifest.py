@@ -68,7 +68,13 @@ def read(path: Path) -> str:
 
 
 def sha256_of(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Content hash with line endings normalized (CRLF == LF).
+
+    Git may check the tree out with different line endings per platform, so a
+    hash over raw bytes would differ between Windows and Linux checkouts.
+    """
+    data = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
