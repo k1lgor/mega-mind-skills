@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] — 2026-08-11
+
+### 🔧 Fix: PyPI Metadata Summary Over Limit
+
+- The `pyproject.toml` `description` (561 chars) exceeded PyPI's 512-character summary limit, rejecting every upload since v1.0.0 with `400 'summary' field must be 512 characters or less`. Shortened to a compliant summary; full details live in the README.
+
+---
+
 ## [1.0.2] — 2026-08-11
 
 ### 🔧 Hotfix: Platform-Independent Content Hashes
