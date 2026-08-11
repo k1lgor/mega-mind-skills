@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Comprehensive security audits and vulnerability checks covering OWASP Top 10 (2025), CWE mappings, threat modeling, supply chain security, and code-level vulnerability detection.

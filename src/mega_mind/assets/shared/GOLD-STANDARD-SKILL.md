@@ -1,4 +1,4 @@
-# Gold Standard SKILL.md Template v1.0
+# Gold Standard SKILL.md Template v2.0
 
 > **The universal template for creating world-class Agent Skills.**
 > Every skill in Mega-Mind must meet or exceed this standard.

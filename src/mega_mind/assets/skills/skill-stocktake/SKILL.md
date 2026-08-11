@@ -1,6 +1,6 @@
 ---
 name: skill-stocktake
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Quality audit and library maintenance for the skill system. Use quarterly or when the skill library feels bloated or stale.
@@ -32,6 +32,50 @@ You are a skill librarian and quality auditor. Your job is to ensure the skill s
 **Your operating principle:** Every skill must earn its place; undocumented skills are not learned, and unused skills are just token costs.
 
 **Your quality bar:** Every skill in the library has a Keep/Improve/Update/Retire/Merge verdict with a self-contained reason; all non-Keep verdicts have a concrete action item; the summary table is complete and standalone — no exceptions.
+
+## EXAMPLE OUTPUT
+
+When you run a stocktake, your output must match the structure below: an inventory list, per-skill verdicts with self-contained reasons, action items for every non-Keep verdict, and a standalone summary table. This is the format the user expects — do not ask them to identify skills or fill in gaps; produce this autonomously.
+
+### Sample Inventory
+
+| # | Skill Name | File Path | Last Modified | Trigger Count (30d) |
+|---|---|---|---|---|
+| 1 | git-flow-helper | .agent/skills/git-flow-helper/SKILL.md | 2026-04-12 | 23 |
+| 2 | commit-conventions | .agent/skills/commit-conventions/SKILL.md | 2026-02-03 | 0 |
+| 3 | api-mock-generator | .agent/skills/api-mock-generator/SKILL.md | 2026-06-28 | 8 |
+| 4 | rest-api-tester | .agent/skills/rest-api-tester/SKILL.md | 2026-05-15 | 5 |
+
+### Verdicts With Self-Contained Reasons
+
+**git-flow-helper — Keep**
+git-flow-helper covers branch naming, PR templates, and merge strategies for this repository. It was triggered 23 times in the last 30 days. Its triggers ("git flow", "branch strategy", "pr template") are unambiguous and do not overlap with any other skill. Content is current — it references Git 2.43 features that are still standard. No action required.
+
+**commit-conventions — Retire**
+commit-conventions has not been triggered in 30 days and has zero recorded invocations in the last quarter. Its guidance on conventional commits is fully duplicated by the commit section in AGENTS.md, making it redundant. Every trigger phrase it owns ("commit message", "conventional commit") is already covered by git-flow-helper, which includes a commit-message section added in its 2026-04 update. Keeping this skill costs tokens every session without adding unique value.
+
+**api-mock-generator — Improve**
+api-mock-generator covers mock server creation for OpenAPI specs and has been triggered 8 times in the last 30 days, showing real usage. However, it lacks examples for GraphQL schemas (only REST examples are present), and its trigger "mock api" is ambiguous — it could also match rest-api-tester. The skill is useful but incomplete and needs trigger narrowing and a GraphQL example added.
+
+**rest-api-tester — Merge into api-mock-generator**
+rest-api-tester and api-mock-generator share 45% content overlap: both cover OpenAPI spec loading, both generate fixture data from schema definitions, and both describe starting/stopping mock servers. rest-api-tester adds test-assertion patterns that api-mock-generator lacks, but the core scaffolding is identical. Merging the test-assertion patterns into api-mock-generator and deleting the rest-api-tester file eliminates the overlap, removes a trigger conflict ("mock api" matches both), and reduces loaded tokens per session.
+
+### Action Items
+
+| Skill | Verdict | Action Item |
+|---|---|---|
+| commit-conventions | Retire | Delete .agent/skills/commit-conventions/SKILL.md. Search the repo for references to "commit-conventions" in routing matrices and workflows; redirect any found references to git-flow-helper. |
+| api-mock-generator | Improve | Add a GraphQL schema mocking example (request/response). Narrow trigger from "mock api" to "generate mock api" to disambiguate from rest-api-tester. |
+| rest-api-tester | Merge into api-mock-generator | Merge test-assertion patterns (the smee-runner section and assertion helpers) into api-mock-generator's Testing section. Consolidate triggers: keep "mock api" and "test api" under api-mock-generator. Delete .agent/skills/rest-api-tester/SKILL.md and its directory. Search for references to rest-api-tester before deleting. |
+
+### Summary Table (standalone — must be included in every stocktake)
+
+| Skill Name | Verdict | Reason (short) | Action Item |
+|---|---|---|---|
+| git-flow-helper | Keep | Active (23 triggers/30d), unique triggers, current Git 2.43 content | None |
+| commit-conventions | Retire | Zero triggers/30d, fully duplicated by AGENTS.md and git-flow-helper | Delete file; redirect references to git-flow-helper |
+| api-mock-generator | Improve | 8 triggers/30d but missing GraphQL examples and ambiguous trigger | Add GraphQL example; narrow trigger to "generate mock api" |
+| rest-api-tester | Merge into api-mock-generator | 45% overlap with api-mock-generator; only unique content is test-assertion patterns | Merge assertion patterns into api-mock-generator; delete file after reference check |
 
 ## When to Use
 
@@ -117,6 +161,7 @@ For each non-Keep verdict, create a concrete action.
 - [ ] Every skill has a verdict assigned
 - [ ] Each verdict's reason field self-contained
 - [ ] Trigger conflicts across all Keep skills resolved
+- [ ] Output includes a standalone summary table with columns: Skill Name | Verdict | Reason (short) | Action Item
 
 ### Verification Commands
 
@@ -139,6 +184,7 @@ grep -rn "verdict:" .agent/skills/*/SKILL.md | wc -l
 | Reason Quality | All reasons self-contained | Rewrite vague reasons with specific evidence |
 | Actionability | All non-Keep verdicts have action items | Create concrete action for every Improve/Update/Retire/Merge |
 | Trigger Conflicts | No identical triggers across different Keep skills | Resolve conflicts by narrowing triggers or merging skills |
+| Summary Table | Standalone summary table present with all four columns | Generate the table before completing the stocktake |
 
 ## Examples
 
@@ -219,4 +265,5 @@ grep -rn "verdict:" .agent/skills/*/SKILL.md | wc -l
 | Version | Date | Changes |
 |---|---|---|
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
+| 2.1.0 | 2026-07-10 | Added EXAMPLE OUTPUT section with complete worked example (inventory, verdicts, action items, summary table) to enforce autonomous output generation. Added summary table check to verification checklist and quality gates. |
 ---

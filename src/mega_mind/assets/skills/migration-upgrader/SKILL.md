@@ -1,6 +1,6 @@
 ---
 name: migration-upgrader
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Executes safe, systematic version upgrades and framework migrations with rollback planning and automated breaking change detection.

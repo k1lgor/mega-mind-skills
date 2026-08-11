@@ -1,6 +1,6 @@
 ---
 name: docker-expert
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Container architecture and optimization specialist for writing production-grade Dockerfiles, composing multi-service stacks, and hardening container security.

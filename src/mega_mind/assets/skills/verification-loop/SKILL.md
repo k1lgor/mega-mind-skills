@@ -1,6 +1,6 @@
 ---
 name: verification-loop
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Scope-aware tiered verification system (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep) with continuous quick-check mode.

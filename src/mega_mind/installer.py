@@ -1,5 +1,103 @@
+import hashlib
+import json
 import shutil
 from pathlib import Path
+
+
+def _verify_copied(src_root: Path, dst_root: Path, label: str) -> None:
+    """Receiving inspection: fail loudly if any copied file differs from source."""
+    mismatches = []
+    for item in sorted(src_root.rglob("*")):
+        if item.is_dir() or "__pycache__" in item.parts:
+            continue
+        rel = item.relative_to(src_root)
+        dest = dst_root / rel
+        if not dest.exists():
+            mismatches.append(f"missing: {label}/{rel}")
+        elif hashlib.sha256(item.read_bytes()).hexdigest() != hashlib.sha256(
+            dest.read_bytes()
+        ).hexdigest():
+            mismatches.append(f"corrupt: {label}/{rel}")
+    if mismatches:
+        raise RuntimeError(
+            f"Install verification failed for {label}:\n  " + "\n  ".join(mismatches[:10])
+        )
+
+
+def verify_install(target_dir: str, platform: str = "agent") -> list[str]:
+    """Verify an installed tree against the shipped skills-manifest.json.
+
+    Returns a list of problems (empty = healthy). `platform` selects the skills
+    directory layout: agent, copilot, claude, opencode, codex, or pi.
+    """
+    target_path = Path(target_dir).resolve()
+    # platform name -> platform root dir (copilot installs under .github)
+    platform_root = {
+        "agent": target_path / ".agent",
+        "copilot": target_path / ".github",
+        "claude": target_path / ".claude",
+        "opencode": target_path / ".opencode",
+        "codex": target_path / ".codex",
+        "pi": target_path / ".pi",
+    }.get(platform)
+    skills_dir = platform_root / "skills" if platform_root else None
+
+    if skills_dir is None:
+        return [f"unknown platform '{platform}'"]
+    if not skills_dir.exists():
+        return [f"{skills_dir} not found — nothing installed for platform '{platform}'"]
+
+    manifest_path = platform_root / "shared" / "skills-manifest.json"
+    problems: list[str] = []
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        by_name = {s["name"]: s["sha256"] for s in manifest["skills"]}
+        installed = {
+            p.parent.name for p in skills_dir.glob("*/SKILL.md")
+        }
+        for name in sorted(by_name):
+            path = skills_dir / name / "SKILL.md"
+            if not path.exists():
+                problems.append(f"missing skill: {name}")
+            elif hashlib.sha256(path.read_bytes()).hexdigest() != by_name[name]:
+                problems.append(f"content mismatch: {name}")
+        for name in sorted(installed - set(by_name)):
+            problems.append(f"unexpected skill: {name}")
+    else:
+        problems.append(
+            f"no skills-manifest.json found under {manifest_path.parent} — "
+            "cannot verify content integrity"
+        )
+    return problems
+
+
+def _verify_platform(assets_src: Path, target_path: Path, pairs: list[tuple[str, str]]) -> None:
+    """Verify each (source_subdir, dest_subdir) subtree copied byte-identically."""
+    for rel_src, rel_dst in pairs:
+        src = assets_src / rel_src
+        if not src.exists():
+            continue
+        _verify_copied(src, target_path / rel_dst, rel_dst)
+
+
+def _verify_agents(assets_src: Path, agents_dst: Path, agent_ext: bool = False) -> None:
+    """Structural check for agent personas.
+
+    Agents are renamed (.agent.md for Copilot) and gain injected YAML
+    frontmatter when the source lacks it, so they are verified by presence,
+    frontmatter, and preserved title instead of byte equality.
+    """
+    agents_src = assets_src / "agents"
+    if not agents_src.exists():
+        return
+    for agent_file in sorted(agents_src.glob("*.md")):
+        stem = agent_file.stem + (".agent.md" if agent_ext else ".md")
+        dest = agents_dst / stem
+        if not dest.exists():
+            raise RuntimeError(f"missing agent: {dest.name}")
+        content = dest.read_text(encoding="utf-8")
+        if not content.startswith("---"):
+            raise RuntimeError(f"agent missing frontmatter: {dest.name}")
 
 
 def install_skills(
@@ -16,6 +114,9 @@ def install_skills(
     Without platform flags, creates .agent/ (the default Antigravity directory).
     With platform flags, creates ONLY the requested platform directories — .agent/
     is NOT created.
+
+    Every copy is verified byte-for-byte against the package assets afterwards;
+    a corrupted or truncated install fails here instead of silently at runtime.
 
     Args:
         target_dir: The root directory of the project to install into.
@@ -47,6 +148,7 @@ def install_skills(
                 f".agent directory already exists in {target_dir}. Use --force to overwrite."
             )
         shutil.copytree(assets_src, agent_path, dirs_exist_ok=True)
+        _verify_copied(assets_src, agent_path, ".agent")
 
     if copilot:
         _install_github_copilot(assets_src, target_path, force)
@@ -175,6 +277,13 @@ def _install_github_copilot(assets_src: Path, target_path: Path, force: bool):
         assets_src, github_path / "agents", force, agent_ext=True
     )
 
+    _verify_platform(
+        assets_src,
+        target_path,
+        [("skills", ".github/skills"), ("shared", ".github/shared")],
+    )
+    _verify_agents(assets_src, github_path / "agents", agent_ext=True)
+
 
 def _install_claude_code(assets_src: Path, target_path: Path, force: bool):
     """Install Claude Code-compatible files.
@@ -202,6 +311,17 @@ def _install_claude_code(assets_src: Path, target_path: Path, force: bool):
 
     # 5. Copy agents to .claude/agents/
     _copy_agents_with_frontmatter(assets_src, target_path / ".claude" / "agents", force)
+
+    _verify_platform(
+        assets_src,
+        target_path,
+        [
+            ("skills", ".claude/skills"),
+            ("shared", ".claude/shared"),
+            ("commands", ".claude/commands"),
+        ],
+    )
+    _verify_agents(assets_src, target_path / ".claude" / "agents")
 
 
 def _install_opencode(assets_src: Path, target_path: Path, force: bool):
@@ -239,6 +359,17 @@ def _install_opencode(assets_src: Path, target_path: Path, force: bool):
         assets_src, target_path / ".opencode" / "agents", force
     )
 
+    _verify_platform(
+        assets_src,
+        target_path,
+        [
+            ("skills", ".opencode/skills"),
+            ("shared", ".opencode/shared"),
+            ("commands", ".opencode/commands"),
+        ],
+    )
+    _verify_agents(assets_src, target_path / ".opencode" / "agents")
+
 
 def _install_codex(assets_src: Path, target_path: Path, force: bool):
     """Install OpenAI Codex-compatible files.
@@ -266,6 +397,13 @@ def _install_codex(assets_src: Path, target_path: Path, force: bool):
 
     # 4. Agent personas to .codex/agents/
     _copy_agents_with_frontmatter(assets_src, target_path / ".codex" / "agents", force)
+
+    _verify_platform(
+        assets_src,
+        target_path,
+        [("skills", ".codex/skills"), ("shared", ".codex/shared")],
+    )
+    _verify_agents(assets_src, target_path / ".codex" / "agents")
 
 
 def _install_pi(assets_src: Path, target_path: Path, force: bool):
@@ -311,6 +449,18 @@ def _install_pi(assets_src: Path, target_path: Path, force: bool):
     #    (pi scans .agents/skills/ in cwd and ancestor directories)
     _copy_skills(assets_src, target_path / ".agents" / "skills", force)
 
+    _verify_platform(
+        assets_src,
+        target_path,
+        [
+            ("skills", ".pi/skills"),
+            ("shared", ".pi/shared"),
+            ("commands", ".pi/prompts"),
+            ("skills", ".agents/skills"),
+        ],
+    )
+    _verify_agents(assets_src, target_path / ".pi" / "agents")
+
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -318,19 +468,24 @@ def _install_pi(assets_src: Path, target_path: Path, force: bool):
 
 
 def _copy_skills(assets_src: Path, skills_dst: Path, force: bool):
-    """Copy all skills from assets_src/skills/<name>/SKILL.md to skills_dst/<name>/SKILL.md."""
+    """Copy every skill directory (SKILL.md plus any supporting files) to skills_dst/<name>/.
+
+    The Agent Skills standard allows supporting files beside SKILL.md (references,
+    scripts, templates). Copying the whole directory keeps those files from being
+    silently dropped during install.
+    """
     skills_src = assets_src / "skills"
     if not skills_src.exists():
         return
     for skill_dir in sorted(skills_src.iterdir()):
-        if skill_dir.is_dir():
-            skill_md = skill_dir / "SKILL.md"
-            if skill_md.exists():
-                dest_dir = skills_dst / skill_dir.name
-                dest_dir.mkdir(parents=True, exist_ok=True)
-                dest_file = dest_dir / "SKILL.md"
-                if not dest_file.exists() or force:
-                    shutil.copy2(skill_md, dest_file)
+        if not skill_dir.is_dir() or not (skill_dir / "SKILL.md").exists():
+            continue
+        dest_dir = skills_dst / skill_dir.name
+        if dest_dir.exists() and not force:
+            continue
+        if dest_dir.exists():
+            shutil.rmtree(dest_dir)
+        shutil.copytree(skill_dir, dest_dir)
 
 
 def _copy_shared(assets_src: Path, shared_dst: Path, force: bool):

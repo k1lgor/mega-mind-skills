@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] — 2026-08-11
+
+### 🔧 Routing & Validation Hardening
+
+- **Single source of truth:** Added `scripts/build-manifest.py`, which generates `.agent/shared/skills-manifest.json` — a machine-readable inventory of all 53 skills (name, category, version, triggers, description, SHA-256 content hash, and 12-section gold-standard compliance). The validator, renderer, installer, and docs all consume it; counts and membership can no longer drift.
+- **Machine-checkable routing:** Added `.agent/shared/routing.json` — the curated routing matrix (54 routes, 11 chains) as data. `scripts/render-skills.py` renders the ASCII matrix and `/mega-mind skills` listing into `mega-mind/SKILL.md` inside `<!-- GENERATED -->` fences; any hand-edit or drift fails CI.
+- **Manifest-driven validator:** Rewrote `scripts/validate-skill-system.py`. The old validator demanded headings skills don't have (51/53 false failures); the new one checks manifest freshness (hash equality), frontmatter rules, 12/12 gold-standard sections (with the "Instructions / Workflow" tolerance), routing coverage + target validity, chain integrity, trigger collisions, and version attestation (pyproject.toml == `__init__.py`).
+- **Hash-verified sync:** `scripts/sync-assets.py` now regenerates the manifest and rendered docs *before* copying, then verifies `.agent/` and `src/mega_mind/assets/` byte-for-byte (content hashes, not counts). `--check` mode added.
+- **`mmo doctor` + `mmo check`:** The CLI now diagnoses the environment (`context-mode` presence) and verifies any installed tree against the manifest's content hashes; `mmo check` is the repository gate (manifest → rendered docs → validator → sync → sandboxed install of all 6 platform layouts).
+- **Verified installs:** `installer.py` copies full skill directories (supporting files no longer dropped), verifies every copied file byte-for-byte, and structurally checks agent personas (frontmatter injection). A corrupt install fails at the dock, not at runtime.
+- **Tests + CI:** Added `tests/` (12 tests: manifest, renderer, installer layouts/verification, validator) and `.github/workflows/validate.yml` (ubuntu + windows: manifest → render → validate → sync → `mmo check` → pytest).
+- **Version & spec alignment:** pyproject.toml 1.0.0 → 1.0.1 with `__init__.py` deriving from package metadata (fallback kept in sync); Gold Standard spec references unified to **v2.0** everywhere; **skill frontmatter versions corrected to 2.0.0** (they were upgraded to Gold Standard v2.0 in 1.0.0 but the frontmatter was never bumped) — a new validator check (`skill_versions`) now enforces frontmatter == latest changelog row; category counts corrected to frontmatter ground truth (12 core-workflow / 29 domain-expert / 8 meta-learning / 4 token-optimization) across README, USAGE, AGENTS.md, docs-site, and the mega-mind skill; stale routing names fixed (`perf-profiler`, `tdd`, `docker`, `k8s`); README documents the three version dimensions (package 1.0.1 / spec 2.0 / skills 2.0.0).
+- **Docs generated where possible:** README's skill catalog, docs-site `reference.md` skill/chains tables, and `index.md` category table are generated regions — updating a skill's frontmatter updates every table via `render-skills.py`.
+
+---
+
 ## [1.0.0] — 2026-07-09
 
 ### 🏆 Gold Standard v1.0 — All 53 Skills Upgraded

@@ -1,6 +1,6 @@
 ---
 name: e2e-test-specialist
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Creates comprehensive end-to-end test suites with Playwright and Cypress using Page Object Model and data-testid selectors.

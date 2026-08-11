@@ -1,6 +1,6 @@
 ---
 name: rtk
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   RTK (Rust Token Killer) CLI proxy that reduces LLM token consumption by 60-90% on common development commands.

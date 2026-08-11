@@ -1,34 +1,34 @@
-# Mega-Mind Agent Skills System v1.0
+# Mega-Mind Agent Skills System v1.0.1
 
 > **The most powerful skill system for AI coding assistants — 53 gold-standard skills, 11 agents, 9 workflows.**
 
-This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company, upgraded to the Gold Standard v1.0 specification.
+This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company, upgraded to the **Gold Standard v2.0** specification. Every skill is versioned **2.0.0** in its frontmatter (mega-mind: 2.1.0) — matching its own `## Changelog`; the `mmo` package that ships them is **1.0.1**. See the [README versioning table](../README.md#versioning) for the three version dimensions.
 
 **Compatible with:** Any AI coding agent (Antigravity · Claude Code · GitHub Copilot (VS Code) · Cursor · OpenCode · Codex · pi · and all tools supporting the [Agent Skills open standard](https://agentskills.io))
 
-**Skill Quality Standard:** All skills conform to the [Gold Standard SKILL.md Template](./shared/GOLD-STANDARD-SKILL.md) — 12 required sections covering identity, principles, blocking violations, verification, performance, references, and changelog. Minimum score: 8.5/10 across all dimensions.
+**Skill Quality Standard:** All skills conform to the [Gold Standard SKILL.md Template](./shared/GOLD-STANDARD-SKILL.md) — 12 required sections covering identity, principles, blocking violations, verification, performance, references, and changelog. Compliance is machine-verified: `.agent/shared/skills-manifest.json` (generated inventory + content hashes) and `.agent/shared/routing.json` (curated routes) are the single sources of truth for the validator, the rendered routing matrix, and all docs.
 
 ---
 
 ## Quick Start
 
 ```
-/mega-mind [command]    # Primary entry point for all operations (v1.0)
+/mega-mind [command]    # Primary entry point for all operations (mega-mind skill v2.1.0)
 ```
 
 Commands: `status`, `skills`, `workflows`, `route <request>`, `execute <workflow>`, `help`, `upgrade`
 
-> **New in v1.0:** All skills upgraded to Gold Standard. See `.agent/shared/GOLD-STANDARD-SKILL.md` for the specification. Use `/skill-stocktake` to audit skill quality against the standard.
+> **New in v1.0.1:** The routing matrix and `/mega-mind skills` listing are generated from `routing.json` + `skills-manifest.json` by `scripts/render-skills.py` — never hand-edit them; regenerate instead. Run `python scripts/validate-skill-system.py` after any catalog change.
 
 ## What's Included
 
-### Mega-Mind Orchestrator (1 skill)
+### The Mega-Mind Orchestrator
 
-The master controller that routes requests and coordinates skill chains:
+The master controller that routes requests and coordinates skill chains (listed under Core Workflow below):
 
 - `mega-mind` - Primary entry point via `/mega-mind` command (also `/mmo`)
 
-### Core Workflow Skills (9 skills)
+### Core Workflow Skills (12 skills)
 
 Structured development discipline:
 
@@ -40,9 +40,12 @@ Structured development discipline:
 - `receiving-code-review` - Handling feedback systematically
 - `finishing-a-development-branch` - Clean branch wrap-up with workflow options
 - `using-git-worktrees` - Parallel branch management
+- `verification-loop` - Scope-aware tiered verification (Surface / Standard / Deep)
+- `multi-plan` - Collaborative multiple-model planning
+- `multi-execute` - Orchestrated multi-model execution and audit
 - `mega-mind` - Master orchestrator and internal skill routing logic
 
-### Domain Expert Skills (30 skills) ✨ UPDATED
+### Domain Expert Skills (29 skills)
 
 Specialized expertise for complex development tasks:
 
@@ -56,9 +59,8 @@ Specialized expertise for complex development tasks:
 - **Documentation:** `doc-writer`
 - **UX:** `ux-designer`
 - **Product:** `product-manager`, `workflow-orchestrator`
-- **Meta:** `skill-generator`
 
-### Meta & Learning Skills (12 skills) ✨ UPDATED
+### Meta & Learning Skills (8 skills)
 
 Advanced patterns for efficiency and continuous improvement:
 
@@ -67,18 +69,16 @@ Advanced patterns for efficiency and continuous improvement:
 - `autonomous-loops` - Multi-step AI pipeline patterns without intervention
 - `skill-stocktake` - Quality audit and library maintenance
 - `cost-aware-llm-pipeline` - Model routing and token budget tracking
-- `verification-loop` - 6-phase continuous verification pipeline
 - `iterative-retrieval` - Progressive context refinement for subagents
-- `content-hash-cache-pattern` - SHA-256 caching for file processing
-- `multi-plan` - Collaborative multiple-model planning
-- `multi-execute` - Orchestrated multi-model execution and audit
-- `plankton-code-quality` - Write-time formatting and linting enforcement
+- `skill-generator` - Create, debug, and evolve SKILL.md files
 - `autoresearch-loop` - Karpathy self-improvement eval loop
 
-### Token Optimization & Context (2 skills)
+### Token Optimization & Context (4 skills)
 
 - `rtk` - Rust Token Killer for 60-90% token reduction on CLI commands
 - `context-optimizer` - Context offloading and session continuity
+- `content-hash-cache-pattern` - SHA-256 caching for file processing
+- `plankton-code-quality` - Write-time formatting and linting enforcement
 
 ---
 
@@ -243,6 +243,9 @@ Check status via `rtk gain`.
 ├── skills/                      # 53 Active skills
 │   └── debugging/               # Merged debugging + bug-hunter skill
 ├── workflows/                   # 9 Pre-defined executable chains
+├── shared/                      # Gold standard, verification gate, de-sloppify
+│   ├── skills-manifest.json     # Generated inventory + content hashes (do not hand-edit)
+│   └── routing.json             # Curated routing data (edit + re-render)
 ├── evals/                       # Eval definitions (EVAL-DRIVEN DEVELOPMENT)
 └── instincts/                   # Learned patterns & observations
     ├── personal/                # Active instinct files (YAML)

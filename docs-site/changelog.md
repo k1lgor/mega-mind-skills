@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] — 2026-08-11
+
+### 🔧 Routing & Validation Hardening
+
+- **Single source of truth:** `scripts/build-manifest.py` generates `.agent/shared/skills-manifest.json` (inventory + SHA-256 hashes + 12-section compliance). Validator, renderer, installer, and docs all consume it — counts and membership can no longer drift.
+- **Machine-checkable routing:** `.agent/shared/routing.json` (54 routes, 11 chains) is rendered into the routing matrix and `/mega-mind skills` listing by `scripts/render-skills.py` inside `<!-- GENERATED -->` fences; drift fails CI.
+- **Manifest-driven validator:** Rewrote `scripts/validate-skill-system.py` — the old one flagged 51/53 skills falsely; the new one checks manifest freshness, frontmatter, 12/12 sections, routing coverage, chains, trigger collisions, and version attestation.
+- **Hash-verified sync:** `scripts/sync-assets.py` regenerates before copying and verifies `.agent/` ↔ `assets/` byte-for-byte.
+- **`mmo doctor` / `mmo check`:** environment + install-tree verification, and a repository-wide gate ending in a sandboxed install of all 6 platform layouts.
+- **Verified installs:** full skill-directory copies, byte-for-byte copy verification, structural agent checks.
+- **Tests + CI:** `tests/` (12 tests) and `validate.yml` on ubuntu + windows.
+- **Version & spec alignment:** 1.0.1 with metadata-derived `__version__`; Gold Standard spec references unified to **v2.0**; **skill frontmatter versions corrected to 2.0.0** (matching their own changelogs — validator-enforced); category counts corrected to 12/29/8/4; stale routing names fixed.
+- **Generated docs:** README catalog, reference.md tables, and index.md category table are generated regions.
+
+---
+
 ## [1.0.0] — 2026-07-09
 
 ### 🏆 Gold Standard v1.0 — All 53 Skills Upgraded

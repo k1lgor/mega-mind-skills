@@ -1,6 +1,6 @@
 ---
 name: observability-specialist
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Builds comprehensive observability systems covering metrics, structured logging, distributed tracing, and actionable alerting.

@@ -1,6 +1,6 @@
 # Installation
 
-## Step 1 — Install the CLI (v1.0.0)
+## Step 1 — Install the CLI (v1.0.1)
 
 ```bash
 # pip (standard)
@@ -93,8 +93,15 @@ uvx mmo init --copilot --claude --force
 
 ```bash
 mmo --version
-# Should output: mmo, version 1.0.0
+# Should output: mmo, version 1.0.1
+
+# Check hook dependency + installed-tree integrity
+mmo doctor
 ```
+
+`mmo doctor` verifies that `context-mode` (the hook dependency) is on PATH and
+that every installed SKILL.md matches the content hashes in the shipped
+`skills-manifest.json`; it exits non-zero on any problem.
 
 Then in your AI assistant, run `/verify` to confirm all skills are correctly installed.
 

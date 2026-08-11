@@ -1,0 +1,61 @@
+name: Validate Mega-Mind
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".agent/**"
+      - "src/mega_mind/**"
+      - "scripts/**"
+      - "tests/**"
+      - "README.md"
+      - "USAGE.md"
+      - "mkdocs.yml"
+      - "docs-site/**"
+      - "pyproject.toml"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate skill system
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install project with dev group
+        run: uv sync --group dev
+
+      - name: Check skills manifest is fresh
+        run: uv run python scripts/build-manifest.py --check
+
+      - name: Check generated docs are fresh
+        run: uv run python scripts/render-skills.py --check
+
+      - name: Validate skill system (manifest-driven)
+        run: uv run python scripts/validate-skill-system.py
+
+      - name: Check .agent/ and assets/ are in sync
+        run: uv run python scripts/sync-assets.py --check
+
+      - name: End-to-end check (all platform installs in a sandbox)
+        run: uv run mmo check
+
+      - name: Run test suite
+        run: uv run pytest tests/ -q

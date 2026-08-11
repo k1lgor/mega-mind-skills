@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   UI/UX flows and design systems covering user research, design tokens, component libraries, accessibility (WCAG 2.1 AA), and user flow design.

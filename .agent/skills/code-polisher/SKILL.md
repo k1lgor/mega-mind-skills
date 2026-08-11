@@ -1,6 +1,6 @@
 ---
 name: code-polisher
-version: "1.0.0"
+version: "2.0.0"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Refactors and improves code quality with measurable before/after improvements in readability, complexity, and duplication.

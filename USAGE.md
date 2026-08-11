@@ -1,8 +1,8 @@
-# Installing Mega-Mind Skills v1.0
+# Installing Mega-Mind Skills v1.0.1
 
-This guide covers how to install the Mega-Mind Gold Standard v1.0 skill set into your project so it is available to your AI coding assistant (Antigravity, GitHub Copilot, Claude Code, OpenCode, Codex, etc.).
+This guide covers how to install the Mega-Mind Gold Standard v2.0 skill set into your project so it is available to your AI coding assistant (Antigravity, GitHub Copilot, Claude Code, OpenCode, Codex, etc.).
 
-> **v1.0 Update:** All 53 skills have been upgraded to the [Gold Standard SKILL.md v1.0](./.agent/shared/GOLD-STANDARD-SKILL.md) specification — 12 required sections per skill including Blocking Violations, Verification with quality gates, Performance & Cost models, structured Examples, and Anti-Patterns tables.
+> **v2.0 Update:** All 53 skills conform to the [Gold Standard SKILL.md v2.0](./.agent/shared/GOLD-STANDARD-SKILL.md) specification — 12 required sections per skill including Blocking Violations, Verification with quality gates, Performance & Cost models, structured Examples, and Anti-Patterns tables. Compliance is machine-verified: every install is checked byte-for-byte against `skills-manifest.json`, and `mmo doctor` confirms hook dependencies and tree integrity.
 
 ---
 
@@ -253,10 +253,15 @@ your-project/
 
 Once initialized:
 
-1. Run `context-mode doctor` to verify the hook dependency is installed and healthy
+```bash
+# 1. Environment + install-tree integrity (checks context-mode and every
+#    installed SKILL.md against the shipped manifest's content hashes)
+mmo doctor
+```
+
 2. Use the `/verify` command within your AI assistant (e.g. Antigravity or GitHub Copilot) to run the **verification-loop** protocol
 
-This ensures both the hook integration and the skill system are correctly loaded and ready for use.
+`mmo doctor` exits non-zero if `context-mode` is missing from PATH (the generated hooks depend on it) or if any installed skill's content no longer matches the manifest. Re-run it after an `mmo init --force` to confirm a clean install.
 
 ---
 
