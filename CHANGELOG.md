@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4] — 2026-10-14
+
+### 🔧 Skill Routing & Instinct-Chain Fixes
+
+- **Zero trigger collisions, machine-enforced:** Removed 11 colliding trigger phrases (10 distinct) across 10 skills — `architectural decision`, `code review`, `design system` (×2), `component design`, `eval harness`, `LLM-as-judge`, `implement the plan`, `roadmap`, `write tests`, bare `workflow` — each resolved in favor of the skill the curated routing matrix already targets; `tech-lead` gained `design system` so frontmatter and matrix now agree everywhere. The 13 touched skills were bumped (2.0.0 → 2.0.1; mega-mind 2.1.0 → 2.1.1) with dated changelog rows. The validator's `trigger_collision` check was promoted from WARNING to **ERROR** — routing ambiguity can no longer ship.
+- **Instinct chain made install-safe:** `mega-mind` (3 instruction sites), `skill-generator`, and `continuous-learning-v2` previously instructed agents to read/write `.agent/instincts/{personal,observations,evolved}/` and `.agent/evals/scores/` — directories that do not ship with an install. Instinct *reads* are now conditional (skip silently when the directory is absent), `continuous-learning-v2` bootstraps the directories with `mkdir -p` on first use, and instinct-evolution steps are conditional on instinct sources existing.
+
+### 🌐 LF Line Endings Everywhere (structurally enforced)
+
+- **`.gitattributes` added:** `* text=auto eol=lf` — checkout and commit are LF on every platform, overriding `core.autocrlf` in either direction.
+- **Converted 116 files to LF;** all 189 tracked files are LF-clean.
+- **New validator check `eol`:** fails validation if any tracked text file contains CRLF (the validator now runs 10 checks, all passing).
+- **Writers fixed at the source:** `build-manifest.py`, `render-skills.py`, `validate-skill-system.py`, `installer.py` (hook + agent-frontmatter writes), and the three `fix-*.py` scripts now write with `newline="\n"` — Python's Windows default (\n → CRLF on write) was silently re-introducing CRLF after every regeneration.
+- **Housekeeping:** `.gitignore` also ignores `src/mega_mind/assets/evals/` (mirror of `.agent/evals/`); `validate.yml` now watches `.gitattributes`.
+
+### 📦 Version & Docs
+
+- `pyproject.toml` 1.0.3 → **1.0.4** with `__init__.py` fallback in sync (validator-enforced). README, USAGE, AGENTS.md, and docs-site version claims updated to **1.0.4** — the docs title had been stale at v1.0.1 since v1.0.2.
+
+---
+
 ## [1.0.3] — 2026-08-11
 
 ### 🔧 Fix: PyPI Metadata Summary Over Limit

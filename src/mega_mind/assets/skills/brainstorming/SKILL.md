@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Structured exploration before committing to an approach.
@@ -14,7 +14,6 @@ triggers:
   - "What's the best approach"
   - "I'm not sure how to"
   - "Let's think about"
-  - "architectural decision"
   - "design a solution"
   - "explore options"
   - "weigh pros and cons"
@@ -343,5 +342,6 @@ I've decided to use Redis for caching. Just need a plan to implement it.
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing hygiene: removed "architectural decision" trigger (owned by tech-lead) — resolves cross-skill trigger collision. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Identity, Core Principles with enforcement, Blocking Violations table, expanded Verification with commands, Performance & Cost, enhanced Examples with edge case, Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate |
 | 1.0.0 | 2024-01-15 | Initial version — structured brainstorming with search-first integration, evaluation framework, and user confirmation gate |

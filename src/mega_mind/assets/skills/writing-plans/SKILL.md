@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Create detailed, step-by-step implementation plans with dependency annotations and verification checkpoints.
@@ -17,7 +17,6 @@ triggers:
   - "implementation plan"
   - "task breakdown"
   - "execution plan"
-  - "roadmap"
 dependencies:
   - brainstorming: recommended
   - executing-plans: required
@@ -410,5 +409,6 @@ Implement a secure user authentication system with JWT tokens, supporting email/
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing hygiene: removed "roadmap" trigger (owned by product-manager) — resolves cross-skill trigger collision. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Identity, Core Principles with enforcement, Blocking Violations table, Verification with commands, Performance & Cost, enhanced Examples with edge cases, Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate; enhanced dependency annotations and rollback requirements |
 | 1.0.0 | 2024-01-15 | Initial version — plan structure with phases, atomic steps, verification checkpoints, and rollback plan |

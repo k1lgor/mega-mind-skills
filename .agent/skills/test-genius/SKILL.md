@@ -1,6 +1,6 @@
 ---
 name: test-genius
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Writes comprehensive unit and integration tests using AAA pattern, mocking, and coverage-driven quality gates.
@@ -9,7 +9,6 @@ description: |
 category: domain-expert
 triggers:
   - "/test-genius"
-  - "write tests"
   - "add test coverage"
   - "unit tests"
   - "test this code"
@@ -332,5 +331,6 @@ Status: PASS
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing hygiene: removed "write tests" trigger (owned by test-driven-development per routing matrix); kept "unit tests", "test coverage", and framework-name triggers. |
 | 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Core Principles, Workflow (Step 0-5), Blocking Violations, Verification with real commands, Performance & Cost, Examples, References, Changelog. Preserved all templates, anti-patterns, and failure modes. |
 | 1.0.0 | — | Initial version |

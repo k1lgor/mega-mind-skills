@@ -191,7 +191,7 @@ def main() -> int:
         return 1
 
     MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
-    MANIFEST_PATH.write_text(payload, encoding="utf-8")
+    MANIFEST_PATH.write_text(payload, encoding="utf-8", newline="\n")
     print(
         f"[OK] wrote {MANIFEST_PATH.relative_to(ROOT)} "
         f"({manifest['skill_count']} skills, schema {SCHEMA_VERSION})"

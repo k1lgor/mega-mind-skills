@@ -68,7 +68,7 @@ def fix_file(path, is_skill=True, is_agent=False, is_workflow=False):
                 )
 
     if content != original:
-        open(path, "w", encoding="utf-8").write(content)
+        open(path, "w", encoding="utf-8", newline="\n").write(content)
         return True
     return False
 

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4] — 2026-10-14
+
+### 🔧 Skill Routing & EOL Fixes
+
+- **Trigger collisions eliminated:** 11 colliding trigger phrases removed across 10 skills (each resolved in favor of the routing matrix's owner; `tech-lead` gained `design system`); 13 skills version-bumped (2.0.0 → 2.0.1; mega-mind → 2.1.1) with dated changelog rows. Validator check `trigger_collision` promoted from WARNING to ERROR.
+- **Instinct chain install-safe:** `mega-mind`, `skill-generator`, and `continuous-learning-v2` no longer reference instinct/eval directories that don't ship — reads are conditional, first use bootstraps with `mkdir -p`.
+- **LF everywhere, enforced:** new `.gitattributes` (`* text=auto eol=lf`); 116 files converted to LF; new validator check `eol` fails on any tracked CRLF; all repo writers patched with `newline="\n"` so regeneration can't reintroduce CRLF; `.gitignore` covers the synced `assets/evals/` mirror; `validate.yml` watches `.gitattributes`.
+- **Version bump:** package 1.0.3 → **1.0.4**; README/USAGE/AGENTS/docs-site updated to v1.0.4 (docs titles had been stale since v1.0.2).
+
+---
+
 ## [1.0.3] — 2026-08-11
 
 ### 🔧 Fix: PyPI Metadata Summary Over Limit

@@ -1,6 +1,6 @@
 ---
 name: tech-lead
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Drives project architecture, technical decisions, and team coordination across the full software delivery lifecycle.
@@ -14,6 +14,7 @@ triggers:
   - "project planning"
   - "tech lead"
   - "system design"
+  - "design system"
   - "architecture review"
   - "technical direction"
 dependencies:
@@ -455,5 +456,6 @@ We have a production outage caused by database connection exhaustion. We need an
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.1 | 2026-10-14 | Routing hygiene: added "design system" trigger to match the curated routing matrix (mega-mind routes "design system" -> tech-lead). |
 | 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, Instructions workflow (5 steps), Blocking Violations table, ADR template, Performance & Cost, Examples (3), References, Changelog |
 | 1.0.0 | 2025-06-01 | Initial version |

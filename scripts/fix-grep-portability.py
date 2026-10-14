@@ -53,7 +53,7 @@ def fix_file(path):
 
     new_content = "\n".join(new_lines)
     if new_content != original:
-        open(path, "w", encoding="utf-8").write(new_content)
+        open(path, "w", encoding="utf-8", newline="\n").write(new_content)
     return changes
 
 

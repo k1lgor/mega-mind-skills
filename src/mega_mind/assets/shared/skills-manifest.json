@@ -217,7 +217,7 @@
       "name": "brainstorming",
       "title": "Brainstorming Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Structured exploration before committing to an approach. Use when facing ambiguous problems, new features, architectural decisions, or any situation where multiple approaches are possible. Differentiator: Mandatory search-first integration before any idea generation, and a hard user-confirmation gate that prevents premature implementation.",
       "triggers": [
         "/brainstorm",
@@ -226,7 +226,6 @@
         "What's the best approach",
         "I'm not sure how to",
         "Let's think about",
-        "architectural decision",
         "design a solution",
         "explore options",
         "weigh pros and cons",
@@ -238,7 +237,7 @@
         "cost-aware-llm-pipeline: optional",
         "context-mode: optional"
       ],
-      "sha256": "197c6627d88a090e27475d2ce15ec6da3288d30b0ec2cd2bf7eb92da7f6211e5",
+      "sha256": "0343220f48599c1b45172ab78f55ffe21051f2adaead5722375b8eb7fbe64866",
       "line_count": 348,
       "sections": {
         "Identity": true,
@@ -260,7 +259,7 @@
       "name": "ci-config-helper",
       "title": "CI Config Helper Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Designs and configures CI/CD pipelines for GitHub Actions and GitLab CI with caching, matrix builds, security scanning, and deployment gating. Use for any continuous integration or deployment pipeline task — from initial setup through production release gating. Distinguishes itself through hardened pipeline patterns with cache optimization, secret management, flaky test detection, and staging-gated deployment.",
       "triggers": [
         "/ci-config",
@@ -270,7 +269,6 @@
         "pipeline",
         "deployment pipeline",
         "ci configuration",
-        "workflow",
         "build pipeline",
         "ci/cd pipeline"
       ],
@@ -282,7 +280,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "e0ed8517fed9d760e863a3df8b7d1f970435d9645dd638ae5a47ca15ddb4cc43",
+      "sha256": "b489f6a14f69df69d5ec458d5c1a4541e729eb7b7067246863fc60b306ac9ba8",
       "line_count": 358,
       "sections": {
         "Identity": true,
@@ -304,7 +302,7 @@
       "name": "code-polisher",
       "title": "Code Polisher Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Refactors and improves code quality with measurable before/after improvements in readability, complexity, and duplication. Use for cleaning up and optimising existing code, reducing cyclomatic complexity, and extracting maintainable patterns. Differentiator: behaviour-preserving refactoring with characterisation tests, before/after code examples for 7+ common code smells, and structured verification gates.",
       "triggers": [
         "/polish",
@@ -312,7 +310,6 @@
         "improve code quality",
         "clean up code",
         "optimize this",
-        "code review",
         "clean code",
         "reduce complexity"
       ],
@@ -321,7 +318,7 @@
         "test-genius: recommended",
         "plankton-code-quality: recommended"
       ],
-      "sha256": "99e3816559e0abdfcdfb744545c87ff8c36cc896cf4b073a926a378a209c9da3",
+      "sha256": "2add8aa771990fca4d2a23cc560298eddb51b857ac093e3f9e44fc6ab39dca0f",
       "line_count": 351,
       "sections": {
         "Identity": true,
@@ -431,7 +428,7 @@
       "name": "continuous-learning-v2",
       "title": "Continuous Learning v2 — Instinct System",
       "category": "meta-learning",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Instinct-based learning system that automatically extracts and evolves patterns from AI sessions. Use to build a growing library of project-specific preferences and workflows that improve the AI's effectiveness over time. Covers instinct extraction with confidence weighting, conflict detection, instinct decay, and promotion of confirmed patterns to skills/workflows.",
       "triggers": [
         "learn from this session",
@@ -448,8 +445,8 @@
         "autoresearch-loop: recommended",
         "skill-generator: recommended"
       ],
-      "sha256": "60be8c72563dd72747a89da10369f0c6bd2b70b05562daa4547202de06e038d7",
-      "line_count": 225,
+      "sha256": "b8aba34a8e4419a8c7a9a5f41529dd455338f502b72020915c391325ec38b4dd",
+      "line_count": 232,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -954,7 +951,7 @@
       "name": "frontend-architect",
       "title": "Frontend Architect Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Designs component architecture, state management strategy, and UI patterns for React/Vue/Next.js applications. Use for frontend architecture decisions, component design, responsive layout planning, and state management selection. Differentiator: atomic design methodology with ADR-tracked component decisions, performance budgets, and accessibility-by-default patterns.",
       "triggers": [
         "/frontend-architect",
@@ -963,8 +960,7 @@
         "UI architecture",
         "responsive design",
         "state management",
-        "component library",
-        "design system"
+        "component library"
       ],
       "dependencies": [
         "ux-designer: recommended",
@@ -972,7 +968,7 @@
         "test-genius: optional",
         "performance-profiler: optional"
       ],
-      "sha256": "192f8effb9682c6d62f3ba9f2b03b0a5cef977b440dfd9c2f2c37aeca14f45b9",
+      "sha256": "aae1a3135836a366b4ba5f5153a21e16032965a320d4f26429a4af1c4c4c1db9",
       "line_count": 518,
       "sections": {
         "Identity": true,
@@ -1163,7 +1159,7 @@
       "name": "mega-mind",
       "title": "Mega-Mind Orchestrator",
       "category": "core-workflow",
-      "version": "2.1.0",
+      "version": "2.1.1",
       "description": "Master orchestrator for the Mega-Mind skill system — analyzes requests, coordinates multiple skills, and manages complex workflows. Invoke when the task spans domains, requires a skill chain, or needs multi-agent orchestration. Differentiator: intelligent request routing via a 50+ entry routing matrix, 10+ pre-defined workflow chains, and a structured handoff protocol that makes this the highest-coverage orchestrator skill in the ecosystem.",
       "triggers": [
         "/mega-mind",
@@ -1190,8 +1186,8 @@
         "context-mode: recommended",
         "rtk: optional"
       ],
-      "sha256": "53bf0f535e01c8a11bd641ccd5d2f84d2c59cd9980578536b5317d5ded8678c8",
-      "line_count": 637,
+      "sha256": "73e6264f897ae5430cb360f253356a27f436eddda213d06cef6b4e2cef19aaf1",
+      "line_count": 638,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1260,7 +1256,7 @@
       "name": "ml-engineer",
       "title": "ML Engineer Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "End-to-end machine learning engineering covering classical pipelines, LLM/GenAI systems, experiment tracking, hyperparameter tuning, model serving, and production monitoring. Use when building, evaluating, or deploying any ML or AI model — from sklearn classifiers to fine-tuned transformers and LLM-powered applications. Emphasizes reproducibility, baselines-first, evaluation harnesses, and production-grade monitoring for both classical ML and GenAI systems.",
       "triggers": [
         "machine learning",
@@ -1274,9 +1270,7 @@
         "experiment tracking",
         "hyperparameter tuning",
         "data drift",
-        "model evaluation",
-        "LLM-as-judge",
-        "eval harness"
+        "model evaluation"
       ],
       "dependencies": [
         "data-engineer: recommended",
@@ -1285,8 +1279,8 @@
         "observability-specialist: recommended",
         "test-driven-development: recommended"
       ],
-      "sha256": "2a7fe7c81341fa46cab918fb3d8b47af66a506beaa7e3937f4f017134d686e8d",
-      "line_count": 651,
+      "sha256": "889b0005175bff2d1830cef1bbbeb6a79524f042b30c73a541977102cab02eb3",
+      "line_count": 650,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1347,7 +1341,7 @@
       "name": "multi-execute",
       "title": "Multi-Execute Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Orchestrated multi-agent implementation workflow that translates an approved multi-plan artifact into production code. Use when implementing complex features defined by an approved multi-plan artifact, especially full-stack tasks or high-stakes modifications. Generates parallel Technical and UX prototypes, refactors them to project standards, applies De-Sloppify pass, runs self-verification per step, and completes with a parallel multi-model audit.",
       "triggers": [
         "multi-execute",
@@ -1355,7 +1349,6 @@
         "multi-model implementation",
         "prototype refactoring",
         "multi-agent audit",
-        "implement the plan",
         "execute multi-plan",
         "high-complexity implementation"
       ],
@@ -1365,7 +1358,7 @@
         "security-reviewer: recommended",
         "finishing-a-development-branch: recommended"
       ],
-      "sha256": "7ba17712438f794dd3c15a71f9c2841e6f065e20b4fa98cd1b6e45c5c9aa2bf6",
+      "sha256": "9d104b1970a7951ea735169229604e3ab74271db6f1e5738d85e0dbc39774312",
       "line_count": 182,
       "sections": {
         "Identity": true,
@@ -1933,7 +1926,7 @@
       "name": "skill-generator",
       "title": "Skill Generator Skill",
       "category": "meta-learning",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Create, debug, and evolve SKILL.md files for any AI coding agent skill system. Use when creating custom skills, evolving instincts into skills, extracting patterns from git history, or debugging existing skill files. Differentiator: Three creation methods (from scratch, from instincts, from git history), full validation checklist, and integration with the continuous-learning pipeline for instinct evolution.",
       "triggers": [
         "/generate-skill",
@@ -1954,8 +1947,8 @@
         "search-first: recommended",
         "context-mode: optional"
       ],
-      "sha256": "bd5865f1ed88f99f3a05f68736ecb69020e0bbedc5a087d2c9581d4793348cb9",
-      "line_count": 407,
+      "sha256": "7b9ecfa1197a9b636d175f08577e83d8c436653da47fdd31355bff4f9c9815c0",
+      "line_count": 408,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2014,7 +2007,7 @@
       "name": "tech-lead",
       "title": "Tech Lead Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Drives project architecture, technical decisions, and team coordination across the full software delivery lifecycle. Use for complex multi-component planning, architectural decision-making, and setting technical direction. Differentiator: combines architecture design with ADR documentation, risk management, and handoff-ready execution plans.",
       "triggers": [
         "/tech-lead",
@@ -2023,6 +2016,7 @@
         "project planning",
         "tech lead",
         "system design",
+        "design system",
         "architecture review",
         "technical direction"
       ],
@@ -2035,8 +2029,8 @@
         "frontend-architect: optional",
         "infra-architect: optional"
       ],
-      "sha256": "a76c3833cdcf1314eb92e831e2d0ad3f0b575898dfdbe4dbad95db9b10b12449",
-      "line_count": 460,
+      "sha256": "aa5d5dc47a061701b265d4f080054103dd8af837f7818803ca81596c251187c6",
+      "line_count": 462,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2095,11 +2089,10 @@
       "name": "test-genius",
       "title": "Test Genius Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Writes comprehensive unit and integration tests using AAA pattern, mocking, and coverage-driven quality gates. Use for any unit or integration testing task — from pure functions through async operations and API endpoints. Distinguishes itself through framework-agnostic templates, enforced coverage targets, and a zero-tolerance policy for flaky or non-asserting tests.",
       "triggers": [
         "/test-genius",
-        "write tests",
         "add test coverage",
         "unit tests",
         "test this code",
@@ -2116,7 +2109,7 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "a1ca399418cc2c2b942f0033c2d6d97e76e4aa3887d903dade850a9a74fe462e",
+      "sha256": "9d802935e67afc9b35c6793968d2cd55b19ee943a372c86fbfdd8dd3307fc35f",
       "line_count": 337,
       "sections": {
         "Identity": true,
@@ -2178,17 +2171,15 @@
       "name": "ux-designer",
       "title": "UX Designer Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "UI/UX flows and design systems covering user research, design tokens, component libraries, accessibility (WCAG 2.1 AA), and user flow design. Use for user experience design tasks — from user flows and design systems to accessibility audits and visual design. Covers design tokens, component state management, WCAG compliance, user journey mapping, and interaction design patterns.",
       "triggers": [
         "UX design",
         "user experience",
-        "design system",
         "user flow",
         "accessibility",
         "WCAG",
         "design tokens",
-        "component design",
         "interaction design"
       ],
       "dependencies": [
@@ -2196,8 +2187,8 @@
         "frontend-architect: recommended",
         "verification-loop: recommended"
       ],
-      "sha256": "d6058b7ada3cc56a0f3133719e9e98262f9c5fb9947eeb78ad4db6d66e116541",
-      "line_count": 251,
+      "sha256": "35b08b36cdf94fa866c73909080e19767d4403ee480bb095b5a1fea82ea957e8",
+      "line_count": 250,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2302,7 +2293,7 @@
       "name": "writing-plans",
       "title": "Writing Plans Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Create detailed, step-by-step implementation plans with dependency annotations and verification checkpoints. Use after brainstorming to document the execution strategy, or when tasked with creating a plan for a feature or change. Differentiator: Every plan includes scope boundaries, dependency annotations, verification checkpoints per phase, and a rollback plan — not just a task list.",
       "triggers": [
         "/plan",
@@ -2313,8 +2304,7 @@
         "break this down",
         "implementation plan",
         "task breakdown",
-        "execution plan",
-        "roadmap"
+        "execution plan"
       ],
       "dependencies": [
         "brainstorming: recommended",
@@ -2322,7 +2312,7 @@
         "cost-aware-llm-pipeline: optional",
         "context-mode: optional"
       ],
-      "sha256": "f53a5afa8e8dbbc2b4574e9b44c01d14bd77ab992c6417145a56e29f02107406",
+      "sha256": "9a254eb04c47d66004b67cbe925213d7312a5223a3f0a9e5a31b8f6dac61e8b8",
       "line_count": 415,
       "sections": {
         "Identity": true,

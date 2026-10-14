@@ -231,7 +231,7 @@ def _install_hooks(
         env_dir.mkdir(parents=True, exist_ok=True)
         hooks_file = env_dir / "hooks.json"
         if not hooks_file.exists() or force:
-            hooks_file.write_text(get_hook_content(env_name), encoding="utf-8")
+            hooks_file.write_text(get_hook_content(env_name), encoding="utf-8", newline="\n")
 
     if agent:
         write_hooks(target_path / ".agent" / "hooks", "antigravity")
@@ -550,4 +550,4 @@ def _copy_agents_with_frontmatter(
                         f"---\n\n"
                     )
                     content = frontmatter + content
-                dest_file.write_text(content, encoding="utf-8")
+                dest_file.write_text(content, encoding="utf-8", newline="\n")

@@ -215,7 +215,7 @@ def main() -> int:
         else:
             expected = replace_region(text, region_id, content)
             if text != expected:
-                path.write_text(expected, encoding="utf-8")
+                path.write_text(expected, encoding="utf-8", newline="\n")
                 print(f"[UPDATED] {path.relative_to(ROOT)} (region {region_id})")
 
     if check:

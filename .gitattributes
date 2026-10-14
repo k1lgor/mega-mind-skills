@@ -1,0 +1,22 @@
+# Enforce LF line endings for every text file in this repository.
+# - Overrides core.autocrlf on every platform: checkout AND commit stay LF.
+# - The `eol` check in scripts/validate-skill-system.py fails validation if any
+#   tracked text file contains CRLF, so regressions cannot land unnoticed.
+* text=auto eol=lf
+
+# Known binary types (explicit so they are never treated as text).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.pack binary

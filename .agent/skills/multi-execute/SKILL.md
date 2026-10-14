@@ -1,6 +1,6 @@
 ---
 name: multi-execute
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Orchestrated multi-agent implementation workflow that translates an approved multi-plan artifact into production code.
@@ -13,7 +13,6 @@ triggers:
   - "multi-model implementation"
   - "prototype refactoring"
   - "multi-agent audit"
-  - "implement the plan"
   - "execute multi-plan"
   - "high-complexity implementation"
 dependencies:
@@ -177,5 +176,6 @@ Phase 5: Completion Report
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing hygiene: removed "implement the plan" trigger (owned by executing-plans per routing matrix) — resolves cross-skill trigger collision. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with quality gates, References, Changelog. |
 ---

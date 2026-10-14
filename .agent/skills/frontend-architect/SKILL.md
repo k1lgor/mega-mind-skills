@@ -1,6 +1,6 @@
 ---
 name: frontend-architect
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Designs component architecture, state management strategy, and UI patterns for React/Vue/Next.js applications.
@@ -15,7 +15,6 @@ triggers:
   - "responsive design"
   - "state management"
   - "component library"
-  - "design system"
 dependencies:
   - ux-designer: recommended
   - code-polisher: optional
@@ -513,5 +512,6 @@ We need a rich text editor. The leading library requires direct DOM manipulation
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.1 | 2026-10-14 | Routing hygiene: removed "design system" trigger (owned by tech-lead per routing matrix) — resolves cross-skill trigger collision. |
 | 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, 4-step Instructions workflow, Component ADR template, Blocking Violations table, Performance & Cost, Examples (3), References, Changelog |
 | 1.0.0 | 2025-06-01 | Initial version |

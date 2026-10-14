@@ -1,6 +1,6 @@
 ---
 name: skill-generator
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Create, debug, and evolve SKILL.md files for any AI coding agent skill system.
@@ -211,7 +211,7 @@ The completed skill must include:
 
 1. **Add the skill to the routing matrix** in `.agent/skills/mega-mind/SKILL.md`
 2. **Verify the entry exists:** `grep -c "<skill-name>" .agent/skills/mega-mind/SKILL.md` returns ≥1
-3. **If evolved from instincts:** Move source YAML files from `.agent/instincts/personal/` to `.agent/instincts/evolved/`
+3. **If evolved from instincts (instinct sources exist):** Move source YAML files from `.agent/instincts/personal/` to `.agent/instincts/evolved/` (`mkdir -p` the destination first if missing)
 
 **Verification gate:** `grep` confirms the skill is in the routing matrix. If instinct-based, source files are moved to evolved/.
 
@@ -254,7 +254,7 @@ Before marking any skill generation as complete:
 - [ ] The skill has been placed in `.agent/skills/<name>/SKILL.md`
 - [ ] The mega-mind routing matrix has been updated — `grep "<skill-name>" .agent/skills/mega-mind/SKILL.md` returns ≥1 match
 - [ ] `skill-stocktake` was consulted to confirm no existing skill covers the same domain
-- [ ] If skill was evolved from instincts, source YAML files moved to `.agent/instincts/evolved/`
+- [ ] If skill was evolved from instincts, source YAML files moved to `.agent/instincts/evolved/` (skip when no instinct sources exist)
 - [ ] Skill triggers on at least 3 test phrases and does NOT trigger on at least 3 non-matching phrases
 
 ### Verification Commands
@@ -402,5 +402,6 @@ Changes to make:
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Instinct-evolution steps are now conditional on `.agent/instincts/personal/` existing; `.agent/instincts/evolved/` is created on demand. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Core Principles with enforcement, Blocking Violations table, expanded Verification with commands and quality gates, Performance & Cost, Examples with edge cases (duplicate prevention, instinct evolution), Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate; enhanced validation checklist with fresh session testing; added fresh-session test step |
 | 1.0.0 | 2024-01-15 | Initial version — skill creation workflow with 3 methods, design principles, and validation checklist |

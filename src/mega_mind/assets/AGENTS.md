@@ -1,8 +1,8 @@
-# Mega-Mind Agent Skills System v1.0.1
+# Mega-Mind Agent Skills System v1.0.4
 
 > **The most powerful skill system for AI coding assistants — 53 gold-standard skills, 11 agents, 9 workflows.**
 
-This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company, upgraded to the **Gold Standard v2.0** specification. Every skill is versioned **2.0.0** in its frontmatter (mega-mind: 2.1.0) — matching its own `## Changelog`; the `mmo` package that ships them is **1.0.1**. See the [README versioning table](../README.md#versioning) for the three version dimensions.
+This is a comprehensive skill-based workflow system that combines the disciplined development workflows of Superpowers with the domain expertise of Virtual Company, upgraded to the **Gold Standard v2.0** specification. Every skill's frontmatter version matches its own `## Changelog` (**2.0.0**/**2.0.1**; mega-mind: **2.1.1**) — validator-enforced; the `mmo` package that ships them is **1.0.4**. See the [README versioning table](../README.md#versioning) for the three version dimensions.
 
 **Compatible with:** Any AI coding agent (Antigravity · Claude Code · GitHub Copilot (VS Code) · Cursor · OpenCode · Codex · pi · and all tools supporting the [Agent Skills open standard](https://agentskills.io))
 
@@ -13,7 +13,7 @@ This is a comprehensive skill-based workflow system that combines the discipline
 ## Quick Start
 
 ```
-/mega-mind [command]    # Primary entry point for all operations (mega-mind skill v2.1.0)
+/mega-mind [command]    # Primary entry point for all operations (mega-mind skill v2.1.1)
 ```
 
 Commands: `status`, `skills`, `workflows`, `route <request>`, `execute <workflow>`, `help`, `upgrade`

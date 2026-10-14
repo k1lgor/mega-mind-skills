@@ -1,4 +1,4 @@
-# Mega-Mind Skills System v1.0.1
+# Mega-Mind Skills System v1.0.4
 
 A unified Gold Standard skill system for any AI coding assistant — covering the full software
 development lifecycle from planning through production operations and compliance.
@@ -11,7 +11,7 @@ development lifecycle from planning through production operations and compliance
 
 - **Multi-Platform** — Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
 
-> **New in v1.0.1 (2026-08-11):** Routing and inventory are now generated artifacts — `.agent/shared/skills-manifest.json` (inventory, content hashes, 12-section compliance) and `.agent/shared/routing.json` (54 routes, 11 chains) feed the validator, the rendered routing matrix, and every docs table. `mmo doctor` verifies installed trees, `mmo check` gates the repo end-to-end, and `tests/` + `validate.yml` CI enforce it all. See the [changelog](changelog.md) for details.
+> **New in v1.0.4 (2026-10-14):** Routing is now collision-free — 11 colliding triggers removed in favor of the curated matrix, the validator's `trigger_collision` check promoted to an ERROR, and the instinct chain no longer references directories that don't ship. Line endings are LF everywhere, enforced by `.gitattributes` + a new `eol` validator check. See the [changelog](changelog.md) for details.
 
 > **New in v1.0 (2026-07-09):** All 53 skills upgraded to Gold Standard. 19,531 total lines, 12/12 sections compliance. See the [changelog](changelog.md) for details.
 

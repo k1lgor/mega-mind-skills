@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   UI/UX flows and design systems covering user research, design tokens, component libraries, accessibility (WCAG 2.1 AA), and user flow design.
@@ -10,12 +10,10 @@ category: domain-expert
 triggers:
   - "UX design"
   - "user experience"
-  - "design system"
   - "user flow"
   - "accessibility"
   - "WCAG"
   - "design tokens"
-  - "component design"
   - "interaction design"
 dependencies:
   - product-manager: recommended
@@ -246,5 +244,6 @@ npx lighthouse http://localhost:3000 --accessibility
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing hygiene: removed "design system" trigger (owned by tech-lead per routing matrix) — resolves cross-skill trigger collision. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
 ---

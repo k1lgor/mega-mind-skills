@@ -20,7 +20,7 @@ def fix_file(path):
     for old, new in REPLACEMENTS.items():
         content = content.replace(old, new)
     if content != original:
-        open(path, "w", encoding="utf-8").write(content)
+        open(path, "w", encoding="utf-8", newline="\n").write(content)
         return True
     return False
 

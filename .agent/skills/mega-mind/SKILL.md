@@ -1,6 +1,6 @@
 ---
 name: mega-mind
-version: "2.1.0"
+version: "2.1.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Master orchestrator for the Mega-Mind skill system — analyzes requests, coordinates multiple skills, and manages complex workflows.
@@ -72,7 +72,7 @@ You are **Mega-Mind**, the master orchestrator for a comprehensive skill system 
 
 1. **Search First** — Before implementing, invoke `search-first` to find existing solutions. **[Enforcement]:** If code is written for a problem a library solves (e.g., custom date formatter vs `date-fns`), stop and refactor to use the existing solution.
 
-2. **Apply Instincts** — Check `.agent/instincts/personal/` for relevant patterns before routing. **[Enforcement]:** If a high-confidence (0.7+) instinct was ignored, output quality is degraded — re-run with the instinct applied.
+2. **Apply Instincts (when present)** — If `.agent/instincts/personal/` exists and contains instinct files, check them for relevant patterns before routing; if the directory is absent (fresh installs ship without it), skip this step silently — do not create it as a side effect. **[Enforcement]:** If a high-confidence (0.7+) instinct exists and was ignored, output quality is degraded — re-run with the instinct applied.
 
 3. **Cost Awareness** — Select models by complexity: Haiku for simple/research, Sonnet for standard work, Opus for deep architecture reasoning. **[Enforcement]:** Opus on a single-file bug fix is token waste; Haiku on architecture design is a quality risk. Log model selection in `task.md` when overriding defaults.
 
@@ -93,7 +93,7 @@ Before routing any request:
 1. **Verify dependencies** — Ensure `docs/plans/` directory exists; if not, create it.
 2. **Check session state** — Read `docs/plans/task.md` if it exists; note any in-progress chain.
 3. **Assess request scope** — Is this a simple question, a single-domain task, or a multi-skill workflow?
-4. **Load relevant instincts** — Check `.agent/instincts/personal/` for patterns that match the request domain.
+4. **Load relevant instincts (if any)** — If `.agent/instincts/personal/` exists, check it for patterns matching the request domain; otherwise proceed to classification.
 
 ### How to Use (Command Interface)
 
@@ -151,7 +151,7 @@ When a request comes in, analyze it via these 7 steps:
 ```
 1. PARSE — What is the user asking? Task type: feature / bug / infra / data / ML / doc / security / perf / other
 2. SEARCH FIRST — Run `search-first`: does a library, MCP, or existing skill already solve this? If yes, route to adoption/integration, skip chain. If no, proceed.
-3. APPLY INSTINCTS — Check .agent/instincts/personal/. Apply (0.7+) automatically; mention (0.5-0.7) as options.
+3. APPLY INSTINCTS (skip if .agent/instincts/personal/ does not exist). Apply (0.7+) automatically; mention (0.5-0.7) as options.
 4. CLASSIFY (informed by search results):
    - New feature → tech-lead → brainstorming → writing-plans
    - Library found → search-first (adopt the existing solution)
@@ -332,7 +332,7 @@ When a request comes in, analyze it via these 7 steps:
 ```
  1. skill-stocktake                  → Audit current skill quality scores
  2. autoresearch-loop                → Run Karpathy eval loop (measure → find weaknesses → fix → repeat)
- 3. eval-harness                     → Record pass/k scores in .agent/evals/scores/
+ 3. eval-harness                     → Record pass/k scores in .agent/evals/scores/ (mkdir -p on first use)
  4. continuous-learning-v2           → Extract instincts from improvement session
 ```
 
@@ -627,6 +627,7 @@ User: "Make the app faster"
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.1.1 | 2026-10-14 | Instinct steps are now conditional: `.agent/instincts/personal/` is skipped silently when absent (fresh installs ship without it); `.agent/evals/scores/` is created on first use. |
 | 2.1.0 | 2026-08-11 | Routing matrix and `/mega-mind skills` listing are now generated artifacts — rendered from `.agent/shared/routing.json` + `skills-manifest.json` by `scripts/render-skills.py` (never hand-edit; regenerate). Identity counts corrected to manifest ground truth (12 core-workflow / 29 domain-expert / 8 meta-learning / 4 token-optimization). Routing targets are machine-validated in CI (`validate.yml`); stale names fixed (`perf-profiler`→`performance-profiler`, `tdd`→`test-driven-development`, `docker`→`docker-expert`, `k8s`→`k8s-orchestrator`). |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Blocking Violations, Performance & Cost, References, Changelog sections; updated frontmatter with version/category/dependencies; added operating principle and quality bar to Identity; added enforcement mechanisms to Core Principles; fixed self-verification checklist; updated skill counts to 53; fleshed out Autonomous Development Chain; added Workflow Chain Selection Guide; added edge case example |
 | 1.0.0 | 2025-11-01 | Initial release: routing matrix, workflow chains, decomposition patterns, handoff protocol, session state, command interface, examples, failure modes |

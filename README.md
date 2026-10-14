@@ -1,4 +1,4 @@
-# Mega-Mind Skills System v1.0.1
+# Mega-Mind Skills System v1.0.4
 
 > **The most powerful skill system for AI coding assistants — 53 Gold Standard skills, 11 agents, 9 workflows.**
 
@@ -10,7 +10,7 @@ This is a comprehensive skill-based workflow system that combines the discipline
 
 Mega-Mind v1.0 brings together **53 Gold Standard skills**, **11 agent personas**, and **9 workflows** organized across the full software development lifecycle — from planning through production operations. All skills meet the **[Gold Standard SKILL.md v2.0](./.agent/shared/GOLD-STANDARD-SKILL.md)** specification, verified machine-checkable in CI.
 
-> **New in v1.0.1 (2026-08-11):** The routing matrix, skills listing, and every skill catalog table are now **generated artifacts** — rendered from `.agent/shared/skills-manifest.json` (inventory) and `.agent/shared/routing.json` (routing) by `scripts/render-skills.py`, and validated by a manifest-driven validator (`scripts/validate-skill-system.py`), an end-to-end `mmo check` gate, and a CI workflow. Counts, membership, and version claims can no longer drift from the skills themselves. See [CHANGELOG.md](./CHANGELOG.md) for details.
+> **New in v1.0.4 (2026-10-14):** Skill routing is now collision-free and machine-enforced — 11 colliding triggers removed in favor of the curated matrix, `trigger_collision` promoted to an ERROR check, and the instinct chain no longer references directories that don't ship with an install. Line endings are LF everywhere, enforced by `.gitattributes` plus a new `eol` validator check. See [CHANGELOG.md](./CHANGELOG.md) for details.
 
 ## Versioning
 
@@ -18,11 +18,11 @@ Three distinct version numbers are in play — don't conflate them:
 
 | Dimension | Version | Where it lives |
 | --- | --- | --- |
-| **Package release** | **1.0.1** | `pyproject.toml` / `mmo --version` — the pip package |
+| **Package release** | **1.0.4** | `pyproject.toml` / `mmo --version` — the pip package |
 | **Gold Standard spec** | **2.0** | `.agent/shared/GOLD-STANDARD-SKILL.md` — the SKILL.md template |
-| **Skill versions** | **2.0.0** (mega-mind: 2.1.0) | each skill's frontmatter `version:` — must equal its latest `## Changelog` row (validator-enforced) |
+| **Skill versions** | **2.0.0 / 2.0.1** (mega-mind: 2.1.1) | each skill's frontmatter `version:` — must equal its latest `## Changelog` row (validator-enforced) |
 
-Skills are at **Gold Standard v2.0** and each skill carries its own `2.0.0` frontmatter version; the `mmo` package that ships them is at **1.0.1**.
+Skills are at **Gold Standard v2.0** and each skill's frontmatter version matches its own changelog (`2.0.0`/`2.0.1`; mega-mind: `2.1.1`); the `mmo` package that ships them is at **1.0.4**.
 
 ### The Mega-Mind Orchestrator
 

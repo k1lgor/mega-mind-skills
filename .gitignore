@@ -76,6 +76,7 @@ Thumbs.db
 docs/plans/
 .agent/instincts/
 .agent/evals/
+src/mega_mind/assets/evals/
 
 # =============================================================================
 # MkDocs build output (regenerated on deploy)
