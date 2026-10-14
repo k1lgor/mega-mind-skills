@@ -1,6 +1,6 @@
 # Installation
 
-## Step 1 — Install the CLI (v1.0.4)
+## Step 1 — Install the CLI (v1.0.5)
 
 ```bash
 # pip (standard)
@@ -93,7 +93,7 @@ uvx mmo init --copilot --claude --force
 
 ```bash
 mmo --version
-# Should output: mmo, version 1.0.4
+# Should output: mmo, version 1.0.5
 
 # Check hook dependency + installed-tree integrity
 mmo doctor

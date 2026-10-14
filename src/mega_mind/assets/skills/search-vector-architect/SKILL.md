@@ -1,6 +1,6 @@
 ---
 name: search-vector-architect
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Design and implement production-grade semantic search and RAG systems.
@@ -24,6 +24,7 @@ triggers:
   - "Pinecone"
   - "Weaviate"
   - "pgvector"
+  - "RAG system"
 dependencies:
   - data-engineer: recommended
   - ml-engineer: recommended
@@ -644,6 +645,7 @@ python -c "from src.search.embeddings import EmbeddingGenerator; print(Embedding
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "RAG system" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
 
 ---

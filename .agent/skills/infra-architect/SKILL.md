@@ -1,6 +1,6 @@
 ---
 name: infra-architect
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Designs and implements cloud infrastructure using Infrastructure as Code with Terraform and Pulumi.
@@ -17,6 +17,7 @@ triggers:
   - "infrastructure as code"
   - "cloud provisioning"
   - "AWS infrastructure"
+  - "design infrastructure"
 dependencies:
   - ci-config-helper: optional
   - k8s-orchestrator: optional
@@ -384,5 +385,6 @@ The Terraform state file was accidentally deleted from S3. All 200 production re
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "design infrastructure" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, 5-step Instructions workflow, Blocking Violations table, Performance & Cost, Examples (3), Anti-Patterns table, References, Changelog |
 | 1.0.0 | 2025-06-01 | Initial version |

@@ -1,6 +1,6 @@
 ---
 name: legacy-archaeologist
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Safely understands, documents, and modernises legacy codebases through systematic archaeology and characterisation.
@@ -16,6 +16,7 @@ triggers:
   - "legacy modernisation"
   - "old codebase"
   - "reverse engineer"
+  - "work with legacy"
 dependencies:
   - code-polisher: optional
   - test-genius: recommended
@@ -361,5 +362,6 @@ I wrote characterisation tests for the legacy order processor but the test expec
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "work with legacy" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, 5-step Instructions workflow (Discovery → Characterisation → Plan → Execute → Document), Blocking Violations table, Performance & Cost, Examples (3), Anti-Patterns table, References, Changelog |
 | 1.0.0 | 2025-06-01 | Initial version |

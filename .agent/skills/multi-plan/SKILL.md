@@ -1,6 +1,6 @@
 ---
 name: multi-plan
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Multi-model collaborative planning for high-complexity tasks using parallel Technical and UX analysis backends.
@@ -16,6 +16,8 @@ triggers:
   - "high-complexity feature"
   - "multi-perspective analysis"
   - "plan synthesis"
+  - "plan comprehensive"
+  - "multi-agent planning"
 dependencies:
   - search-first: required
   - architect: recommended
@@ -176,5 +178,6 @@ Save to `.agent/plans/<feature-name>.md` with Architecture, Logical Steps, Risk 
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "plan comprehensive", "multi-agent planning" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with quality gates, References, Changelog. |
 ---

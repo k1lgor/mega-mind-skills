@@ -70,6 +70,17 @@ Every incident response produces:
 | Blameless Postmortem | Within 48 hours of SEV1/SEV2, 1 week for SEV3+ | `docs/postmortems/<date>-<summary>.md`          |
 | Runbook update       | If a runbook was missing or incorrect          | Updated `.agent/runbooks/<name>.md` or created  |
 
+## Communications Cadence
+
+Stakeholders must never learn about an incident by asking.
+
+- **First update within 5 minutes**: severity, impact, who is commanding, mitigation in flight.
+- **Cadence**: every 15 minutes for SEV1, every 30 for SEV2, hourly for SEV3 — including no-change updates, because silence reads as nobody working on it.
+- **One channel, one voice.** The commander owns the channel; responders report to it rather than broadcasting.
+- **Say what is known and what is not.** An unconfirmed cause is stated as unconfirmed; a guess in an update costs more than admitting uncertainty.
+- **Handover at 6 hours or on exhaustion.** The incoming commander receives severity, timeline, current hypothesis, mitigations attempted and open actions — recorded in the incident log, not in memory.
+- **Close the loop explicitly**: the all-clear and postmortem date go to the same audience that received the updates.
+
 ## Postmortem Template
 
 ```markdown

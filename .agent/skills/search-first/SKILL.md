@@ -1,6 +1,6 @@
 ---
 name: search-first
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Research-before-coding discipline that always searches for existing solutions before writing code.
@@ -17,6 +17,7 @@ triggers:
   - "is there a package"
   - "prior art"
   - "dependency decision"
+  - "search for library"
 dependencies:
   - mega-mind: recommended
   - brainstorming: recommended
@@ -245,5 +246,6 @@ grep -c "Search-First Research\|search-first" docs/
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "search for library" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
 ---

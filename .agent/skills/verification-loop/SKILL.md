@@ -1,6 +1,6 @@
 ---
 name: verification-loop
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Scope-aware tiered verification system (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep) with continuous quick-check mode.
@@ -19,6 +19,9 @@ triggers:
   - "complete this task"
   - "is this done"
   - "verify this works"
+  - "CI/CD verify"
+  - "verify this"
+  - "mark task done"
 dependencies:
   - rtk: recommended
   - plankton-code-quality: recommended
@@ -279,5 +282,6 @@ git diff HEAD
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "CI/CD verify", "verify this", "mark task done" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Performance & Cost section, Examples, References, Changelog. Enhanced Verification section with quality gates. |
 ---

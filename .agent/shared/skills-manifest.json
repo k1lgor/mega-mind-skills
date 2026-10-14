@@ -89,7 +89,7 @@
       "name": "autonomous-loops",
       "title": "Autonomous Loops Skill",
       "category": "meta-learning",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Autonomous loop patterns for multi-step AI workflows without human intervention. Use when building CI-style pipelines, parallel agent coordination, or continuous autonomous development cycles. Covers 5 loop architectures (Sequential Pipeline, Infinite Agentic Loop, Continuous PR Loop, De-Sloppify Pass, RFC-Driven DAG) with decision matrix.",
       "triggers": [
         "autonomous workflow",
@@ -101,7 +101,8 @@
         "pr loop",
         "agentic pipeline",
         "Ralphinho",
-        "DAG orchestration"
+        "DAG orchestration",
+        "autonomous pipeline"
       ],
       "dependencies": [
         "verification-loop: recommended",
@@ -109,8 +110,8 @@
         "content-hash-cache-pattern: optional",
         "cost-aware-llm-pipeline: recommended"
       ],
-      "sha256": "4008f2c8f6e94f22e4db49e9707e021240229b3955da69327d4cc9357fcdaf65",
-      "line_count": 220,
+      "sha256": "4b47ce923d1b732e061c12197f6f036c1947ffaf2e6741baf04d00d0ccb0f14e",
+      "line_count": 222,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -131,7 +132,7 @@
       "name": "autoresearch-loop",
       "title": "Autoresearch Loop Skill",
       "category": "meta-learning",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Karpathy-style automated self-improvement loop for the .agent/ skill system. Use to measure skill quality, identify weaknesses through structured evals, generate targeted improvements, and verify them. The AI equivalent of gradient descent applied to agent instructions — works through Measure -> Find Weaknesses -> Generate Improvements -> Score -> Regression Check -> Iterate.",
       "triggers": [
         "autoresearch",
@@ -142,15 +143,16 @@
         "karpathy loop",
         "eval and improve",
         "skill regression",
-        "improve the skill system"
+        "improve the skill system",
+        "Karpathy autoresearch"
       ],
       "dependencies": [
         "continuous-learning-v2: recommended",
         "skill-stocktake: recommended",
         "skill-generator: recommended"
       ],
-      "sha256": "2f68da58b8bfd17c5f1d8d086e2ce66ac67535e01ccda4af5c439c3cb0f943da",
-      "line_count": 179,
+      "sha256": "099c81d20f4cecf9623fd2c32f5bb4c8f0d0072c904dbb5a2e21367d5872dac3",
+      "line_count": 181,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -171,7 +173,7 @@
       "name": "backend-architect",
       "title": "Backend Architect Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Designs server-side architecture, API contracts, and data models for production-grade services. Use for backend architecture decisions, service/repository implementation, and designing REST/GraphQL API contracts. Differentiator: layered architecture with documented ADRs, machine-readable API contracts (OpenAPI/GraphQL), and database patterns with connection management, transactions, and migration strategies.",
       "triggers": [
         "/backend-architect",
@@ -186,7 +188,9 @@
         "API conventions",
         "pagination",
         "cursor pagination",
-        "api versioning"
+        "api versioning",
+        "design API endpoint",
+        "design backend"
       ],
       "dependencies": [
         "infra-architect: optional",
@@ -195,8 +199,8 @@
         "test-genius: optional",
         "code-polisher: optional"
       ],
-      "sha256": "75f7c726c8157335f803755b253de80b19330fc8a02f58bc6d10d8ff72a1df48",
-      "line_count": 500,
+      "sha256": "ea602669d4988490c8fb250d5afa8b764635d6fd833664d3af92d33b46f0ca55",
+      "line_count": 503,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -259,7 +263,7 @@
       "name": "ci-config-helper",
       "title": "CI Config Helper Skill",
       "category": "domain-expert",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "Designs and configures CI/CD pipelines for GitHub Actions and GitLab CI with caching, matrix builds, security scanning, and deployment gating. Use for any continuous integration or deployment pipeline task — from initial setup through production release gating. Distinguishes itself through hardened pipeline patterns with cache optimization, secret management, flaky test detection, and staging-gated deployment.",
       "triggers": [
         "/ci-config",
@@ -270,7 +274,9 @@
         "deployment pipeline",
         "ci configuration",
         "build pipeline",
-        "ci/cd pipeline"
+        "ci/cd pipeline",
+        "deploy",
+        "release"
       ],
       "dependencies": [
         "docker-expert: recommended",
@@ -280,8 +286,8 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "b489f6a14f69df69d5ec458d5c1a4541e729eb7b7067246863fc60b306ac9ba8",
-      "line_count": 358,
+      "sha256": "3e91e578e4c332a4ad0d568b3b08734863eabb7ed8e0d8fe50b65448fc87e7c8",
+      "line_count": 361,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -302,7 +308,7 @@
       "name": "code-polisher",
       "title": "Code Polisher Skill",
       "category": "domain-expert",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "Refactors and improves code quality with measurable before/after improvements in readability, complexity, and duplication. Use for cleaning up and optimising existing code, reducing cyclomatic complexity, and extracting maintainable patterns. Differentiator: behaviour-preserving refactoring with characterisation tests, before/after code examples for 7+ common code smells, and structured verification gates.",
       "triggers": [
         "/polish",
@@ -311,15 +317,16 @@
         "clean up code",
         "optimize this",
         "clean code",
-        "reduce complexity"
+        "reduce complexity",
+        "refactor code"
       ],
       "dependencies": [
         "legacy-archaeologist: recommended",
         "test-genius: recommended",
         "plankton-code-quality: recommended"
       ],
-      "sha256": "2add8aa771990fca4d2a23cc560298eddb51b857ac093e3f9e44fc6ab39dca0f",
-      "line_count": 351,
+      "sha256": "ab5ea2fcafaafd7f6d1bcae37bf8309c6711e85892a51d1867d200389283b350",
+      "line_count": 353,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -428,7 +435,7 @@
       "name": "continuous-learning-v2",
       "title": "Continuous Learning v2 — Instinct System",
       "category": "meta-learning",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "Instinct-based learning system that automatically extracts and evolves patterns from AI sessions. Use to build a growing library of project-specific preferences and workflows that improve the AI's effectiveness over time. Covers instinct extraction with confidence weighting, conflict detection, instinct decay, and promotion of confirmed patterns to skills/workflows.",
       "triggers": [
         "learn from this session",
@@ -438,15 +445,16 @@
         "remember this pattern",
         "evolve my skills",
         "what have you learned",
-        "capture learning"
+        "capture learning",
+        "end of session"
       ],
       "dependencies": [
         "skill-stocktake: recommended",
         "autoresearch-loop: recommended",
         "skill-generator: recommended"
       ],
-      "sha256": "b8aba34a8e4419a8c7a9a5f41529dd455338f502b72020915c391325ec38b4dd",
-      "line_count": 232,
+      "sha256": "0a1bf51000560b9334e79f14f64606f514d8cca75fd364691b4229ff2fa2918b",
+      "line_count": 234,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -507,7 +515,7 @@
       "name": "data-analyst",
       "title": "Data Analyst Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Senior data analyst skill for extracting statistically rigorous insights from structured and semi-structured data. Use for analytics, reporting, and decision-support work — A/B tests, cohort analysis, funnel analysis, and insight narratives. Covers EDA, significance testing with effect sizes, bias detection, SQL analysis patterns, and reproducible reporting.",
       "triggers": [
         "data analysis",
@@ -523,7 +531,8 @@
         "confidence interval",
         "dbt model",
         "insight",
-        "metric"
+        "metric",
+        "analyze data"
       ],
       "dependencies": [
         "data-engineer: required",
@@ -531,8 +540,8 @@
         "doc-writer: recommended",
         "observability-specialist: optional"
       ],
-      "sha256": "973844b612552242cabf6c79beadfefe8880a0e0ae24b1e247b7289a4023e95b",
-      "line_count": 580,
+      "sha256": "7b0ccea1c2a003423dfbde98288b07caf2aaf73467094b8481a201a3fb606096",
+      "line_count": 582,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -553,7 +562,7 @@
       "name": "data-engineer",
       "title": "Data Engineer Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Senior data engineering skill for designing, building, and operating reliable data pipelines at scale. Use when implementing ETL/ELT pipelines, streaming architectures, or data quality frameworks. Covers batch and streaming (Kafka, Flink, dbt), quality (Great Expectations), schema evolution, incremental loading, idempotency, and pipeline observability.",
       "triggers": [
         "data engineering",
@@ -570,7 +579,9 @@
         "dbt",
         "data lineage",
         "pipeline observability",
-        "idempotent pipeline"
+        "idempotent pipeline",
+        "design database",
+        "build data pipeline"
       ],
       "dependencies": [
         "data-analyst: recommended",
@@ -579,8 +590,8 @@
         "observability-specialist: recommended",
         "infra-architect: optional"
       ],
-      "sha256": "2bbf16c0ed8ffc11ce505c611231e72079b268f741ba6ea36d14f8f5c6a21d1b",
-      "line_count": 582,
+      "sha256": "33bce4ec1b890091ec10e304f0245395f1f3657fd299b84d5b8f2bbd34c91ee4",
+      "line_count": 585,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -601,7 +612,7 @@
       "name": "database-migrations",
       "title": "Database Migration Patterns",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Zero-downtime database migration patterns for Prisma, Drizzle, Django, and Go. Use when altering tables, adding columns, creating indexes, or running data backfills on a live database. Covers Expand-Migrate-Contract strategy, CONCURRENTLY index creation, batched data migrations, and safety protocols for schema changes.",
       "triggers": [
         "database migration",
@@ -613,15 +624,16 @@
         "backfill data",
         "rename column",
         "prisma migrate",
-        "drizzle migration"
+        "drizzle migration",
+        "migrate database"
       ],
       "dependencies": [
         "data-engineer: optional",
         "verification-loop: recommended",
         "observability-specialist: optional"
       ],
-      "sha256": "5ac6479782e4f2d00be3d40721880bed8cad8d28dea55a43665da9b4410f3c95",
-      "line_count": 508,
+      "sha256": "fc0f71347977533f86aed4f655c4fde1009828a5766e44b50ac5e5e236082995",
+      "line_count": 510,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -642,7 +654,7 @@
       "name": "debugging",
       "title": "Debugging Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Unified debugging skill with two modes — Rapid Fix for pattern-matching known bug types, and Systematic for hypothesis-driven root cause analysis. Use for any debugging task: crash reports, stack traces, performance issues, race conditions, or multi-system failures. Distinguishes itself through a formal hypothesis-driven loop, reproduction-first discipline, and a regression test requirement that closes the loop.",
       "triggers": [
         "/debug",
@@ -654,7 +666,8 @@
         "fix this bug",
         "something is wrong",
         "investigate this error",
-        "why is this not working"
+        "why is this not working",
+        "fix bug"
       ],
       "dependencies": [
         "test-genius: required",
@@ -664,8 +677,8 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "b4e55c67ca3da28aca55b430256d879f1809629f58a0e741d804963a5c0efbb2",
-      "line_count": 427,
+      "sha256": "7547578702e93534db16035e344c34390256865fe8c1e74611a0d6e1d1e002a7",
+      "line_count": 429,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -686,7 +699,7 @@
       "name": "doc-writer",
       "title": "Doc Writer Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Generate comprehensive documentation including READMEs, API docs, inline comments, architecture docs, and user guides. Use for all documentation needs — from quick inline comments to full project documentation sets. Covers multiple documentation types with templates, example-driven approach, audience-aware writing, and self-verification with runnable code examples.",
       "triggers": [
         "write documentation",
@@ -697,13 +710,14 @@
         "user guide",
         "architecture documentation",
         "JSDoc",
-        "docstring"
+        "docstring",
+        "write docs"
       ],
       "dependencies": [
         "verification-loop: recommended"
       ],
-      "sha256": "721ebd97fc177d28af6664d93525d4e08c1bfe108d0271936d0d6f6f44a5fbd7",
-      "line_count": 280,
+      "sha256": "19d1882fb41f651f840101c57538dfd7d318bc28d917d2d62980ed24afc5b042",
+      "line_count": 282,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -773,7 +787,7 @@
       "name": "e2e-test-specialist",
       "title": "E2E Test Specialist Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Creates comprehensive end-to-end test suites with Playwright and Cypress using Page Object Model and data-testid selectors. Use for any browser-level testing — user flows, checkout, authentication, and visual regression. Distinguishes itself through flakiness-elimination patterns, cross-browser matrix enforcement, and zero-tolerance for timing-based waits.",
       "triggers": [
         "/e2e-test",
@@ -784,7 +798,8 @@
         "browser test",
         "visual regression",
         "user flow test",
-        "cross-browser"
+        "cross-browser",
+        "e2e tests"
       ],
       "dependencies": [
         "test-genius: recommended",
@@ -793,8 +808,8 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "67fe1a04d68488e03bb65b5b89c1f05f820f22fa34afa03c53dd6b5c52e1ef0f",
-      "line_count": 304,
+      "sha256": "a400c8e0c7ee5c13bb8f34d097a1315f6a6e7b61bd1b4e21ebed60edc28ae6a0",
+      "line_count": 306,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -860,7 +875,7 @@
       "name": "executing-plans",
       "title": "Executing Plans Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Disciplined plan execution with dependency graph resolution, review gates, progress tracking, and quality cleanup. Use when you have a plan to implement and need to track progress systematically, including complex sequential tasks with ordered dependencies. Differentiator: Includes dependency graph decomposition, context preservation snapshots between steps, interruption recovery protocol, and mandatory De-Sloppify pass after every implementation step.",
       "triggers": [
         "/execute",
@@ -877,7 +892,8 @@
         "task decomposition",
         "review gate",
         "resuming interrupted task",
-        "task blocked by"
+        "task blocked by",
+        "implement feature"
       ],
       "dependencies": [
         "writing-plans: required",
@@ -887,8 +903,8 @@
         "debugging: optional",
         "cost-aware-llm-pipeline: optional"
       ],
-      "sha256": "138dfb76045b5ad6b314a653ee99cae2453f454d63a3643cdc534a836ad6b749",
-      "line_count": 447,
+      "sha256": "c7f04774cb5ade4768ee3199c9ff47cfa6ac4a5ede451cd471589830338d7cb7",
+      "line_count": 449,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -951,7 +967,7 @@
       "name": "frontend-architect",
       "title": "Frontend Architect Skill",
       "category": "domain-expert",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "Designs component architecture, state management strategy, and UI patterns for React/Vue/Next.js applications. Use for frontend architecture decisions, component design, responsive layout planning, and state management selection. Differentiator: atomic design methodology with ADR-tracked component decisions, performance budgets, and accessibility-by-default patterns.",
       "triggers": [
         "/frontend-architect",
@@ -960,7 +976,8 @@
         "UI architecture",
         "responsive design",
         "state management",
-        "component library"
+        "component library",
+        "design frontend"
       ],
       "dependencies": [
         "ux-designer: recommended",
@@ -968,8 +985,8 @@
         "test-genius: optional",
         "performance-profiler: optional"
       ],
-      "sha256": "aae1a3135836a366b4ba5f5153a21e16032965a320d4f26429a4af1c4c4c1db9",
-      "line_count": 518,
+      "sha256": "2d3f31f9668de82c250e8262df0eb294a6b6843a236a3741fdabe80d7ad8a38e",
+      "line_count": 520,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -990,7 +1007,7 @@
       "name": "infra-architect",
       "title": "Infra Architect Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Designs and implements cloud infrastructure using Infrastructure as Code with Terraform and Pulumi. Use for cloud architecture design, IaC provisioning, and infrastructure scaling decisions. Differentiator: security-by-default patterns (IAM least privilege, network segmentation, encryption), remote state management, and pre/post-apply verification gates with policy-as-code scanning.",
       "triggers": [
         "/infra-architect",
@@ -1001,7 +1018,8 @@
         "IaC",
         "infrastructure as code",
         "cloud provisioning",
-        "AWS infrastructure"
+        "AWS infrastructure",
+        "design infrastructure"
       ],
       "dependencies": [
         "ci-config-helper: optional",
@@ -1009,8 +1027,8 @@
         "docker-expert: optional",
         "security-reviewer: recommended"
       ],
-      "sha256": "f71a685be4d7855b2c6133392e1453a894fb0ffc51574472e773e5f547fd70b8",
-      "line_count": 389,
+      "sha256": "c9f88b3b116bd7f1796259e6fa8e6273be4d7793237edc80bcd84e883e586179",
+      "line_count": 391,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1071,7 +1089,7 @@
       "name": "k8s-orchestrator",
       "title": "K8s Orchestrator Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Designs and deploys Kubernetes manifests, Helm charts, and production-grade cluster configurations with deployment strategies, health probes, and rollback planning. Use for any Kubernetes deployment task — from initial manifests through production readiness. Distinguishes itself through complete deployment strategies (rolling, blue-green, canary), health probe patterns with startup/liveness/readiness, and a comprehensive production readiness checklist.",
       "triggers": [
         "/k8s",
@@ -1087,7 +1105,9 @@
         "pod",
         "service",
         "ingress",
-        "helm"
+        "helm",
+        "deploy to k8s",
+        "deploy to kubernetes"
       ],
       "dependencies": [
         "docker-expert: required",
@@ -1097,8 +1117,8 @@
         "context-mode: optional",
         "rtk: optional"
       ],
-      "sha256": "b70364f97cfe74be84990822c575e2035f695807c12abf4a19aeb90131701acb",
-      "line_count": 383,
+      "sha256": "5b7736820b364f7ec1fec6c3ba05d223f91738d375c6e426159a6c203050d667",
+      "line_count": 386,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1119,7 +1139,7 @@
       "name": "legacy-archaeologist",
       "title": "Legacy Archaeologist Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Safely understands, documents, and modernises legacy codebases through systematic archaeology and characterisation. Use for working with undocumented legacy systems, planning safe refactoring, and gradually modernising old code. Differentiator: produces a System Map (data flow, dependency tree, critical paths) before touching code, then applies characterisation tests (golden master/snapshot) that capture current behaviour including side effects.",
       "triggers": [
         "/archaeologist",
@@ -1129,7 +1149,8 @@
         "code archaeology",
         "legacy modernisation",
         "old codebase",
-        "reverse engineer"
+        "reverse engineer",
+        "work with legacy"
       ],
       "dependencies": [
         "code-polisher: optional",
@@ -1137,8 +1158,8 @@
         "migration-upgrader: optional",
         "python-patterns: optional"
       ],
-      "sha256": "7dc1e43b2baf09d7d551e1da9d39addebbe9a1428f99c5d8bf93e7874e2fe747",
-      "line_count": 366,
+      "sha256": "97dd90c1075be044e66fc57997276eaf4da4ab86450459b86bc4a2d074f421ba",
+      "line_count": 368,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1159,7 +1180,7 @@
       "name": "mega-mind",
       "title": "Mega-Mind Orchestrator",
       "category": "core-workflow",
-      "version": "2.1.1",
+      "version": "2.1.3",
       "description": "Master orchestrator for the Mega-Mind skill system — analyzes requests, coordinates multiple skills, and manages complex workflows. Invoke when the task spans domains, requires a skill chain, or needs multi-agent orchestration. Differentiator: intelligent request routing via a 50+ entry routing matrix, 10+ pre-defined workflow chains, and a structured handoff protocol that makes this the highest-coverage orchestrator skill in the ecosystem.",
       "triggers": [
         "/mega-mind",
@@ -1186,8 +1207,8 @@
         "context-mode: recommended",
         "rtk: optional"
       ],
-      "sha256": "73e6264f897ae5430cb360f253356a27f436eddda213d06cef6b4e2cef19aaf1",
-      "line_count": 638,
+      "sha256": "f6bfd1e5d1a63350f16938aca316f69d3fad250baa104b2360efa3178dde7579",
+      "line_count": 660,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1256,7 +1277,7 @@
       "name": "ml-engineer",
       "title": "ML Engineer Skill",
       "category": "domain-expert",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "End-to-end machine learning engineering covering classical pipelines, LLM/GenAI systems, experiment tracking, hyperparameter tuning, model serving, and production monitoring. Use when building, evaluating, or deploying any ML or AI model — from sklearn classifiers to fine-tuned transformers and LLM-powered applications. Emphasizes reproducibility, baselines-first, evaluation harnesses, and production-grade monitoring for both classical ML and GenAI systems.",
       "triggers": [
         "machine learning",
@@ -1270,7 +1291,8 @@
         "experiment tracking",
         "hyperparameter tuning",
         "data drift",
-        "model evaluation"
+        "model evaluation",
+        "train model"
       ],
       "dependencies": [
         "data-engineer: recommended",
@@ -1279,8 +1301,8 @@
         "observability-specialist: recommended",
         "test-driven-development: recommended"
       ],
-      "sha256": "889b0005175bff2d1830cef1bbbeb6a79524f042b30c73a541977102cab02eb3",
-      "line_count": 650,
+      "sha256": "2c0e3a9c490e522621c843bdb9def492a5f74674c0f0ee1aee078cf5f3dd8785",
+      "line_count": 652,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1301,7 +1323,7 @@
       "name": "mobile-architect",
       "title": "Mobile Architect Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Designs cross-platform and native mobile application architectures with React Native and Flutter. Use for mobile app architecture, navigation design, state management, and platform-specific optimisation. Differentiator: dual-framework expertise (React Native + Flutter) with Clean Architecture patterns, performance optimisation for low-RAM devices, offline-first data strategies, and platform-specific code organisation.",
       "triggers": [
         "/mobile-architect",
@@ -1311,7 +1333,8 @@
         "React Native",
         "Flutter",
         "cross-platform",
-        "mobile architecture"
+        "mobile architecture",
+        "design mobile app"
       ],
       "dependencies": [
         "frontend-architect: optional",
@@ -1319,8 +1342,8 @@
         "ux-designer: recommended",
         "test-genius: optional"
       ],
-      "sha256": "31ba08cbcb25002daa608e76ce167cb26bc82f10b09175675ebe5a29688477d6",
-      "line_count": 375,
+      "sha256": "8a72f5014784d9f10e9d00d6baa3df23c7eda1d3e980da3f5a31c3751b259220",
+      "line_count": 377,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1341,7 +1364,7 @@
       "name": "multi-execute",
       "title": "Multi-Execute Skill",
       "category": "core-workflow",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "Orchestrated multi-agent implementation workflow that translates an approved multi-plan artifact into production code. Use when implementing complex features defined by an approved multi-plan artifact, especially full-stack tasks or high-stakes modifications. Generates parallel Technical and UX prototypes, refactors them to project standards, applies De-Sloppify pass, runs self-verification per step, and completes with a parallel multi-model audit.",
       "triggers": [
         "multi-execute",
@@ -1350,7 +1373,8 @@
         "prototype refactoring",
         "multi-agent audit",
         "execute multi-plan",
-        "high-complexity implementation"
+        "high-complexity implementation",
+        "multi-agent execution"
       ],
       "dependencies": [
         "multi-plan: required",
@@ -1358,8 +1382,8 @@
         "security-reviewer: recommended",
         "finishing-a-development-branch: recommended"
       ],
-      "sha256": "9d104b1970a7951ea735169229604e3ab74271db6f1e5738d85e0dbc39774312",
-      "line_count": 182,
+      "sha256": "e9367dd8f120329d835494c416d5a309682a94baaed596b23736ba4ff939aad1",
+      "line_count": 184,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1380,7 +1404,7 @@
       "name": "multi-plan",
       "title": "Multi-Plan Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Multi-model collaborative planning for high-complexity tasks using parallel Technical and UX analysis backends. Use when breaking down highly complex or ambiguous feature requests that span multiple subsystems. Distributes requirements to specialized analysis perspectives, synthesizes outputs into a conflict-resolved unified implementation plan with risk matrix, verification steps, and stop-loss criteria.",
       "triggers": [
         "multi-plan",
@@ -1390,7 +1414,9 @@
         "architectural review",
         "high-complexity feature",
         "multi-perspective analysis",
-        "plan synthesis"
+        "plan synthesis",
+        "plan comprehensive",
+        "multi-agent planning"
       ],
       "dependencies": [
         "search-first: required",
@@ -1398,8 +1424,8 @@
         "multi-execute: required",
         "writing-plans: optional"
       ],
-      "sha256": "ac8a2a071acc5a8f298d6c807881769b3205e454a577a9df5e2d1856354f5017",
-      "line_count": 181,
+      "sha256": "7a90b31d51be03c855c2132387cb9c6f9c30733e3ed434b254c7cf5e44bf14b6",
+      "line_count": 184,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1547,7 +1573,7 @@
       "name": "product-manager",
       "title": "Product Manager Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Task breakdown and user story creation for product planning and backlog management. Use for product planning tasks — user stories, sprint planning, prioritization, and roadmap definition. Covers user story format with Given/When/Then acceptance criteria, RICE prioritization, sprint planning, and Definition of Done.",
       "triggers": [
         "product management",
@@ -1559,15 +1585,16 @@
         "feature request",
         "acceptance criteria",
         "RICE scoring",
-        "MVP definition"
+        "MVP definition",
+        "plan feature"
       ],
       "dependencies": [
         "tech-lead: recommended",
         "writing-plans: recommended",
         "verification-loop: recommended"
       ],
-      "sha256": "affe7c6cd46090ffb3abf3b4008205309c90cede9e468f8f83dfdf543ed4f800",
-      "line_count": 226,
+      "sha256": "7423eeba84f08d7f0bd4d46feed78bfe39477fb337d615fb25a8305ad3089515",
+      "line_count": 228,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1588,7 +1615,7 @@
       "name": "python-patterns",
       "title": "Python Development Patterns",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Production-grade Python design patterns, modern tooling, and idiomatic code standards for Python 3.10+. Use for any Python-specific development where quality, type safety, and performance matter. Differentiator: strict tooling discipline (uv + ruff + pyright + pytest), decision matrix for dataclass/Pydantic/TypedDict selection, async/await deep-dive with concurrency model decision guide, and exception hierarchy design patterns.",
       "triggers": [
         "/python",
@@ -1606,7 +1633,8 @@
         "context manager",
         "python decorator",
         "asyncio",
-        "ruff"
+        "ruff",
+        "python code"
       ],
       "dependencies": [
         "code-polisher: optional",
@@ -1615,8 +1643,8 @@
         "performance-profiler: optional",
         "security-reviewer: optional"
       ],
-      "sha256": "e6e1c9d6fd211f4e2c3e5beda4d415fdf09d40d684bd93b39f36d79c9f014417",
-      "line_count": 616,
+      "sha256": "539c7be47a4a870d1aeb194d2b78e7ec041ac5328cd842b4b227f950eeade6a0",
+      "line_count": 618,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1637,7 +1665,7 @@
       "name": "receiving-code-review",
       "title": "Receiving Code Review Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Systematic handling of code review feedback — categorize, respond, fix, and follow up. Use when you receive code review feedback and need to address it methodically without dropping anything. Differentiator: Explicit 4-category feedback classification (must-fix/should-fix/consider/question), response templates with status tracking, and enforced re-review protocol before merging.",
       "triggers": [
         "/receive-review",
@@ -1646,15 +1674,16 @@
         "responding to review",
         "review feedback received",
         "address PR comments",
-        "respond to reviewer"
+        "respond to reviewer",
+        "handle review feedback"
       ],
       "dependencies": [
         "requesting-code-review: required",
         "finishing-a-development-branch: required",
         "test-driven-development: optional"
       ],
-      "sha256": "69ffcb0d00b005cf0df1af463e43a027b9012b39a4a4abe7f01ee0154e9a5340",
-      "line_count": 338,
+      "sha256": "eef9178aa26045ccdcbbcff3eaccd4fb601a1e94b4e618ec326a42b991abd81f",
+      "line_count": 340,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1793,7 +1822,7 @@
       "name": "search-first",
       "title": "Search-First Skill",
       "category": "meta-learning",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Research-before-coding discipline that always searches for existing solutions before writing code. Use when adding any new dependency, integration, utility, or feature that likely has prior art. Covers parallel search across package registries, MCP servers, GitHub, and web; candidate scoring rubric; and decision matrix (Adopt/Extend/Compose/Build).",
       "triggers": [
         "add functionality",
@@ -1804,15 +1833,16 @@
         "should I use",
         "is there a package",
         "prior art",
-        "dependency decision"
+        "dependency decision",
+        "search for library"
       ],
       "dependencies": [
         "mega-mind: recommended",
         "brainstorming: recommended",
         "tech-lead: recommended"
       ],
-      "sha256": "f0c87341a5e4c8b8e0e27b55f5c3d821f2ebc249eb0d54af5709f4a0291c266a",
-      "line_count": 250,
+      "sha256": "ccc198dacda96fd5c502096235cc16055d55f4b4c6ee2183c19f1533447d21b3",
+      "line_count": 252,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -1833,7 +1863,7 @@
       "name": "search-vector-architect",
       "title": "Search Vector Architect Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Design and implement production-grade semantic search and RAG systems. Use when building search infrastructure, RAG pipelines, or troubleshooting retrieval quality in LLM-powered applications. Covers embedding model selection, chunking strategy, hybrid search (BM25 + vector), reranking, retrieval evaluation (NDCG, MRR), and production concerns (latency, index size, cost).",
       "triggers": [
         "vector search",
@@ -1851,7 +1881,8 @@
         "retrieval miss",
         "Pinecone",
         "Weaviate",
-        "pgvector"
+        "pgvector",
+        "RAG system"
       ],
       "dependencies": [
         "data-engineer: recommended",
@@ -1861,8 +1892,8 @@
         "backend-architect: optional",
         "observability-specialist: optional"
       ],
-      "sha256": "9154af4271c5677e01f79e2dfc1e8f5f69d764e4f2bc7cb9540f7dbfb0a5a3c9",
-      "line_count": 657,
+      "sha256": "076c6ec42027696fe7938d12a8c320ec881a1a8d211c998dc19b84932eea3970",
+      "line_count": 659,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2051,7 +2082,7 @@
       "name": "test-driven-development",
       "title": "Test-Driven Development Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Write tests first, implement second, refactor third — the RED-GREEN-REFACTOR cycle. Use when building new features that benefit from a test-first approach and require reliable, maintainable code. Differentiator: Enforces the RED phase verification (test must fail before implementation exists) and mandates the REFACTOR step (not optional), preventing TDD theatre.",
       "triggers": [
         "/tdd",
@@ -2060,15 +2091,16 @@
         "test-driven development",
         "write tests first",
         "red green refactor",
-        "test first"
+        "test first",
+        "write tests"
       ],
       "dependencies": [
         "executing-plans: recommended",
         "cost-aware-llm-pipeline: optional",
         "rtk: recommended"
       ],
-      "sha256": "2adadfb687c7273561fdc1699d9e2b1635e1517e72c4339bbc295142d43b5f52",
-      "line_count": 385,
+      "sha256": "456dd7346e435a922a6669ad792b52d38eac1d128b28c2275c6694bf42c70909",
+      "line_count": 387,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2131,7 +2163,7 @@
       "name": "using-git-worktrees",
       "title": "Using Git Worktrees Skill",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Parallel branch management with Git worktrees — work on multiple features simultaneously without stashing or switching. Use when working on multiple features, reviewing PRs while developing, or context-switching between branches. Differentiator: Includes 3 workflow patterns (hotfix-while-developing, PR-review-while-developing, parallel-features), a worktree management script, and remediation steps for 5 common failure modes.",
       "triggers": [
         "/worktree",
@@ -2142,15 +2174,16 @@
         "worktree",
         "switch contexts",
         "parallel work",
-        "multi-branch workflow"
+        "multi-branch workflow",
+        "work with git"
       ],
       "dependencies": [
         "finishing-a-development-branch: recommended",
         "receiving-code-review: optional",
         "git: required"
       ],
-      "sha256": "6aa61fab9c8b21a4588a1de96fe4bbbd19af9e929df0a6fa6aa6a41cfa566558",
-      "line_count": 407,
+      "sha256": "b54d61ac1cdb5f05a38e7c53c56f9920831bfda333ab893324dd1a4eda91ac66",
+      "line_count": 409,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2171,7 +2204,7 @@
       "name": "ux-designer",
       "title": "UX Designer Skill",
       "category": "domain-expert",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "UI/UX flows and design systems covering user research, design tokens, component libraries, accessibility (WCAG 2.1 AA), and user flow design. Use for user experience design tasks — from user flows and design systems to accessibility audits and visual design. Covers design tokens, component state management, WCAG compliance, user journey mapping, and interaction design patterns.",
       "triggers": [
         "UX design",
@@ -2180,15 +2213,16 @@
         "accessibility",
         "WCAG",
         "design tokens",
-        "interaction design"
+        "interaction design",
+        "improve UX"
       ],
       "dependencies": [
         "product-manager: recommended",
         "frontend-architect: recommended",
         "verification-loop: recommended"
       ],
-      "sha256": "35b08b36cdf94fa866c73909080e19767d4403ee480bb095b5a1fea82ea957e8",
-      "line_count": 250,
+      "sha256": "7a8ae1c7021e4ca634d6595444c51e0ce422f3c8112e8b206931503dd1c0c35b",
+      "line_count": 252,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2209,7 +2243,7 @@
       "name": "verification-loop",
       "title": "Verification Loop",
       "category": "core-workflow",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Scope-aware tiered verification system (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep) with continuous quick-check mode. Use before any PR or major handoff to get a structured, rigorous verification that produces a machine-readable READY/NOT READY verdict. Classifies change risk before running phases to avoid over-testing cosmetic changes while guaranteeing deep verification for risky ones.",
       "triggers": [
         "/verify",
@@ -2222,7 +2256,10 @@
         "mark as done",
         "complete this task",
         "is this done",
-        "verify this works"
+        "verify this works",
+        "CI/CD verify",
+        "verify this",
+        "mark task done"
       ],
       "dependencies": [
         "rtk: recommended",
@@ -2230,8 +2267,8 @@
         "security-reviewer: recommended",
         "context-optimizer: recommended"
       ],
-      "sha256": "6c86c79a2bea2ecc0cd10e46c26f8e787f862f986717892bd71fbe54c73ea5a2",
-      "line_count": 284,
+      "sha256": "b46a9854001bf0b0c1ce8b6c5affc5b97401a7aff711bc934976b594da6ecf57",
+      "line_count": 288,
       "sections": {
         "Identity": true,
         "When to Use": true,
@@ -2252,7 +2289,7 @@
       "name": "workflow-orchestrator",
       "title": "Workflow Orchestrator Skill",
       "category": "domain-expert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Complex task scheduling and orchestration for multi-step workflow automation. Use for workflow automation tasks — building Temporal workflows, Saga compensation patterns, event-driven orchestration, and cron-based scheduling. Covers sequential/parallel/conditional workflows, Saga compensation, retry strategies, dead-letter queues, and state persistence.",
       "triggers": [
         "workflow automation",
@@ -2264,15 +2301,16 @@
         "Temporal",
         "distributed workflow",
         "retry strategy",
-        "dead letter queue"
+        "dead letter queue",
+        "orchestrate workflow"
       ],
       "dependencies": [
         "verification-loop: recommended",
         "observability-specialist: recommended",
         "content-hash-cache-pattern: optional"
       ],
-      "sha256": "87009bb7115bfc631b98b23e9474ed36f1577bfdbcbd52379b941f0107312d44",
-      "line_count": 275,
+      "sha256": "aea3ccb380d3803ace3c45acab67c09ebea6291270e3c2b035d3a58ba305c2a7",
+      "line_count": 277,
       "sections": {
         "Identity": true,
         "When to Use": true,

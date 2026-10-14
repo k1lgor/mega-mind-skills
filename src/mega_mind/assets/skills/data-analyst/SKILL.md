@@ -1,6 +1,6 @@
 ---
 name: data-analyst
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Senior data analyst skill for extracting statistically rigorous insights from structured and semi-structured data.
@@ -22,6 +22,7 @@ triggers:
   - "dbt model"
   - "insight"
   - "metric"
+  - "analyze data"
 dependencies:
   - data-engineer: required
   - ml-engineer: recommended
@@ -561,6 +562,7 @@ python data_quality_check.py --table orders
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "analyze data" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
 
 ---

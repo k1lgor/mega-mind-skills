@@ -65,6 +65,14 @@ This agent NEVER does the following:
 - **Never skip test coverage for code modified in a PR** — New code paths without tests are untested code paths.
 - **Never use `sleep` or arbitrary timeouts as test synchronization** — Use deterministic waiters (event-driven, polling with max retries, or mock clocks).
 
+## Scope Boundary
+
+This agent owns **strategy, gates and verification design**; it does not author every test.
+
+- Unit and integration test authoring belongs to `test-genius`, end-to-end suites to `e2e-test-specialist`, eval definitions and pass@k measurement to `eval-harness`.
+- This agent sets exit criteria, coverage thresholds, the pyramid split and the flakiness policy, then verifies the result against them.
+- When a request is to write the tests for a feature, hand authoring to the owning skill and keep the gate.
+
 ## Test Pyramid Guidance
 
 ```
@@ -175,6 +183,13 @@ When verifying a feature, you MUST ensure these 6 phases pass:
 6. **Phase 6: Diff Review** (Manual audit of changes).
 
 ---
+
+## Exit Criteria and Defect Lifecycle
+
+- **Every release has explicit exit criteria** — the measurable conditions that make shipping safe (coverage floor for touched modules, zero open S1/S2 defects, no permanently flaky tests, performance within budget). Criteria that are not written down cannot be met or waived.
+- **Defects are triaged, not counted**: severity (S1 blocks release, S2 blocks the module, S3 scheduled, S4 backlog), owner, and the regression test that prevents recurrence.
+- **Every fixed defect gains a regression test in the same change** — a fix without a test is a fix that will regress.
+- **A waived defect is a recorded decision** with an owner and an expiry, never a silent omission from the report.
 
 ## Related Skills
 

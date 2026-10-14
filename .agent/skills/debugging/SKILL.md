@@ -1,6 +1,6 @@
 ---
 name: debugging
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Unified debugging skill with two modes — Rapid Fix for pattern-matching known bug types, and Systematic for hypothesis-driven root cause analysis.
@@ -18,6 +18,7 @@ triggers:
   - "something is wrong"
   - "investigate this error"
   - "why is this not working"
+  - "fix bug"
 dependencies:
   - test-genius: required
   - test-driven-development: recommended
@@ -422,5 +423,6 @@ The PDF export fails intermittently with "Gateway Timeout" — happens about 20%
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "fix bug" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Core Principles, enhanced Workflow with Step 0-6 (formal hypothesis-driven loop), Blocking Violations, Verification with quality gates, Performance & Cost, Examples, References, Changelog. Preserved all two-mode content, templates, anti-patterns, and failure modes from v1. |
 | 1.0.0 | — | Initial version |

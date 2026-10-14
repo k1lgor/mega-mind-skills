@@ -1,6 +1,6 @@
 ---
 name: data-engineer
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Senior data engineering skill for designing, building, and operating reliable data pipelines at scale.
@@ -23,6 +23,8 @@ triggers:
   - "data lineage"
   - "pipeline observability"
   - "idempotent pipeline"
+  - "design database"
+  - "build data pipeline"
 dependencies:
   - data-analyst: recommended
   - ml-engineer: recommended
@@ -563,6 +565,7 @@ python check_lineage.py --table destination_table
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "design database", "build data pipeline" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
 
 ---

@@ -141,6 +141,12 @@ Every review comment must be tagged with one of these levels:
 - [ ] Are functions focused (doing one thing)?
 - [ ] Is there code duplication that should be extracted?
 
+## Verdict and Ownership
+
+- Use exactly one verdict per review: **Approve**, **Request changes**, or **Comment**. An ambiguous summary is not a decision.
+- **Every blocking comment names the owner and the required change** — this needs work is not actionable.
+- The author resolves blocking issues, not the reviewer; the reviewer's job ends at the verdict and the concrete ask.
+
 ## Feedback Guidelines
 
 ### Be Constructive

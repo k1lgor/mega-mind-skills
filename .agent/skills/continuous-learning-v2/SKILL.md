@@ -1,6 +1,6 @@
 ---
 name: continuous-learning-v2
-version: "2.0.1"
+version: "2.0.2"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Instinct-based learning system that automatically extracts and evolves patterns from AI sessions.
@@ -16,6 +16,7 @@ triggers:
   - "evolve my skills"
   - "what have you learned"
   - "capture learning"
+  - "end of session"
 dependencies:
   - skill-stocktake: recommended
   - autoresearch-loop: recommended
@@ -226,6 +227,7 @@ grep "confidence:" .agent/instincts/personal/*.yaml
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.2 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "end of session" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.1 | 2026-10-14 | Added first-use bootstrap (`mkdir -p`) for `.agent/instincts/{observations,personal,evolved}` — these directories are not shipped with installs. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
 ---

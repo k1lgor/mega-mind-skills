@@ -1,6 +1,6 @@
 ---
 name: doc-writer
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Generate comprehensive documentation including READMEs, API docs, inline comments, architecture docs, and user guides.
@@ -17,6 +17,7 @@ triggers:
   - "architecture documentation"
   - "JSDoc"
   - "docstring"
+  - "write docs"
 dependencies:
   - verification-loop: recommended
 ---
@@ -275,5 +276,6 @@ npx tsdoc-validator src/**/*.ts
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "write docs" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
 ---

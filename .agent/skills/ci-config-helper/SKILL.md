@@ -1,6 +1,6 @@
 ---
 name: ci-config-helper
-version: "2.0.1"
+version: "2.0.2"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Designs and configures CI/CD pipelines for GitHub Actions and GitLab CI with caching, matrix builds, security scanning, and deployment gating.
@@ -17,6 +17,8 @@ triggers:
   - "ci configuration"
   - "build pipeline"
   - "ci/cd pipeline"
+  - "deploy"
+  - "release"
 dependencies:
   - docker-expert: recommended
   - k8s-orchestrator: recommended
@@ -352,6 +354,7 @@ Add security scanning and a staging→prod deployment pipe to our existing CI
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.2 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "deploy", "release" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.1 | 2026-10-14 | Routing hygiene: removed bare "workflow" trigger (ambiguous with mega-mind; kept CI-specific phrases). |
 | 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Core Principles, Workflow with Step 0-6, Blocking Violations, Verification with quality gates and commands, Performance & Cost, Examples, References, Changelog. Preserved all GitHub Actions/GitLab CI templates, best practices, anti-patterns, and failure modes from v1. |
 | 1.0.0 | — | Initial version |

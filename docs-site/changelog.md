@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.5] — 2026-10-14
+
+### 🧪 Agent Hardening (all 11 personas)
+
+- **Every agent prompt-tested** against its own documented rules, then hardened where the audit found gaps: `adversarial-tester` gained written approval, environment isolation, abort/rollback and rate ceilings (and lost an unsound "a harness OOM proves a vulnerability" rule); `architect` gained cost/ops axes, an override rule and Deciders plus Migration/Rollout ADR fields; `tech-lead` gained delegation and alignment rules and lost three stale `api-designer` links; `release-manager` gained a 7-row go/no-go gate; `security-reviewer` gained rotate-then-purge and a ban on self-approving its own fixes; `data-privacy-officer` gained DSAR and lawful-basis sections; `incident-commander` gained a communications cadence and 6-hour handover; `planner` gained unknowns/buffers and critical-path/milestone rules; `qa-engineer` gained a scope boundary and exit criteria; `code-reviewer` gained verdict/ownership discipline; `accessibility-auditor` was tested and passed as-found.
+- **New validator check `agent_refs`:** hyphenated cross-references inside agent personas must resolve to a real skill, agent or workflow — the class of rot that let a stale `api-designer` link survive several releases. The validator now runs 11 checks.
+- **`sync-assets.py` ordering fixed:** it built the manifest before rendering, so the renderer rewrote `mega-mind` after its hash was recorded and the copied manifest was stale (this broke `mmo check` and two installer tests). Now: build → render → rebuild → copy.
+
+### 🔗 Routing Layer Consistency
+
+- **All 37 matrix phrases are now frontmatter triggers** (31 skills bumped), so host-level skill selection reaches the same target the orchestrator matrix does.
+- **Three skills gained matrix routes** (`brainstorming`, `writing-plans`, `finishing-a-development-branch`) — `routing.json` now holds **57 routes** — and `mega-mind` lists all nine named workflows beside `execute <workflow>`.
+
+### 🔧 Routing Fallback Precision
+
+- **CLASSIFY precedence rules** (mega-mind 2.1.2): unknown-root-cause failure → `debugging` before platform skills; named test type beats generic `write tests`; DevOps split into provisioning / container build / cluster-workload failure. Matching `note` fields added to the affected routes in `routing.json`.
+- **New routing fixture:** `docs/routing-tests.md` — six prompt-level cases with expected routes and a per-release results table.
+
+---
+
 ## [1.0.4] — 2026-10-14
 
 ### 🔧 Skill Routing & EOL Fixes

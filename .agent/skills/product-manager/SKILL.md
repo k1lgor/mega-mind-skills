@@ -1,6 +1,6 @@
 ---
 name: product-manager
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Task breakdown and user story creation for product planning and backlog management.
@@ -18,6 +18,7 @@ triggers:
   - "acceptance criteria"
   - "RICE scoring"
   - "MVP definition"
+  - "plan feature"
 dependencies:
   - tech-lead: recommended
   - writing-plans: recommended
@@ -221,5 +222,6 @@ python -c "total=sum([5,3,8,5]); capacity=45; print(f'Backlog: {total} points / 
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "plan feature" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
 ---

@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Disciplined plan execution with dependency graph resolution, review gates, progress tracking, and quality cleanup.
@@ -23,6 +23,7 @@ triggers:
   - "review gate"
   - "resuming interrupted task"
   - "task blocked by"
+  - "implement feature"
 dependencies:
   - writing-plans: required
   - test-driven-development: recommended
@@ -442,5 +443,6 @@ rtk npm test 2>&1 | tail -5
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "implement feature" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Core Principles with enforcement, Blocking Violations table, expanded Verification with commands and quality gates, Performance & Cost, Examples with edge case (escalation, interruption recovery), Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate; enhanced dependency graph section |
 | 1.0.0 | 2024-01-15 | Initial version — disciplined plan execution with dependency resolution, review gates, and progress tracking |

@@ -1,6 +1,6 @@
 ---
 name: e2e-test-specialist
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Creates comprehensive end-to-end test suites with Playwright and Cypress using Page Object Model and data-testid selectors.
@@ -17,6 +17,7 @@ triggers:
   - "visual regression"
   - "user flow test"
   - "cross-browser"
+  - "e2e tests"
 dependencies:
   - test-genius: recommended
   - test-driven-development: recommended
@@ -299,5 +300,6 @@ The login flow works but we keep having issues with error messages not showing â
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "e2e tests" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Core Principles, Workflow (Step 0-4), Blocking Violations, Verification with real commands, Performance & Cost, Examples, References, Changelog. Preserved all Playwright/Cypress templates, POM, visual regression, anti-patterns, and failure modes. |
 | 1.0.0 | â€” | Initial version |

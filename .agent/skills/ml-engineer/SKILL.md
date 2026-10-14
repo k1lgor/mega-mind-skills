@@ -1,6 +1,6 @@
 ---
 name: ml-engineer
-version: "2.0.1"
+version: "2.0.2"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   End-to-end machine learning engineering covering classical pipelines, LLM/GenAI systems, experiment tracking, hyperparameter tuning, model serving, and production monitoring.
@@ -20,6 +20,7 @@ triggers:
   - "hyperparameter tuning"
   - "data drift"
   - "model evaluation"
+  - "train model"
 dependencies:
   - data-engineer: recommended
   - search-vector-architect: recommended
@@ -637,6 +638,7 @@ python -m src.monitoring.drift_detector --reference data/processed/reference.par
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.2 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "train model" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.1 | 2026-10-14 | Routing hygiene: removed "LLM-as-judge" trigger (owned by eval-harness) — resolves cross-skill trigger collision. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. Reorganized to 12-section template. |
 

@@ -1,6 +1,6 @@
 ---
 name: autoresearch-loop
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Karpathy-style automated self-improvement loop for the .agent/ skill system.
@@ -17,6 +17,7 @@ triggers:
   - "eval and improve"
   - "skill regression"
   - "improve the skill system"
+  - "Karpathy autoresearch"
 dependencies:
   - continuous-learning-v2: recommended
   - skill-stocktake: recommended
@@ -174,5 +175,6 @@ Phase 6: Iterate or Terminate
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "Karpathy autoresearch" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with quality gates, References, Changelog. |
 ---

@@ -1,6 +1,6 @@
 ---
 name: mobile-architect
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Designs cross-platform and native mobile application architectures with React Native and Flutter.
@@ -16,6 +16,7 @@ triggers:
   - "Flutter"
   - "cross-platform"
   - "mobile architecture"
+  - "design mobile app"
 dependencies:
   - frontend-architect: optional
   - backend-architect: optional
@@ -370,5 +371,6 @@ Our deep links work on warm start but crash when the app is cold-started from a 
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "design mobile app" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, 4-step Instructions workflow, Blocking Violations table, Performance & Cost, Examples (3), Anti-Patterns table, References, Changelog |
 | 1.0.0 | 2025-06-01 | Initial version |

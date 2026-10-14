@@ -103,6 +103,15 @@ Use this sizing matrix for step-level estimates:
 
 **Rule:** Any XL estimate is a red flag. Decompose further until no step exceeds L.
 
+### Unknowns and Buffers
+
+An estimate without its unknowns is a guess with a number attached.
+
+- **Size the unknown, not only the known.** Any step depending on an unread system, an unverified API or an unmade decision is listed as **unknown** with the timeboxed spike that resolves it — never silently estimated as small.
+- **Hold a buffer**: roughly 20% for familiar work, 50% when touching unfamiliar systems. State it in the plan so it is a deliberate reserve rather than hidden padding.
+- **State capacity, not only effort.** Check the estimate against who is actually available, including reviews, on-call and existing commitments; effort beyond capacity is a slip, not a plan.
+- **Re-estimate at every milestone.** When a spike resolves an unknown, update the downstream steps or say which ones it invalidated.
+
 ## Task Dependency Mapping
 
 For plans with >5 steps, produce an explicit dependency table:
@@ -119,6 +128,12 @@ For plans with >5 steps, produce an explicit dependency table:
 | 5. Write unit tests for UserService | Step 2     | Step 3               |
 | 6. Write E2E test for login flow    | Step 4     | None                 |
 ```
+
+## Critical Path and Milestones
+
+- **Name the critical path** — the longest chain of dependent steps that fixes the finish date. Work off the path has float; the path does not.
+- **Every plan names its milestones**, with the verifiable outcome that marks each one done.
+- **A slip on the critical path is escalated in the session it is discovered**; a slip off the path is absorbed by float.
 
 ## Planning Protocol
 

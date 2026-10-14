@@ -1,6 +1,6 @@
 ---
 name: mega-mind
-version: "2.1.1"
+version: "2.1.3"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Master orchestrator for the Mega-Mind skill system — analyzes requests, coordinates multiple skills, and manages complex workflows.
@@ -109,6 +109,20 @@ Commands:
   help                - Show this help message
 ```
 
+Named workflows for `execute <workflow>`:
+
+| Workflow | Purpose |
+| --- | --- |
+| `brainstorm` | Structured exploration of an unclear problem |
+| `write-plan` | Turn a scoped request into an implementation plan |
+| `execute-plan` | Step-by-step execution with checkpoints |
+| `high-complexity-dev` | Multi-agent orchestration for large changes |
+| `review` | Structured code review |
+| `debug` | Hypothesis-driven root-cause debugging |
+| `ship` | Merge, deploy, branch cleanup |
+| `incident-response` | Production incident lifecycle |
+| `release` | Versioning, rollout, monitoring |
+
 ### Orchestration Engine
 
 #### Coordination & Handoff Protocol
@@ -155,8 +169,11 @@ When a request comes in, analyze it via these 7 steps:
 4. CLASSIFY (informed by search results):
    - New feature → tech-lead → brainstorming → writing-plans
    - Library found → search-first (adopt the existing solution)
-   - Bug → debugging | Code quality → code-polisher | Security → security-reviewer | Performance → performance-profiler
-   - Testing → test-driven-development → test-genius | DevOps → infra-architect → docker-expert → k8s-orchestrator | Data → data-engineer → data-analyst
+   - Bug / failing behaviour with unknown root cause → debugging (takes precedence over platform and domain skills: diagnose first, then hand off)
+   - Code quality → code-polisher | Security → security-reviewer | Performance → performance-profiler
+   - Testing → test-driven-development (writing tests before implementation); a NAMED test type wins over the generic phrase: "unit tests" / "integration tests" → test-genius, "e2e tests" → e2e-test-specialist, "capability eval" → eval-harness
+   - Infra provisioning → infra-architect | Container build/image → docker-expert | Cluster or workload failure (CrashLoop, scheduling, rollout) → k8s-orchestrator, but start with debugging when the root cause is unknown
+   - Data → data-engineer → data-analyst
    - ML/AI → ml-engineer | Docs → doc-writer | Mobile → mobile-architect | Legacy → legacy-archaeologist
    - Autonomous pipeline → autonomous-loops | End of session → continuous-learning-v2 | Skill review → skill-stocktake
 5. SELECT MODEL — Haiku (research/simple, 3-4x cheaper), Sonnet (standard, default), Opus (deep architecture, sparingly)
@@ -173,7 +190,9 @@ When a request comes in, analyze it via these 7 steps:
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
   CORE WORKFLOW                                                                                                       │
+  ├── "explore options" / "compare solutions"     → brainstorming                                                     │
   ├── "implement feature"                         → executing-plans                                                   │
+  ├── "merge this branch" / "wrap up this branch" → finishing-a-development-branch                                    │
   ├── "multi-agent execution"                     → multi-execute                                                     │
   ├── "multi-agent planning"                      → multi-plan                                                        │
   ├── "plan comprehensive"                        → multi-plan                                                        │
@@ -182,6 +201,7 @@ When a request comes in, analyze it via these 7 steps:
   ├── "write tests"                               → test-driven-development                                           │
   ├── "work with git"                             → using-git-worktrees                                               │
   ├── "run verification" / "CI/CD verify" / "verify this" / "mark task done"→ verification-loop                       │
+  ├── "write a plan" / "create a plan"            → writing-plans                                                     │
   DOMAIN EXPERT                                                                                                       │
   ├── "design API" / "design API endpoint" / "design backend"→ backend-architect                                      │
   ├── "CI/CD" / "deploy" / "release"              → ci-config-helper                                                  │
@@ -197,7 +217,7 @@ When a request comes in, analyze it via these 7 steps:
   ├── "capability eval"                           → eval-harness                                                      │
   ├── "design frontend"                           → frontend-architect                                                │
   ├── "design infrastructure"                     → infra-architect                                                   │
-  ├── "deploy to k8s"                             → k8s-orchestrator                                                  │
+  ├── "deploy to k8s" / "deploy to kubernetes"    → k8s-orchestrator                                                  │
   ├── "work with legacy"                          → legacy-archaeologist                                              │
   ├── "upgrade dependencies"                      → migration-upgrader                                                │
   ├── "train model"                               → ml-engineer                                                       │
@@ -627,6 +647,8 @@ User: "Make the app faster"
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.1.3 | 2026-10-14 | The nine named workflows are now listed next to `execute <workflow>` so they are discoverable from the orchestrator. |
+| 2.1.2 | 2026-10-14 | Routing fallback made deterministic: CLASSIFY precedence (unknown-root-cause failure → debugging before platform skills), named test type beats generic "write tests", DevOps bucket split into provisioning / container build / cluster-workload failure instead of an ambiguous priority chain. Added docs/routing-tests.md prompt-level fixture. |
 | 2.1.1 | 2026-10-14 | Instinct steps are now conditional: `.agent/instincts/personal/` is skipped silently when absent (fresh installs ship without it); `.agent/evals/scores/` is created on first use. |
 | 2.1.0 | 2026-08-11 | Routing matrix and `/mega-mind skills` listing are now generated artifacts — rendered from `.agent/shared/routing.json` + `skills-manifest.json` by `scripts/render-skills.py` (never hand-edit; regenerate). Identity counts corrected to manifest ground truth (12 core-workflow / 29 domain-expert / 8 meta-learning / 4 token-optimization). Routing targets are machine-validated in CI (`validate.yml`); stale names fixed (`perf-profiler`→`performance-profiler`, `tdd`→`test-driven-development`, `docker`→`docker-expert`, `k8s`→`k8s-orchestrator`). |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Blocking Violations, Performance & Cost, References, Changelog sections; updated frontmatter with version/category/dependencies; added operating principle and quality bar to Identity; added enforcement mechanisms to Core Principles; fixed self-verification checklist; updated skill counts to 53; fleshed out Autonomous Development Chain; added Workflow Chain Selection Guide; added edge case example |

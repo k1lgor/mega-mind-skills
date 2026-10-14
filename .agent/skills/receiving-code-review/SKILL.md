@@ -1,6 +1,6 @@
 ---
 name: receiving-code-review
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Systematic handling of code review feedback — categorize, respond, fix, and follow up.
@@ -15,6 +15,7 @@ triggers:
   - "review feedback received"
   - "address PR comments"
   - "respond to reviewer"
+  - "handle review feedback"
 dependencies:
   - requesting-code-review: required
   - finishing-a-development-branch: required
@@ -333,5 +334,6 @@ to evaluate a full migration.
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "handle review feedback" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Identity, Core Principles with enforcement, Blocking Violations table, expanded Verification with commands and quality gates, Performance & Cost, Examples with edge cases (polite disagreement, zero blocking comments), Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate; added 4-category feedback classification system |
 | 1.0.0 | 2024-01-15 | Initial version — feedback categorization, response templates, and checklist for addressing review comments |

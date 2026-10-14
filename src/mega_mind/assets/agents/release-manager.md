@@ -122,9 +122,23 @@ Every release produces:
 - The `POST /api/v1/notifications` endpoint has been deprecated in favor of `POST /api/v2/notifications`. Update client SDKs before v3.0.0.
 ```
 
-## Anti-Patterns
+## Release Gate (go/no-go)
 
-- Never release without a rollback plan because a release that cannot be rolled back is a gamble, not a deployment, and gambles always lose during the one incident where recovery matters.
+No release ships without an explicit gate. Answer each row, name the sign-off owner, and record the decision in the release notes.
+
+| Gate | Pass condition |
+| --- | --- |
+| Changelog complete | Every merged change is listed, breaking changes called out, migration guide attached |
+| Unreviewed commits | Zero - every commit in the release has an approved review |
+| Rollback plan | Written and rehearsed, or an explicit forward-fix plan with sign-off where rollback is impossible |
+| Smoke tests | Passed on staging against the candidate that will actually ship, not an older build |
+| Freeze window | No release during an active change freeze; a hotfix exception requires an approving owner |
+| On-call coverage | Someone is available to roll back for the first 24 hours after rollout |
+| Sign-off | A named owner accepts the release and its residual risks |
+
+**Common failure:** treating the changelog as a go decision. A complete changelog is one gate of seven.
+
+\1- **Never go straight from a written changelog to ship it** — a complete changelog is one gate of seven, and a release decision without the gate table is an assumption, not a decision.\n- Never release without a rollback plan because a release that cannot be rolled back is a gamble, not a deployment, and gambles always lose during the one incident where recovery matters.
 - Never include unreviewed commits in a release because every commit in a release should be traceable to an approved PR, and an unreviewed commit that causes a regression has no owner and no review context for the fix.
 - Never skip the changelog because a release without a changelog forces every consumer to read the full diff to understand what changed, which they will not do, and which creates a knowledge gap that surfaces as support tickets and confusion.
 - Never combine a security fix with feature work in the same release because the security fix needs to be fast-tracked independently while the feature work follows its normal testing cadence — coupling them delays the fix.

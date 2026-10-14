@@ -1,6 +1,6 @@
 ---
 name: k8s-orchestrator
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Designs and deploys Kubernetes manifests, Helm charts, and production-grade cluster configurations with deployment strategies, health probes, and rollback planning.
@@ -22,6 +22,8 @@ triggers:
   - "service"
   - "ingress"
   - "helm"
+  - "deploy to k8s"
+  - "deploy to kubernetes"
 dependencies:
   - docker-expert: required
   - ci-config-helper: required
@@ -378,5 +380,6 @@ Deploy a new version of the payment service with zero tolerance for mixed-versio
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "deploy to k8s", "deploy to kubernetes" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Full Gold Standard rewrite: added Identity (role/mission/quality bar/differentiator), Core Principles table with enforcement, Workflow with Step 0-5, Blocking Violations table, Verification with quality gates and commands, Performance & Cost, Examples, References, Changelog. Preserved all deployment strategies, health probes, environment config, rollback plan, production readiness checklist, Helm chart structure, anti-patterns, and failure modes from v1. |
 | 1.0.0 | — | Initial version |

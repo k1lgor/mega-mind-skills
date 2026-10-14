@@ -79,11 +79,17 @@ def main() -> int:
     print("=" * 50)
 
     if not check_only:
-        # 1. Regenerate the manifest so it reflects current content
+        # 1. Build the manifest that the renderer consumes (descriptions, categories).
         run_step("building skills manifest", ["scripts/build-manifest.py"])
-        # 2. Re-render generated doc regions from the manifest
+        # 2. Re-render generated doc regions. This REWRITES SKILL.md content
+        #    (for example the mega-mind routing matrix), so the hashes recorded in
+        #    step 1 are stale for every file the renderer touches.
         run_step("rendering generated docs", ["scripts/render-skills.py"])
-        # 3. Copy the tree
+        # 3. Rebuild the manifest so its hashes cover the post-render content that is
+        #    about to be copied. Without this step verify_install() reports a stale
+        #    hash for mega-mind and the installer tests / mmo check fail.
+        run_step("refreshing skills manifest", ["scripts/build-manifest.py"])
+        # 4. Copy the tree
         shutil.copytree(AGENT_DIR, ASSETS_DIR, dirs_exist_ok=True)
         print("  tree copied")
 

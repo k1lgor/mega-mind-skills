@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Write tests first, implement second, refactor third — the RED-GREEN-REFACTOR cycle.
@@ -15,6 +15,7 @@ triggers:
   - "write tests first"
   - "red green refactor"
   - "test first"
+  - "write tests"
 dependencies:
   - executing-plans: recommended
   - cost-aware-llm-pipeline: optional
@@ -380,5 +381,6 @@ test('rejects duplicate email', async () => {
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "write tests" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Identity, Core Principles with enforcement, Blocking Violations table, expanded Verification with commands, Performance & Cost, Examples with bug-fix TDD and legacy refactoring edge cases, Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate; added characterization testing guidance |
 | 1.0.0 | 2024-01-15 | Initial version — RED-GREEN-REFACTOR cycle with examples and best practices |

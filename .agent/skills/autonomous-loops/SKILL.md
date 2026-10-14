@@ -1,6 +1,6 @@
 ---
 name: autonomous-loops
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Autonomous loop patterns for multi-step AI workflows without human intervention.
@@ -18,6 +18,7 @@ triggers:
   - "agentic pipeline"
   - "Ralphinho"
   - "DAG orchestration"
+  - "autonomous pipeline"
 dependencies:
   - verification-loop: recommended
   - writing-plans: recommended
@@ -215,5 +216,6 @@ git log --oneline | wc -l
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "autonomous pipeline" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Examples, References, Changelog. |
 ---

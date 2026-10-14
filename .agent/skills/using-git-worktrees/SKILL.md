@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Parallel branch management with Git worktrees — work on multiple features simultaneously without stashing or switching.
@@ -17,6 +17,7 @@ triggers:
   - "switch contexts"
   - "parallel work"
   - "multi-branch workflow"
+  - "work with git"
 dependencies:
   - finishing-a-development-branch: recommended
   - receiving-code-review: optional
@@ -402,5 +403,6 @@ Create per-worktree IDE windows:
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "work with git" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added Identity, Core Principles with enforcement, Blocking Violations table, expanded Verification with commands and quality gates, Performance & Cost, Examples with edge cases ("already checked out", wrong IDE window), Anti-Patterns table format, References, Changelog; restructured Steps with Goal/Expected Output/Tools/Verification Gate; added clean-merged script; enhanced naming convention enforcement |
 | 1.0.0 | 2024-01-15 | Initial version — Git worktree basics with 3 workflow patterns and common issue troubleshooting |

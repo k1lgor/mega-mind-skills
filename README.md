@@ -1,4 +1,4 @@
-# Mega-Mind Skills System v1.0.4
+# Mega-Mind Skills System v1.0.5
 
 > **The most powerful skill system for AI coding assistants — 53 Gold Standard skills, 11 agents, 9 workflows.**
 
@@ -10,7 +10,7 @@ This is a comprehensive skill-based workflow system that combines the discipline
 
 Mega-Mind v1.0 brings together **53 Gold Standard skills**, **11 agent personas**, and **9 workflows** organized across the full software development lifecycle — from planning through production operations. All skills meet the **[Gold Standard SKILL.md v2.0](./.agent/shared/GOLD-STANDARD-SKILL.md)** specification, verified machine-checkable in CI.
 
-> **New in v1.0.4 (2026-10-14):** Skill routing is now collision-free and machine-enforced — 11 colliding triggers removed in favor of the curated matrix, `trigger_collision` promoted to an ERROR check, and the instinct chain no longer references directories that don't ship with an install. Line endings are LF everywhere, enforced by `.gitattributes` plus a new `eol` validator check. See [CHANGELOG.md](./CHANGELOG.md) for details.
+> **New in v1.0.5 (2026-10-14):** All **11 agent personas** were prompt-tested against their own documented rules and hardened where the audit found gaps — blast-radius approval for `adversarial-tester`, cost/override/migration fields for `architect`, a go/no-go release gate, DSAR and lawful-basis handling, an incident comms cadence, plus delegation and estimate disciplines. Routing is now consistent across both layers (**57 routes**, every matrix phrase also a frontmatter trigger), and a new `agent_refs` validator check catches persona links to renamed skills. See [CHANGELOG.md](./CHANGELOG.md) for details.
 
 ## Versioning
 
@@ -18,11 +18,11 @@ Three distinct version numbers are in play — don't conflate them:
 
 | Dimension | Version | Where it lives |
 | --- | --- | --- |
-| **Package release** | **1.0.4** | `pyproject.toml` / `mmo --version` — the pip package |
+| **Package release** | **1.0.5** | `pyproject.toml` / `mmo --version` — the pip package |
 | **Gold Standard spec** | **2.0** | `.agent/shared/GOLD-STANDARD-SKILL.md` — the SKILL.md template |
-| **Skill versions** | **2.0.0 / 2.0.1** (mega-mind: 2.1.1) | each skill's frontmatter `version:` — must equal its latest `## Changelog` row (validator-enforced) |
+| **Skill versions** | **2.0.0 / 2.0.1 / 2.0.2** (mega-mind: 2.1.3) | each skill's frontmatter `version:` — must equal its latest `## Changelog` row (validator-enforced) |
 
-Skills are at **Gold Standard v2.0** and each skill's frontmatter version matches its own changelog (`2.0.0`/`2.0.1`; mega-mind: `2.1.1`); the `mmo` package that ships them is at **1.0.4**.
+Skills are at **Gold Standard v2.0** and each skill's frontmatter version matches its own changelog (`2.0.0`/`2.0.1`/`2.0.2`; mega-mind: `2.1.3`); the `mmo` package that ships them is at **1.0.5**.
 
 ### The Mega-Mind Orchestrator
 
@@ -328,6 +328,9 @@ mega-mind-skills/
 ├── USAGE.md                     # Installation guide
 ├── CHANGELOG.md                 # Release history
 ├── pyproject.toml               # Python package config
+├── docs/
+│   ├── plans/                   # Session task tracking (task.md)
+│   └── routing-tests.md         # Prompt-level routing regression fixture
 │
 ├── scripts/
 │   ├── build-manifest.py        # Generates .agent/shared/skills-manifest.json
@@ -380,7 +383,7 @@ mega-mind-skills/
 ## Full Routing Matrix
 
 The request-type mapping is curated as machine-readable data in
-`.agent/shared/routing.json` (54 routes, 11 chains) and rendered into the
+`.agent/shared/routing.json` (57 routes, 11 chains) and rendered into the
 routing matrix diagram in `.agent/skills/mega-mind/SKILL.md` by
 `scripts/render-skills.py`. The manifest-driven validator
 (`scripts/validate-skill-system.py`) verifies that every route target resolves

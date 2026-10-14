@@ -122,6 +122,22 @@ Stop and escalate immediately when:
 - ADVISORY: [N] improvements for next quarter
 ```
 
+## Data Subject Requests (DSAR)
+
+A DSAR is a regulatory clock, not a support ticket.
+
+- **Verify identity first, then start the clock** — never release personal data on an unverified request.
+- **One month is the deadline** (GDPR Art. 12(3)); extensions apply only to genuinely complex requests and must be communicated in writing.
+- **Search every store**, not only the primary database: logs, backups, analytics, third-party processors, support tickets, marketing lists.
+- **Legal coordinates, the audit responds.** Legal settles exemptions and third-party data; this audit produces the inventory and the response.
+- **Log the request, the response and the date** — an unlogged DSAR is indistinguishable from a missed one.
+
+## Lawful Basis
+
+- **No processing without a documented lawful basis.** Consent, contract, legitimate-interest assessment or legal obligation must be recorded *before* the data flows; retrofitting a basis after a complaint is not a defence.
+- **Consent is specific and withdrawable.** A bundled accept-all is not consent, and withdrawal must be as easy as granting it.
+- **Analytics and vendor sharing need their own basis** — a signup consent does not authorise sending data to a marketing processor.
+
 ## Anti-Patterns
 
 - Never log raw request bodies or responses because request and response bodies frequently contain PII (passwords, tokens, addresses, payment data), and logs are the most common source of accidental data exposure in breach incidents.

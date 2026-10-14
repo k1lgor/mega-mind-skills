@@ -1,6 +1,6 @@
 ---
 name: python-patterns
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Production-grade Python design patterns, modern tooling, and idiomatic code standards for Python 3.10+.
@@ -24,6 +24,7 @@ triggers:
   - "python decorator"
   - "asyncio"
   - "ruff"
+  - "python code"
 dependencies:
   - code-polisher: optional
   - test-genius: optional
@@ -611,5 +612,6 @@ Our long-running service leaks memory. After 24 hours it's using 2GB and needs r
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "python code" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Gold standard upgrade: added version/category/dependencies frontmatter, Core Principles with enforcement, 5-step Instructions workflow (Type Design → Logic Implementation → Async Design → Tests → Verification), Blocking Violations table, Performance & Cost, Examples (3), Anti-Patterns table, References, Changelog |
 | 1.0.0 | 2025-06-01 | Initial version |

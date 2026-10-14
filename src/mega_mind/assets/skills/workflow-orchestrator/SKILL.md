@@ -1,6 +1,6 @@
 ---
 name: workflow-orchestrator
-version: "2.0.0"
+version: "2.0.1"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Complex task scheduling and orchestration for multi-step workflow automation.
@@ -18,6 +18,7 @@ triggers:
   - "distributed workflow"
   - "retry strategy"
   - "dead letter queue"
+  - "orchestrate workflow"
 dependencies:
   - verification-loop: recommended
   - observability-specialist: recommended
@@ -270,5 +271,6 @@ kubectl get deployment <name> -o jsonpath='{.spec.replicas}'
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | 2026-10-14 | Routing consistency: added the routing-matrix phrase(s) "orchestrate workflow" to frontmatter triggers so skill-level selection matches the matrix. |
 | 2.0.0 | 2026-07-09 | Upgraded to Gold Standard v2.0: added frontmatter version/category/dependencies, Identity with quality bar, Core Principles, Blocking Violations table, Verification with commands/quality gates, Performance & Cost section, Examples, References, Changelog. |
 ---
