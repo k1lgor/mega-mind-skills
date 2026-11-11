@@ -1,4 +1,4 @@
-# Mega-Mind Skills System v1.0.5
+# Mega-Mind Skills System v1.1.0
 
 A unified Gold Standard skill system for any AI coding assistant — covering the full software
 development lifecycle from planning through production operations and compliance.
@@ -10,6 +10,8 @@ development lifecycle from planning through production operations and compliance
 - **9 Workflow Chains** — Executable sequences covering the full lifecycle: brainstorm → plan → build → verify → ship → release → operate → learn.
 
 - **Multi-Platform** — Works with Antigravity, Claude Code, GitHub Copilot, Cursor, OpenCode, Codex, and pi — any tool supporting the Agent Skills open standard.
+
+> **New in v1.1.0 (2026-11-11):** The routing layer is now **executable and tested**. A deterministic router (`mega_mind/router.py`) backs a new **`mmo route "<request>"`** command, applying the precedence the orchestrator only documented before — no model call. `tests/test_router.py` proves 78/78 curated phrases, 53/53 skills, 11/11 agents and the skill's own examples route to their documented target *and layer*. Writing the tests exposed four real defects (whole-chain requests unrouted, published examples matching nothing, a CLI crash on non-UTF-8 consoles, routes not kind-checked). See the [changelog](changelog.md) for details.
 
 > **New in v1.0.5 (2026-10-14):** All 11 agent personas were prompt-tested against their own documented rules and hardened where the audit found gaps (blast-radius approval, ADR cost and override rules, a go/no-go release gate, DSAR and lawful basis, incident comms cadence, delegation and estimate discipline). Routing is consistent across both layers — 57 routes, every matrix phrase also a frontmatter trigger — plus a new `agent_refs` validator check for stale persona links. See the [changelog](changelog.md) for details.
 

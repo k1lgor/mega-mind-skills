@@ -1,6 +1,6 @@
 ---
 name: mega-mind
-version: "2.1.3"
+version: "2.1.5"
 compatibility: Any AI coding agent (Antigravity, Claude Code, Copilot, Cursor, OpenCode, Codex, pi, and all tools supporting the Agent Skills open standard)
 description: |
   Master orchestrator for the Mega-Mind skill system — analyzes requests, coordinates multiple skills, and manages complex workflows.
@@ -164,7 +164,7 @@ When a request comes in, analyze it via these 7 steps:
 
 ```
 1. PARSE — What is the user asking? Task type: feature / bug / infra / data / ML / doc / security / perf / other
-2. SEARCH FIRST — Run `search-first`: does a library, MCP, or existing skill already solve this? If yes, route to adoption/integration, skip chain. If no, proceed.
+2. SEARCH FIRST — For feature, new-project, and multi-step work, run `search-first`: does a library, MCP, or existing skill already solve this? If yes, route to adoption/integration, skip chain. Trivial single-file fixes and well-understood mechanical changes may skip this step; record the skip in `task.md`.
 3. APPLY INSTINCTS (skip if .agent/instincts/personal/ does not exist). Apply (0.7+) automatically; mention (0.5-0.7) as options.
 4. CLASSIFY (informed by search results):
    - New feature → tech-lead → brainstorming → writing-plans
@@ -172,18 +172,31 @@ When a request comes in, analyze it via these 7 steps:
    - Bug / failing behaviour with unknown root cause → debugging (takes precedence over platform and domain skills: diagnose first, then hand off)
    - Code quality → code-polisher | Security → security-reviewer | Performance → performance-profiler
    - Testing → test-driven-development (writing tests before implementation); a NAMED test type wins over the generic phrase: "unit tests" / "integration tests" → test-genius, "e2e tests" → e2e-test-specialist, "capability eval" → eval-harness
-   - Infra provisioning → infra-architect | Container build/image → docker-expert | Cluster or workload failure (CrashLoop, scheduling, rollout) → k8s-orchestrator, but start with debugging when the root cause is unknown
+   - Infra provisioning → infra-architect | Container build/image → docker-expert | Kubernetes (deploys, scaling, or cluster/workload failures) → k8s-orchestrator, but start with debugging when a failure's root cause is unknown | Generic CI/CD pipelines and non-k8s deploys → ci-config-helper
    - Data → data-engineer → data-analyst
    - ML/AI → ml-engineer | Docs → doc-writer | Mobile → mobile-architect | Legacy → legacy-archaeologist
    - Autonomous pipeline → autonomous-loops | End of session → continuous-learning-v2 | Skill review → skill-stocktake
+   - Pre-PR review of existing code → code-reviewer (agent) | Review process/templates → requesting-code-review (skill)
+   - Architecture Decision Record / "create architecture decisions" → architect (agent)
+   - "break down complex task" (decomposition beyond one chain) → planner (agent)
+   - Quality assurance / test-strategy ownership → qa-engineer (agent)
+   - Privacy audit, GDPR, PII scan, data retention → data-privacy-officer (agent)
 5. SELECT MODEL — Haiku (research/simple, 3-4x cheaper), Sonnet (standard, default), Opus (deep architecture, sparingly)
-6. DETERMINE workflow — Simple → single skill. Complex → skill chain. Multi-phase → full workflow. No-intervention → autonomous-loops.
+6. DETERMINE workflow — Simple → single skill. Complex → skill chain. Multi-phase → full workflow. No-intervention → autonomous-loops. For whole-chain selection (production outage, WCAG audit, resilience stress test, version bump + deploy, greenfield, self-improvement), use the Workflow Chain Selection Guide table below — agent chain entries (incident-commander, accessibility-auditor, adversarial-tester, release-manager) start their chain and are dispatched as agents.
 7. EXECUTE — Create/update <project-root>/docs/plans/task.md. Route to first skill. Track progress. Chain. NO `git add`/`git commit` until finishing-a-development-branch.
 ```
 
 ### Skill Routing Matrix
 
 > **Agent vs Skill**: Agents (`.agent/agents/`) are deep-dive personas for complex analysis — invoke them explicitly when a task warrants dedicated focus. Skills (`.agent/skills/`) are lighter, step-by-step instructions for routine tasks. When both exist for the same domain, start with the skill; escalate to the agent if the task is unusually complex or requires an Architecture Decision Record.
+
+**Deterministic cross-check.** The precedence rules in step 4 are implemented in
+`mega_mind/router.py`. Run `mmo route "<request>"` (add `--json` for machine output) to
+see the owner, the layer that decided it (`routing` / `persona` / `trigger` /
+`test-type` / `failure-fallback` / `chain` / `hint`), and the suggested chain. It reads
+only `routing.json`, `skills-manifest.json` and agent filenames — no model call — so it
+is reproducible. When its answer and your reading of the matrix disagree, the matrix
+wins for judgement calls; a `layer: routing` answer should never be overridden.
 
 <!-- BEGIN GENERATED: routing-matrix -->
 <!-- Generated by scripts/render-skills.py — DO NOT EDIT BY HAND -->
@@ -480,7 +493,7 @@ AGENTS (11): accessibility-auditor · adversarial-tester · architect · code-re
 | Routing to wrong skill (triggers ignored) | Wrong skill lacks domain constraints — degraded output | Stop chain. Run `/mega-mind route <request>` to re-dispatch. Document error in `task.md`. |
 | Chaining next skill before current emits valid Handoff (`status: completed`) | Early errors amplify through downstream — 5-step unwind needed if caught late | Do NOT proceed. Re-invoke current skill to emit Handoff. Escalate after 3 turns with no handoff. |
 | Marking task "complete" without running verification checklist | Self-reported completion without verification is the top source of rework | Re-open. Run the verification checklist NOW. If it fails, task is "blocked", not "done." |
-| Starting implementation before `search-first` | Duplicates ecosystem work — introduces maintenance burden for solved problems | Pause. Run `search-first`. If a library exists, refactor to use it. Document skip in `task.md`. |
+| Starting non-trivial feature or multi-step implementation before `search-first` | Duplicates ecosystem work — introduces maintenance burden for solved problems | Pause. Run `search-first`. If a library exists, refactor to use it. Document skip in `task.md`. (Trivial single-file fixes are exempt per Request Analysis step 2.) |
 | Running `git add`/`git commit` before `finishing-a-development-branch` | Commits without user direction are contract violations — bypass review/verification | Run `git reset HEAD~1 --soft`. Explain. Wait for user confirmation. |
 | Using wrong model tier (Opus for simple fix, Haiku for architecture) | Opus: 3-5x token waste. Haiku: low-quality output needing rework | Opus waste: accept loss, switch to Sonnet. Haiku damage: re-run critical steps with Sonnet/Opus. |
 | Skipping `security-reviewer` on auth/payments/PII/API code | Security vulns shipped to production — most expensive defect class to fix | Flag incomplete. Run `security-reviewer` before merge. Execute OWASP Top 10 checklist. |
@@ -542,18 +555,20 @@ User: "I need to add user authentication with OAuth"
 
 📋 Request Analyzed: New feature - User Authentication with OAuth
 
-🔄 Routed to skill chain:
+🔄 Routed to the Feature Development (Z-Pattern) chain:
+   0. search-first → Check existing auth libraries/MCP servers (MANDATORY)
    1. tech-lead → Define architecture
    2. brainstorming → Explore OAuth providers
-   3. backend-architect → Design auth API
-   4. writing-plans → Create implementation plan
-   5. test-driven-development → Write auth tests
-   6. backend-architect → Implement auth service
-   7. frontend-architect → Implement login UI
-   8. security-reviewer → Security audit
-   9. verification-loop → Verify
+   3. writing-plans → Create implementation plan (incl. backend-architect / frontend-architect design tasks)
+   4. test-driven-development → Write auth tests first
+   5. executing-plans → Implement auth service and login UI
+   6. verification-loop → Verify
+   7. requesting-code-review → Submit for review
+   8. finishing-a-development-branch → Merge and deploy (commit gate)
+   9. continuous-learning-v2 → Extract instincts
+   (+ security-reviewer before merge — auth code is security-sensitive)
 
-📍 Starting with: tech-lead
+📍 Starting with: search-first
 ```
 
 ### Example 2: Bug Report
@@ -615,7 +630,7 @@ User: "Make the app faster"
 
 ### Internal Dependencies
 
-- `search-first` — Mandatory pre-flight research skill; invoked before every chain to check existing solutions
+- `search-first` — Mandatory pre-flight research skill for feature, new-project and multi-step chains; trivial single-file fixes may skip it with a documented skip in `task.md`
 - `verification-loop` — Scope-aware verification (Tier 1 Surface / Tier 2 Standard / Tier 3 Deep); invoked after every implementation step
 - `continuous-learning-v2` — End-of-session instinct extraction; invoked as the final step of every chain
 - `context-optimizer` — Context window management; used for recovery when session context is exhausted mid-chain
@@ -647,6 +662,8 @@ User: "Make the app faster"
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.1.5 | 2026-11-11 | The step-4 precedence rules now have an executable implementation (`mega_mind/router.py`, `mmo route`), and `tests/test_router.py` asserts that all 78 routing phrases, all 53 skills, all 11 agents and this skill's own three published examples route as documented. Fixed two routing gaps the tests exposed: whole-chain requests with no matching phrase were unrouted (they now start at the chain head), and the documented examples (OAuth feature, random logouts, "make the app faster") matched nothing — now covered by feature-request and ambiguous-performance rules. |
+| 2.1.4 | 2026-11-11 | CLASSIFY now covers the five agent routes (code-reviewer, architect, planner, qa-engineer, data-privacy-officer) that were reachable only via the matrix, and points whole-chain selection at the Workflow Chain Selection Guide (incident-commander, accessibility-auditor, adversarial-tester, release-manager were otherwise unreachable from the 7-step analysis). k8s/deploy ownership clarified: k8s-orchestrator owns k8s deploys and failures, ci-config-helper owns generic CI/CD and non-k8s deploys. search-first scoped to feature/new-project/multi-step work (was contradicted by the over-orchestration anti-pattern); Example 1 aligned with the canonical Z-Pattern chain. |
 | 2.1.3 | 2026-10-14 | The nine named workflows are now listed next to `execute <workflow>` so they are discoverable from the orchestrator. |
 | 2.1.2 | 2026-10-14 | Routing fallback made deterministic: CLASSIFY precedence (unknown-root-cause failure → debugging before platform skills), named test type beats generic "write tests", DevOps bucket split into provisioning / container build / cluster-workload failure instead of an ambiguous priority chain. Added docs/routing-tests.md prompt-level fixture. |
 | 2.1.1 | 2026-10-14 | Instinct steps are now conditional: `.agent/instincts/personal/` is skipped silently when absent (fresh installs ship without it); `.agent/evals/scores/` is created on first use. |

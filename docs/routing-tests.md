@@ -1,5 +1,16 @@
 # Routing Regression Fixtures (prompt level)
 
+> **The deterministic half is now executable.** `tests/test_router.py` routes every
+> curated phrase, every skill trigger, and the six cases below through
+> `mega_mind.router` and fails on any mismatch. Run it with
+> `uv run python -m pytest tests/test_router.py -q`, or route a single prompt with
+> `mmo route "<request>"`. The same rules are what the orchestrator applies, so a
+> failure here is a real routing regression rather than a judgement call.
+>
+> What remains manual is the part that genuinely needs judgement: whether an agent,
+> reading a natural sentence, picks the layer the router picked, and whether it honours
+> a `When NOT to Use` redirect.
+
 Manual, prompt-level tests for the Mega-Mind routing layer.
 
 The validator (`scripts/validate-skill-system.py`) covers the **deterministic** half of
@@ -42,6 +53,13 @@ deterministic checks live in `scripts/validate-skill-system.py` and run in CI.
   with an unknown root cause goes to `debugging` first and the platform skill takes over
   once the cause is known. Answering `k8s-orchestrator` is acceptable **only** if the
   agent states the debugging handoff.
+- Since mega-mind **2.1.4**: `k8s-orchestrator` owns k8s deploys/scaling **and** k8s
+  failures; `ci-config-helper` owns generic CI/CD pipelines and non-k8s deploys. A
+  "deploy to kubernetes" prompt with no failure context → `k8s-orchestrator` directly.
+- Since mega-mind **2.1.4**: `search-first` is mandatory for feature/new-project and
+  multi-step work only. A trivial single-file fix that answers without it is a PASS if
+  the skip is recorded; demanding `search-first` for a one-line typo fix is an
+  over-orchestration anti-pattern, not a routing success.
 
 ## Full-coverage run (all 53 skills)
 
@@ -77,7 +95,8 @@ data itself — a consistency measurement, not external ground truth.
 
 ## Recording results
 
-Append one row per release run:
+Append one row per release run. Record only runs that actually happened — a
+matrix that was written but not executed is not a result.
 
 | Date | mega-mind version | Passed | Ambiguous | Failed | Notes |
 | --- | --- | --- | --- | --- | --- |

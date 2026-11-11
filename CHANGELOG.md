@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] — 2026-11-11
+
+### ✅ Executable routing tests (replaces hand-scored fixtures)
+
+- **New `mega_mind/router.py`** — a deterministic router over the shipped data
+  (`routing.json`, `skills-manifest.json`, agent filenames). No model call, no network, so
+  routing decisions are reproducible. It implements the precedence the orchestrator only
+  documented before: explicit persona invocation, named test type over generic "write
+  tests", debugging-first for failures with an unknown root cause, longest routing
+  phrase, unambiguous frontmatter-trigger fallback, then chain selection.
+- **New `mmo route "<request>"`** (`--json` for machine output). Exits 1 when unrouted.
+  This is the executable counterpart of the `/mega-mind route <request>` the docs already
+  referenced.
+- **New `tests/test_router.py` (42 tests)** — asserts that all **78** curated routing
+  phrases reach their documented target *and layer*, that all **53** skills and all **11**
+  agents are reachable from a real prompt, that the eight documented agent-vs-skill
+  collisions resolve to the documented layer, that the six prompt-level fixture cases in
+  `docs/routing-tests.md` behave as recorded, and that an installed tree is routable.
+  Mutation-checked: removing the test-type table, the failure signals, or the persona table
+  each flips the assertion that covers it.
+- **Two routing gaps the tests exposed and closed:**
+  - A whole-chain request with no matching phrase (`"build a CSV export feature end-to-end"`)
+    returned *unrouted*. It now selects the chain and starts at its head (`search-first`).
+  - **All three of `mega-mind`'s own published examples** (`OAuth feature`, `"Users are
+    randomly getting logged out"`, `"Make the app faster"`) matched no routing data at all.
+    They now route as documented — via a feature verb+noun rule, a session-failure signal,
+    and an ambiguous-performance rule that profiles before choosing a specialist.
+- **Fixed: CLI crashed on non-UTF-8 consoles.** `mmo route` printed a `→` glyph and `mmo
+  init` prints emoji; on a cp1251/cp437 console both raised `UnicodeEncodeError` *after*
+  doing their work, losing the answer. Streams are now reconfigured to UTF-8 with
+  replacement at startup, `route` output is ASCII, and a subprocess test pins the behaviour
+  under `PYTHONIOENCODING=cp1251`.
+
+### 🔗 Routing layer (from the same audit)
+
+- `mega-mind` **2.1.5**: the precedence rules now have an executable implementation and a
+  deterministic cross-check documented beside the routing matrix.
+- `mega-mind` **2.1.4**: CLASSIFY covers the five agent routes that were matrix-only and
+  points whole-chain selection at the Workflow Chain Selection Guide (four chain-start
+  personas were otherwise unreachable); k8s deploy ownership split from generic CI/CD;
+  `search-first` scoped to non-trivial work, resolving its contradiction with the
+  over-orchestration anti-pattern; Example 1 aligned with the canonical Z-Pattern chain.
+- **Validator hardened:** routes are now kind-aware (a `kind: skill` route can no longer
+  target an agent), every skill-routed phrase is checked against its target's frontmatter
+  triggers, and a skill with an unparseable changelog table no longer passes silently.
+
 ## [1.0.5] — 2026-10-14
 
 ### 🧪 Agent Hardening: eight more personas

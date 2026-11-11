@@ -1,4 +1,8 @@
-# Mega-Mind Skills System v1.0.5
+# Mega-Mind Skills System v1.1.0
+
+<p align="center">
+  <img src="./docs/assets/mega-mind-hero.jpg" alt="Mega-Mind Skills System — a glowing circuit brain orchestrating a ring of skill nodes" width="800">
+</p>
 
 > **The most powerful skill system for AI coding assistants — 53 Gold Standard skills, 11 agents, 9 workflows.**
 
@@ -10,7 +14,7 @@ This is a comprehensive skill-based workflow system that combines the discipline
 
 Mega-Mind v1.0 brings together **53 Gold Standard skills**, **11 agent personas**, and **9 workflows** organized across the full software development lifecycle — from planning through production operations. All skills meet the **[Gold Standard SKILL.md v2.0](./.agent/shared/GOLD-STANDARD-SKILL.md)** specification, verified machine-checkable in CI.
 
-> **New in v1.0.5 (2026-10-14):** All **11 agent personas** were prompt-tested against their own documented rules and hardened where the audit found gaps — blast-radius approval for `adversarial-tester`, cost/override/migration fields for `architect`, a go/no-go release gate, DSAR and lawful-basis handling, an incident comms cadence, plus delegation and estimate disciplines. Routing is now consistent across both layers (**57 routes**, every matrix phrase also a frontmatter trigger), and a new `agent_refs` validator check catches persona links to renamed skills. See [CHANGELOG.md](./CHANGELOG.md) for details.
+> **New in v1.1.0 (2026-11-11):** The routing layer is now **executable and tested**. A deterministic router (`mega_mind/router.py`, exposed as **`mmo route "<request>"`**) applies the precedence rules the orchestrator only documented before — persona invocation, named test type over generic "write tests", debugging-first for unknown-cause failures, then longest phrase — with no model call. `tests/test_router.py` proves **78/78** curated phrases, **53/53** skills, **11/11** agents and the skill's own published examples route to their documented target *and layer*. Writing the tests exposed four real defects: whole-chain requests returned unrouted, all three of `mega-mind`'s published examples matched no routing data, the CLI crashed on non-UTF-8 consoles, and routes were not kind-checked. See [CHANGELOG.md](./CHANGELOG.md).
 
 ## Versioning
 
@@ -18,11 +22,11 @@ Three distinct version numbers are in play — don't conflate them:
 
 | Dimension | Version | Where it lives |
 | --- | --- | --- |
-| **Package release** | **1.0.5** | `pyproject.toml` / `mmo --version` — the pip package |
+| **Package release** | **1.1.0** | `pyproject.toml` / `mmo --version` — the pip package |
 | **Gold Standard spec** | **2.0** | `.agent/shared/GOLD-STANDARD-SKILL.md` — the SKILL.md template |
-| **Skill versions** | **2.0.0 / 2.0.1 / 2.0.2** (mega-mind: 2.1.3) | each skill's frontmatter `version:` — must equal its latest `## Changelog` row (validator-enforced) |
+| **Skill versions** | **2.0.0 / 2.0.1 / 2.0.2** (mega-mind: 2.1.5) | each skill's frontmatter `version:` — must equal its latest `## Changelog` row (validator-enforced) |
 
-Skills are at **Gold Standard v2.0** and each skill's frontmatter version matches its own changelog (`2.0.0`/`2.0.1`/`2.0.2`; mega-mind: `2.1.3`); the `mmo` package that ships them is at **1.0.5**.
+Skills are at **Gold Standard v2.0** and each skill's frontmatter version matches its own changelog (`2.0.0`/`2.0.1`/`2.0.2`; mega-mind: `2.1.5`); the `mmo` package that ships them is at **1.1.0**.
 
 ### The Mega-Mind Orchestrator
 
@@ -341,8 +345,9 @@ mega-mind-skills/
 │   └── fix-*.py                 # Portability & normalization fixers
 │
 ├── src/mega_mind/
-│   ├── cli.py                   # CLI entry point (mmo init / doctor / check)
+│   ├── cli.py                   # CLI entry point (mmo init / route / doctor / check)
 │   ├── installer.py             # Multi-platform installer (checksum-verified)
+│   ├── router.py                # Deterministic request router (precedence rules)
 │   └── assets/                  # Distribution copies of .agent/
 │
 └── .agent/
@@ -389,7 +394,12 @@ routing matrix diagram in `.agent/skills/mega-mind/SKILL.md` by
 (`scripts/validate-skill-system.py`) verifies that every route target resolves
 to a real skill or agent and that no skill is left unrouted — the matrix can
 never silently drift from the library again.
-Use `/mega-mind route <request>` to let the orchestrator dispatch automatically.
+
+The same data is executable: `mega_mind/router.py` implements the precedence rules
+(see `mmo route`), and `tests/test_router.py` asserts that every phrase, every
+skill, every agent and the orchestrator's own published examples route as
+documented. Use `/mega-mind route <request>` — or `mmo route "<request>"` for the
+deterministic answer — to dispatch automatically.
 
 ---
 
@@ -543,6 +553,10 @@ uvx mmo init --copilot --claude --opencode --codex --pi --force
 uvx mmo doctor
 uvx mmo doctor /path/to/project
 
+# Route a request to the skill or agent that owns it (deterministic, no model call)
+uvx mmo route "review my code before I open the PR"
+uvx mmo route "deploy to k8s and it keeps crashing" --json
+
 # Maintainer gate: manifest, generated docs, validator, sync, sandboxed install
 uvx mmo check        # (run from the repo root)
 
@@ -559,6 +573,12 @@ uvx mmo --version
 manifest is fresh, all generated doc regions match their source data, the
 skill system passes validation, `.agent/` and the packaged `assets/` are
 byte-identical, and a sandboxed install of all six platform layouts succeeds.
+
+`mmo route` applies the orchestrator's documented precedence rules to one
+request and prints the owner, the layer that decided it, and the workflow chain
+it belongs to. It reads only `routing.json`, `skills-manifest.json` and the agent
+persona filenames — no model, no network — so routing decisions are reproducible
+and testable. `/mega-mind route <request>` uses the same rules.
 
 ### Hook prerequisite
 

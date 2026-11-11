@@ -37,7 +37,7 @@
     { "kind": "skill", "skill": "debugging", "phrases": ["fix bug", "debug this"], "note": "takes precedence over platform/domain skills when a failure has an unknown root cause - diagnose first, then hand off" },
     { "kind": "skill", "skill": "performance-profiler", "phrases": ["performance issue"] },
     { "kind": "skill", "skill": "docker-expert", "phrases": ["containerize"] },
-    { "kind": "skill", "skill": "k8s-orchestrator", "phrases": ["deploy to k8s", "deploy to kubernetes"], "note": "cluster/workload failures (CrashLoop, scheduling, rollout); start with debugging when the root cause is unknown" },
+    { "kind": "skill", "skill": "k8s-orchestrator", "phrases": ["deploy to k8s", "deploy to kubernetes"], "note": "owns k8s deploys, scaling, and cluster/workload failures (CrashLoop, scheduling, rollout); start with debugging when a failure's root cause is unknown. Generic CI/CD pipelines and non-k8s deploys stay with ci-config-helper." },
     { "kind": "skill", "skill": "ci-config-helper", "phrases": ["CI/CD", "deploy", "release"] },
     { "kind": "skill", "skill": "observability-specialist", "phrases": ["monitoring"] },
     { "kind": "skill", "skill": "data-engineer", "phrases": ["build data pipeline"] },

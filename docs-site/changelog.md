@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] — 2026-11-11
+
+### ✅ Executable routing tests
+
+- **New deterministic router** (`mega_mind/router.py`) over the shipped data — no model call, no network. It implements the precedence the orchestrator only documented: explicit persona invocation → named test type over generic `write tests` → debugging-first for unknown-cause failures → longest routing phrase → unambiguous trigger fallback → chain selection.
+- **New `mmo route "<request>"`** command (`--json` for machine output, exit 1 when unrouted) — the executable counterpart of the `/mega-mind route` the docs already referenced.
+- **New `tests/test_router.py` (42 tests)** proves **78/78** curated phrases reach their documented target *and layer*, **53/53** skills and **11/11** agents are reachable, the eight documented agent-vs-skill collisions resolve to the right layer, the six `docs/routing-tests.md` fixtures behave as recorded, and an installed tree is routable. Mutation-checked: removing the test-type table, the failure signals or the persona table each flips its covering assertion.
+
+### 🐞 Defects the tests found and closed
+
+- **Whole-chain requests returned unrouted:** "build a CSV export feature end-to-end" matched no phrase. It now selects the chain and starts at its head (`search-first`).
+- **All three of `mega-mind`'s published examples matched nothing** (`OAuth feature`, `"Users are randomly getting logged out"`, `"Make the app faster"`). They now route as documented via feature verb+noun, session-failure and ambiguous-performance rules.
+- **CLI crashed on non-UTF-8 consoles:** `mmo route` printed `→` and `mmo init` prints emoji, so both raised `UnicodeEncodeError` on a cp1251 console *after* doing their work. Streams are reconfigured to UTF-8 with replacement at startup, `route` output is ASCII, and a subprocess test pins it at `PYTHONIOENCODING=cp1251`.
+- **Validator hardening:** routes are kind-aware (a `kind: skill` route can no longer target an agent), every skill-routed phrase is checked against its target's frontmatter triggers, and a skill with an unparseable changelog table no longer passes silently.
+
+### 🔗 Routing layer (same audit)
+
+- **`mega-mind` 2.1.5:** the precedence rules now have an executable implementation documented beside the routing matrix.
+- **`mega-mind` 2.1.4:** CLASSIFY covers the five agent routes that were matrix-only and points whole-chain selection at the Workflow Chain Selection Guide (four chain-start personas were otherwise unreachable); k8s deploy ownership split from generic CI/CD; `search-first` scoped to non-trivial work, resolving its contradiction with the over-orchestration anti-pattern; Example 1 aligned with the canonical Z-Pattern chain.
+
 ## [1.0.5] — 2026-10-14
 
 ### 🧪 Agent Hardening (all 11 personas)

@@ -1180,7 +1180,7 @@
       "name": "mega-mind",
       "title": "Mega-Mind Orchestrator",
       "category": "core-workflow",
-      "version": "2.1.3",
+      "version": "2.1.5",
       "description": "Master orchestrator for the Mega-Mind skill system — analyzes requests, coordinates multiple skills, and manages complex workflows. Invoke when the task spans domains, requires a skill chain, or needs multi-agent orchestration. Differentiator: intelligent request routing via a 50+ entry routing matrix, 10+ pre-defined workflow chains, and a structured handoff protocol that makes this the highest-coverage orchestrator skill in the ecosystem.",
       "triggers": [
         "/mega-mind",
@@ -1207,8 +1207,8 @@
         "context-mode: recommended",
         "rtk: optional"
       ],
-      "sha256": "f6bfd1e5d1a63350f16938aca316f69d3fad250baa104b2360efa3178dde7579",
-      "line_count": 660,
+      "sha256": "8f64984be3cf8b1cf2cada4745440137f9afbc6e133c2eff49feee72f7e4d332",
+      "line_count": 677,
       "sections": {
         "Identity": true,
         "When to Use": true,
